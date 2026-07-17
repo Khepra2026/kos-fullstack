@@ -1,0 +1,20 @@
+# ═══════════════════════════════════════════════════════════════
+# KOS SELF-HEALING TIMER — Déclenche kos-health.service
+# Exécution toutes les 5 minutes, démarrage 2 min après le boot
+# Fichier : /etc/systemd/system/kos-health.timer
+# ═══════════════════════════════════════════════════════════════
+
+[Unit]
+Description=KOS Self-Healing Timer — Vérification santé toutes les 5 minutes
+Requires=kos-health.service
+
+[Timer]
+# Premier déclenchement 2 minutes après le boot (laisse le temps à la stack de démarrer)
+OnBootSec=2min
+# Toutes les 5 minutes ensuite
+OnUnitActiveSec=5min
+# Précision de +/- 30 secondes pour éviter les pics de charge
+RandomizedDelaySec=30s
+
+[Install]
+WantedBy=timers.target

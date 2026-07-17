@@ -1,0 +1,323 @@
+import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import KOSHubLayout from '@/components/feature/KOSHubLayout';
+import { SeoHead } from '@/components/feature/SeoHead';
+import { useContentCalendar } from '@/hooks/useContentCalendar';
+import {
+  NOVEMBER_BATCH_IDS,
+  NOVEMBER_BATCH_FORMATS,
+  NOVEMBER_PUBLISH_DATE,
+  CONTENT_CALENDAR_CLUSTERS,
+  CONTENT_CALENDAR_LEVELS,
+  CONTENT_CALENDAR_FORMATS,
+} from '@/mocks/kosContentCalendar';
+import type { ContentTheme } from '@/mocks/kosContentCalendar';
+
+const CLUSTER_COLORS: Record<string, string> = {
+  'Conformité': '#DC2626', 'Finance': '#059669', 'Gouvernance': '#7C3AED',
+  'Risques': '#EA580C', 'Stratégie': '#2563EB', 'Digital': '#0891B2',
+  'ESG': '#0D7B5F', 'RH': '#D97706', 'Juridique': '#9B7B2C',
+  'Audit': '#BE123C', 'Crédit': '#6366F1', 'Pilotage': '#0EA5E9',
+  'Data': '#8B5CF6', 'Organisation': '#14B8A6', 'Produit': '#F43F5E',
+  'Impact': '#10B981', 'Client': '#F59E0B', 'Marketing': '#EC4899',
+};
+
+const FORMAT_LABELS: Record<string, string> = {
+  blog: 'Blog 1500 mots', kbr: 'KBR (1 page)', note_strategique: 'Note Stratégique',
+  position_paper: 'Position Paper', etude_flash: 'Étude Flash',
+  monographie: 'Monographie', linkedin: 'Post LinkedIn',
+};
+
+const NIVEAU_STYLES: Record<string, string> = {
+  'Avancé': 'bg-red-50 text-red-700 border-red-200',
+  'Intermédiaire': 'bg-amber-50 text-amber-700 border-amber-200',
+  'Débutant': 'bg-emerald-50 text-emerald-700 border-emerald-200',
+};
+
+function getClusterColor(cluster: string): string {
+  return CLUSTER_COLORS[cluster] || '#6B7280';
+}
+
+function ThemeCard({ theme, isNovBatch }: { theme: ContentTheme; isNovBatch: boolean }) {
+  const clusterColor = getClusterColor(theme.cluster);
+  return (
+    <div className={`rounded-xl bg-white border overflow-hidden transition-all hover:border-foreground-200/60 group ${isNovBatch ? 'ring-1 ring-amber-300 shadow-amber-50 shadow-sm' : 'border-background-200'}`}>
+      <div className="h-1" style={{ backgroundColor: clusterColor }} />
+      <div className="p-4">
+        <div className="flex items-start gap-3 mb-2">
+          <span className="text-xs font-bold text-foreground-400 shrink-0 mt-0.5">#{theme.id}</span>
+          <div className="flex-1 min-w-0">
+            <h3 className="text-sm font-bold text-foreground-900 leading-snug line-clamp-2 mb-1.5">{theme.titre}</h3>
+            <div className="flex flex-wrap gap-1.5">
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border whitespace-nowrap"
+                style={{ backgroundColor: `${clusterColor}10`, borderColor: `${clusterColor}30`, color: clusterColor }}>
+                {theme.cluster}
+              </span>
+              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border whitespace-nowrap ${NIVEAU_STYLES[theme.niveau] || 'bg-gray-50 text-gray-600 border-gray-200'}`}>
+                {theme.niveau}
+              </span>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-background-50 border border-background-200 text-[10px] font-bold text-foreground-500 whitespace-nowrap">
+                {FORMAT_LABELS[theme.format_type] || theme.format_type}
+              </span>
+              {isNovBatch && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 border border-amber-300 text-[10px] font-bold text-amber-700 whitespace-nowrap">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                  Nov. 2026
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+        <p className="text-xs text-foreground-500 mb-2 line-clamp-1">{theme.keywords}</p>
+        <div className="flex items-center justify-between">
+          <span className="text-[10px] text-foreground-400 italic truncate max-w-[60%]">{theme.cta}</span>
+          <span className="text-[10px] font-mono text-foreground-300 bg-background-50 px-1.5 py-0.5 rounded">{theme.slug_wp}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function KOSContentCalendarPage() {
+  const { i18n } = useTranslation();
+  const lang = i18n.language.startsWith('en') ? 'en' : 'fr';
+  const { themes, loading, error, source, novemberBatch, clusters, levels, formats } = useContentCalendar();
+  const [activeTab, setActiveTab] = useState<string>('all');
+  const [clusterFilter, setClusterFilter] = useState<string>('all');
+  const [levelFilter, setLevelFilter] = useState<string>('all');
+  const [formatFilter, setFormatFilter] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+
+  const filteredThemes = useMemo(() => {
+    let list = themes;
+    if (activeTab === 'november') list = novemberBatch;
+    if (clusterFilter !== 'all') list = list.filter(t => t.cluster === clusterFilter);
+    if (levelFilter !== 'all') list = list.filter(t => t.niveau === levelFilter);
+    if (formatFilter !== 'all') list = list.filter(t => t.format_type === formatFilter);
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      list = list.filter(t =>
+        t.titre.toLowerCase().includes(q) ||
+        t.keywords.toLowerCase().includes(q) ||
+        t.cluster.toLowerCase().includes(q)
+      );
+    }
+    return list;
+  }, [themes, novemberBatch, activeTab, clusterFilter, levelFilter, formatFilter, searchQuery]);
+
+  const activeTabData = { id: activeTab, label: activeTab === 'november' ? 'Batch Novembre 2026' : 'Toutes les Thématiques' };
+
+  return (
+    <KOSHubLayout hubId={64} activeTab="calendar" tabLabel="Calendrier Éditorial">
+      <SeoHead
+        title="Calendrier Éditorial 2026 — 100 Thématiques SFD & Conformité | KHEPRA EXPERTS"
+        description="Calendrier éditorial complet KHEPRA EXPERTS : 100 thématiques couvrant la conformité BCEAO/COBAC, la gouvernance SFD, la finance, le digital, les risques. Batch Novembre 2026."
+        keywords="calendrier éditorial SFD, thématiques conformité BCEAO, content marketing microfinance, KHEPRA EXPERTS"
+        canonicalPath="/kos-content-calendar"
+        ogType="website"
+        ogLocale={lang === 'fr' ? 'fr_FR' : 'en_US'}
+      />
+
+      {/* Hero */}
+      <section className="relative bg-background-100 border-b border-background-200/70">
+        <div className="absolute inset-0 bg-gradient-to-br from-amber-50/40 via-white to-background-50" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 py-12 sm:py-16">
+          <div className="text-center max-w-3xl mx-auto">
+            <div className="flex flex-wrap justify-center gap-2 mb-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200">
+                <i className="ri-calendar-todo-line text-amber-600 text-sm" />
+                <span className="text-xs font-bold text-amber-700 uppercase tracking-wider">Calendrier Éditorial 2026</span>
+              </div>
+              <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full ${source === 'live' ? 'bg-emerald-50 border border-emerald-200' : 'bg-amber-50 border border-amber-200'}`}>
+                <span className={`w-2 h-2 rounded-full ${source === 'live' ? 'bg-emerald-500 animate-pulse' : 'bg-amber-400'}`} />
+                <span className={`text-xs font-bold uppercase tracking-wider ${source === 'live' ? 'text-emerald-700' : 'text-amber-700'}`}>
+                  {source === 'live' ? 'LIVE — SUPABASE' : 'MOCK'}
+                </span>
+              </div>
+            </div>
+            <h1 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground-950 mb-4 leading-tight">
+              Calendrier Éditorial
+              <span className="block text-amber-600 mt-1">100 thématiques. 18 clusters. Publication 08/11/2026.</span>
+            </h1>
+            <p className="text-foreground-600 leading-relaxed max-w-2xl mx-auto">
+              <strong className="text-foreground-900">{themes.length} thématiques</strong> stratégiques pour dirigeants SFD —
+              de la conformité BCEAO au digital en passant par la gouvernance et les risques.{' '}
+              <strong className="text-amber-700">20 articles</strong> sélectionnés pour le batch Novembre 2026.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Stats bar */}
+      <div className="bg-white border-b border-background-200/70">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-sm">
+            <div className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-foreground-900" />
+              <span className="text-foreground-600">{themes.length} <strong className="text-foreground-900">thématiques</strong></span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-amber-500" />
+              <span className="text-foreground-600">{novemberBatch.length} <strong className="text-amber-700">batch Novembre</strong></span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <i className="ri-folder-line text-foreground-400 text-xs" />
+              <span className="text-foreground-600">{clusters.length} <strong className="text-foreground-900">clusters</strong></span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <i className="ri-calendar-line text-foreground-400 text-xs" />
+              <span className="text-foreground-600">Publication : <strong className="text-foreground-900">08 Novembre 2026 à 14:00 GMT</strong></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Tab bar + Filters */}
+      <div className="sticky top-[52px] z-20 bg-white/95 backdrop-blur-sm border-b border-background-200/70">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+          <div className="flex flex-col sm:flex-row gap-2">
+            <div className="flex gap-1 overflow-x-auto">
+              <button onClick={() => { setActiveTab('all'); setClusterFilter('all'); }} className={`whitespace-nowrap px-4 py-2 rounded-full text-xs font-bold cursor-pointer transition-all ${activeTab === 'all' ? 'bg-foreground-950 text-white' : 'bg-background-50 border border-background-200 text-foreground-600 hover:border-foreground-300'}`}>
+                Toutes ({themes.length})
+              </button>
+              <button onClick={() => { setActiveTab('november'); setClusterFilter('all'); }} className={`whitespace-nowrap px-4 py-2 rounded-full text-xs font-bold cursor-pointer transition-all flex items-center gap-1.5 ${activeTab === 'november' ? 'bg-amber-600 text-white' : 'bg-background-50 border border-background-200 text-foreground-600 hover:border-amber-300'}`}>
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                Batch Nov. 2026 ({novemberBatch.length})
+              </button>
+            </div>
+            <div className="hidden sm:block w-px h-6 bg-background-200 self-center" />
+            <div className="flex gap-1 overflow-x-auto">
+              <select
+                value={clusterFilter}
+                onChange={e => setClusterFilter(e.target.value)}
+                className="text-xs font-bold px-2.5 py-1.5 rounded-full bg-background-50 border border-background-200 text-foreground-600 cursor-pointer hover:border-foreground-300"
+              >
+                <option value="all">Tous clusters</option>
+                {CONTENT_CALENDAR_CLUSTERS.filter(c => clusters.includes(c)).map(c => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+              <select
+                value={levelFilter}
+                onChange={e => setLevelFilter(e.target.value)}
+                className="text-xs font-bold px-2.5 py-1.5 rounded-full bg-background-50 border border-background-200 text-foreground-600 cursor-pointer hover:border-foreground-300"
+              >
+                <option value="all">Tous niveaux</option>
+                {CONTENT_CALENDAR_LEVELS.filter(l => levels.includes(l)).map(l => (
+                  <option key={l} value={l}>{l}</option>
+                ))}
+              </select>
+              <select
+                value={formatFilter}
+                onChange={e => setFormatFilter(e.target.value)}
+                className="text-xs font-bold px-2.5 py-1.5 rounded-full bg-background-50 border border-background-200 text-foreground-600 cursor-pointer hover:border-foreground-300"
+              >
+                <option value="all">Tous formats</option>
+                {CONTENT_CALENDAR_FORMATS.filter(f => formats.includes(f)).map(f => (
+                  <option key={f} value={f}>{FORMAT_LABELS[f] || f}</option>
+                ))}
+              </select>
+              <div className="relative">
+                <i className="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-foreground-400 text-xs" />
+                <input
+                  type="text"
+                  placeholder="Rechercher..."
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  className="text-xs font-bold pl-8 pr-3 py-1.5 rounded-full bg-background-50 border border-background-200 text-foreground-700 placeholder:text-foreground-400 w-40 focus:outline-none focus:border-amber-300"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Loading / Error */}
+      {loading && (
+        <div className="py-20 text-center">
+          <div className="w-10 h-10 mx-auto mb-4 rounded-full border-4 border-background-200 border-t-amber-500 animate-spin" />
+          <p className="text-foreground-500 text-sm">Chargement des thématiques...</p>
+        </div>
+      )}
+      {error && (
+        <div className="py-20 text-center max-w-md mx-auto">
+          <div className="rounded-xl bg-red-50 border border-red-200 p-5">
+            <i className="ri-error-warning-line text-2xl text-red-500 mb-2 block" />
+            <p className="text-sm text-red-700 font-bold mb-1">Erreur de chargement</p>
+            <p className="text-xs text-red-600">{error}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Themes Grid */}
+      {!loading && !error && (
+        <div className="py-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            {/* November Batch Special Section */}
+            {activeTab === 'all' && clusterFilter === 'all' && levelFilter === 'all' && formatFilter === 'all' && !searchQuery && (
+              <div className="mb-10">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center">
+                    <i className="ri-flashlight-fill text-amber-600" />
+                  </div>
+                  <div>
+                    <h2 className="font-heading text-lg font-bold text-foreground-950">Batch Novembre 2026 — 20 Articles</h2>
+                    <p className="text-xs text-foreground-500">Publication programmée le 8 Novembre 2026 à 14:00 GMT</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                  {novemberBatch.map(theme => (
+                    <ThemeCard key={theme.id} theme={theme} isNovBatch={true} />
+                  ))}
+                </div>
+                <div className="mt-4 h-px bg-gradient-to-r from-amber-200 via-background-200 to-transparent" />
+              </div>
+            )}
+
+            {/* Full Grid */}
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-heading text-lg font-bold text-foreground-950">
+                {activeTab === 'november' ? 'Batch Novembre 2026' : 'Toutes les Thématiques'}
+              </h2>
+              <span className="text-xs text-foreground-500">{filteredThemes.length} résultat{filteredThemes.length > 1 ? 's' : ''}</span>
+            </div>
+            {filteredThemes.length === 0 ? (
+              <div className="text-center py-12">
+                <i className="ri-file-search-line text-3xl text-foreground-300 mb-3 block" />
+                <p className="text-foreground-500 text-sm">Aucune thématique trouvée.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {filteredThemes.map(theme => (
+                  <ThemeCard key={theme.id} theme={theme} isNovBatch={NOVEMBER_BATCH_IDS.includes(theme.id)} />
+                ))}
+              </div>
+            )}
+
+            {/* Cluster Legend */}
+            <div className="mt-10 p-4 rounded-xl bg-background-50 border border-background-200/70">
+              <h3 className="text-xs font-bold text-foreground-400 uppercase tracking-wider mb-3">Répartition par Cluster</h3>
+              <div className="flex flex-wrap gap-2">
+                {clusters.map(cluster => {
+                  const count = themes.filter(t => t.cluster === cluster).length;
+                  const color = getClusterColor(cluster);
+                  return (
+                    <button
+                      key={cluster}
+                      onClick={() => { setClusterFilter(cluster); setActiveTab('all'); }}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border cursor-pointer transition-all hover:scale-105"
+                      style={{ backgroundColor: `${color}08`, borderColor: `${color}20`, color }}
+                    >
+                      <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: color }} />
+                      {cluster} ({count})
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </KOSHubLayout>
+  );
+}

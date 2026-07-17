@@ -1,0 +1,148 @@
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { supabase } from '@/lib/supabase';
+import {
+  globalVisibilityMetrics,
+  globalVisibilityScore,
+  multilingualSEOStats,
+  academicPublications,
+  mediaPartnerships,
+  aiPlatformVisibility,
+  monthlyVisibilityPlan,
+  monthlyVisibilityKPIs,
+  globalVisibilityAggregatedStats,
+} from '@/mocks/kosGlobalVisibilityCommand';
+import { logHookAudit, createAuditEntry, type HookAuditEntry } from '@/utils/hookAuditLogger';
+
+interface SEOAuditLive {
+  id: string;
+  page_url: string;
+  seo_score: number;
+  aeo_score: number;
+  h1_count: number;
+  issues_count: number;
+  [key: string]: unknown;
+}
+
+interface AuditMeta {
+  seo: HookAuditEntry | null;
+}
+
+export function useGlobalVisibilityCommand() {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isLive, setIsLive] = useState(false);
+  const [liveSEOData, setLiveSEOData] = useState<SEOAuditLive[]>([]);
+  const [auditTrail, setAuditTrail] = useState<AuditMeta>({ seo: null });
+
+  const fetchLive = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    const startTime = performance.now();
+
+    try {
+      const { data, error: dbErr } = await supabase
+        .from('seo_audit_results')
+        .select('*')
+        .order('seo_score', { ascending: false });
+
+      const durationMs = Math.round(performance.now() - startTime);
+
+      if (dbErr) throw dbErr;
+
+      if (data && data.length > 0) {
+        setLiveSEOData(data as SEOAuditLive[]);
+        setIsLive(true);
+        const entry = createAuditEntry('useGlobalVisibilityCommand', 'supabase', data.length, 'seo_audit_results', undefined, durationMs);
+        logHookAudit(entry);
+        setAuditTrail({ seo: entry });
+      } else {
+        setLiveSEOData([]);
+        setIsLive(false);
+        const entry = createAuditEntry('useGlobalVisibilityCommand', 'mock_fallback', 0, 'seo_audit_results', 'Table vide — fallback mock', durationMs);
+        logHookAudit(entry);
+        setAuditTrail({ seo: entry });
+      }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Erreur de connexion Supabase';
+      setError(msg);
+      setIsLive(false);
+      const durationMs = Math.round(performance.now() - startTime);
+      const entry = createAuditEntry('useGlobalVisibilityCommand', 'error_fallback', 0, 'seo_audit_results', msg, durationMs);
+      logHookAudit(entry);
+      setAuditTrail({ seo: entry });
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchLive();
+  }, [fetchLive]);
+
+  // Memoized computations from mock data
+  const metrics = useMemo(() => globalVisibilityMetrics, []);
+  const overview = useMemo(() => globalVisibilityScore, []);
+  const multilingual = useMemo(() => multilingualSEOStats, []);
+  const publications = useMemo(() => academicPublications, []);
+  const medias = useMemo(() => mediaPartnerships, []);
+  const aiPlatforms = useMemo(() => aiPlatformVisibility, []);
+  const plan = useMemo(() => monthlyVisibilityPlan, []);
+  const kpis = useMemo(() => monthlyVisibilityKPIs, []);
+  const stats = useMemo(() => globalVisibilityAggregatedStats, []);
+
+  const publishedPapers = useMemo(() => publications.filter(p => p.statut === 'publié'), [publications]);
+  const plannedPapers = useMemo(() => publications.filter(p => p.statut === 'planifié'), [publications]);
+  const activeMedias = useMemo(() => medias.filter(m => m.statut === 'actif'), [medias]);
+  const targetMedias = useMemo(() => medias.filter(m => m.statut === 'cible'), [medias]);
+  const negotiatingMedias = useMemo(() => medias.filter(m => m.statut === 'negociation'), [medias]);
+
+  const currentMonthKPI = useMemo(() => kpis[0], [kpis]);
+  const targetMonthKPI = useMemo(() => kpis[kpis.length - 1], [kpis]);
+
+  const frSEO = useMemo(() => multilingual.find(l => l.langue === 'FR')!, [multilingual]);
+  const enSEO = useMemo(() => multilingual.find(l => l.langue === 'EN')!, [multilingual]);
+  const ptSEO = useMemo(() => multilingual.find(l => l.langue === 'PT')!, [multilingual]);
+
+  const totalBudgetPlan = useMemo(() => plan.reduce((sum, m) => sum + m.budgetFCFA, 0), [plan]);
+
+  // Aggregate live SEO data
+  const liveSEOStats = useMemo(() => {
+    if (liveSEOData.length === 0) return null;
+    return {
+      pagesScanned: liveSEOData.length,
+      avgSEOScore: Math.round(liveSEOData.reduce((s, d) => s + (d.seo_score || 0), 0) / liveSEOData.length * 10) / 10,
+      avgAEOScore: Math.round(liveSEOData.reduce((s, d) => s + (d.aeo_score || 0), 0) / liveSEOData.length * 10) / 10,
+      pagesWithIssues: liveSEOData.filter(d => (d.issues_count || 0) > 0).length,
+    };
+  }, [liveSEOData]);
+
+  return {
+    loading,
+    error,
+    isLive,
+    liveSEOData,
+    liveSEOStats,
+    refetch: fetchLive,
+    auditTrail,
+    metrics,
+    overview,
+    multilingual,
+    publications,
+    publishedPapers,
+    plannedPapers,
+    medias,
+    activeMedias,
+    targetMedias,
+    negotiatingMedias,
+    aiPlatforms,
+    plan,
+    kpis,
+    stats,
+    currentMonthKPI,
+    targetMonthKPI,
+    frSEO,
+    enSEO,
+    ptSEO,
+    totalBudgetPlan,
+  };
+}

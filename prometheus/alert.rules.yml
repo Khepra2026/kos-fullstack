@@ -1,0 +1,88 @@
+# KOS Alert Rules — Big Four SLO/SLA/SLI Compliance
+# Corrections: OBS-002 disponibilite 99.5%, latence p95 < 200ms, erreur < 1%
+# Corrections: DEVOPS-002 alertes failed_jobs > 3
+
+groups:
+    - name: kos.slo.rules
+    interval: 30s
+    rules:
+      # SLO 1 : Disponibilite 99.5% — 36h downtime/mois max
+            - record: slo:sli_availability:ratio_rate30d
+        expr: |
+          sum(rate(nginx_http_requests_total{status!~"5.."}))
+          /
+          sum(rate(nginx_http_requests_total))
+            - alert: SLOAvailabilityBreach
+        expr: slo:sli_availability:ratio_rate30d < 0.995
+        for: 5m
+        labels:
+          severity: critical
+          slo: availability
+        annotations:
+          summary: "SLO Disponibilite viole : {{ $value | humanizePercentage }}"
+          description: "Moins de 99.5% de requetes 2xx/3xx sur 30j. Impact ISO 27001 A.17."
+
+      # SLO 2 : Latence p95 < 200ms
+            - record: slo:sli_latency:p95_5m
+        expr: histogram_quantile(0.95, sum(rate(nginx_http_request_duration_seconds_bucket)) by (le))
+            - alert: SLOLatencyBreach
+        expr: slo:sli_latency:p95_5m > 0.2
+        for: 10m
+        labels:
+          severity: warning
+          slo: latency
+        annotations:
+          summary: "SLO Latence viole : p95 = {{ $value }}s"
+
+      # SLO 3 : Taux erreur < 1%
+            - record: slo:sli_error_rate:ratio_rate5m
+        expr: |
+          sum(rate(nginx_http_requests_total{status=~"5.."}))
+          /
+          sum(rate(nginx_http_requests_total))
+            - alert: SLOErrorRateBreach
+        expr: slo:sli_error_rate:ratio_rate5m > 0.01
+        for: 5m
+        labels:
+          severity: critical
+          slo: error_rate
+
+    - name: kos.critical.rules
+    rules:
+      # DEVOPS-002 : DLQ > 3
+            - alert: DeadLetterQueueHigh
+        expr: kos_dlq_failed_jobs > 3
+        for: 2m
+        labels:
+          severity: critical
+          team: devops
+        annotations:
+          summary: "DLQ contient {{ $value }} jobs. Auto-recovery peut etre KO."
+          runbook: "https://wiki.khepra.com/runbook/dlq"
+
+      # INFRA-001 : Edge Functions saturees
+            - alert: APIGatewaySaturation
+        expr: rate(http_requests_total{job="n8n"}) > 80
+        for: 2m
+        labels:
+          severity: critical
+          team: infra
+        annotations:
+          summary: "n8n > 80 req/s. Risque 429 imminent."
+
+      # RES-001 : RTO > 5min
+            - alert: RTOSLABreach
+        expr: kos_pca_last_rto_seconds > 300
+        labels:
+          severity: high
+          team: sre
+        annotations:
+          summary: "Dernier test PCA RTO = {{ $value }}s > 5min. Non-conforme ISO 27001 A.17."
+
+      # DB-002 : Pas de backup 24h
+            - alert: BackupMissing24h
+        expr: time() - kos_postgres_last_backup_timestamp_seconds > 86400
+        labels:
+          severity: critical
+        annotations:
+          summary: "Aucun backup PostgreSQL depuis 24h. Risque RPO."

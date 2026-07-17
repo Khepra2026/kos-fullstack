@@ -1,0 +1,176 @@
+import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '@/lib/supabase';
+import {
+  knowledgeGuides as mockGuides,
+  knowledgeTemplates as mockTemplates,
+  knowledgeChecklists as mockChecklists,
+  knowledgeMatrices as mockMatrices,
+  knowledgeDiagnostics as mockDiagnostics,
+  knowledgeKPIs as mockKPIs,
+} from '@/mocks/kosKnowledgeCenter';
+
+export interface KnowledgeResource {
+  id: string;
+  title: string;
+  slug: string;
+  icon: string;
+  description: string;
+  resource_type: 'guide' | 'template' | 'checklist' | 'matrix' | 'diagnostic';
+  topics: string[];
+  color: string;
+  downloads: number;
+  conversion_rate: number;
+  featured?: boolean;
+  format?: string;
+  pages?: number;
+  items?: number;
+  estimated_time?: string;
+  dimensions?: string;
+  axes?: number;
+  questions?: number;
+  duration?: string;
+  completions?: number;
+  last_updated?: string;
+}
+
+export interface KnowledgeKPIs {
+  total_resources: number;
+  total_guides: number;
+  total_templates: number;
+  total_checklists: number;
+  total_matrices: number;
+  total_diagnostics: number;
+  total_downloads: number;
+  total_leads_generated: number;
+  avg_conversion_rate: number;
+  top_resource: string;
+  top_resource_downloads: number;
+  monthly_downloads: number;
+  monthly_leads: number;
+  revenue_attributed_fcfa: number;
+}
+
+export interface KnowledgeCenterData {
+  knowledgeGuides: KnowledgeResource[];
+  knowledgeTemplates: KnowledgeResource[];
+  knowledgeChecklists: KnowledgeResource[];
+  knowledgeMatrices: KnowledgeResource[];
+  knowledgeDiagnostics: KnowledgeResource[];
+  knowledgeKPIs: KnowledgeKPIs;
+  isLive: boolean;
+}
+
+export function useKnowledgeCenter() {
+  const [data, setData] = useState<KnowledgeCenterData>({
+    knowledgeGuides: [],
+    knowledgeTemplates: [],
+    knowledgeChecklists: [],
+    knowledgeMatrices: [],
+    knowledgeDiagnostics: [],
+    knowledgeKPIs: {
+      total_resources: 0,
+      total_guides: 0,
+      total_templates: 0,
+      total_checklists: 0,
+      total_matrices: 0,
+      total_diagnostics: 0,
+      total_downloads: 0,
+      total_leads_generated: 0,
+      avg_conversion_rate: 0,
+      top_resource: '',
+      top_resource_downloads: 0,
+      monthly_downloads: 0,
+      monthly_leads: 0,
+      revenue_attributed_fcfa: 0,
+    },
+    isLive: false,
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const [resourcesRes, kpisRes] = await Promise.all([
+        supabase.from('kos_knowledge_resources').select('*').order('downloads', { ascending: false }),
+        supabase.from('kos_knowledge_kpis').select('*').order('created_at', { ascending: false }).limit(1),
+      ]);
+
+      if (resourcesRes.error) throw resourcesRes.error;
+      if (kpisRes.error) throw kpisRes.error;
+
+      const allResources = (resourcesRes.data || []) as KnowledgeResource[];
+      const hasData = allResources.length > 0;
+
+      const guides = allResources.filter(r => r.resource_type === 'guide');
+      const templates = allResources.filter(r => r.resource_type === 'template');
+      const checklists = allResources.filter(r => r.resource_type === 'checklist');
+      const matrices = allResources.filter(r => r.resource_type === 'matrix');
+      const diagnostics = allResources.filter(r => r.resource_type === 'diagnostic');
+
+      const kpiRow = (kpisRes.data && kpisRes.data.length > 0) ? kpisRes.data[0] : null;
+
+      setData({
+        knowledgeGuides: guides,
+        knowledgeTemplates: templates,
+        knowledgeChecklists: checklists,
+        knowledgeMatrices: matrices,
+        knowledgeDiagnostics: diagnostics,
+        knowledgeKPIs: kpiRow ? {
+          total_resources: kpiRow.total_resources,
+          total_guides: kpiRow.total_guides,
+          total_templates: kpiRow.total_templates,
+          total_checklists: kpiRow.total_checklists,
+          total_matrices: kpiRow.total_matrices,
+          total_diagnostics: kpiRow.total_diagnostics,
+          total_downloads: kpiRow.total_downloads,
+          total_leads_generated: kpiRow.total_leads_generated,
+          avg_conversion_rate: Number(kpiRow.avg_conversion_rate),
+          top_resource: kpiRow.top_resource,
+          top_resource_downloads: kpiRow.top_resource_downloads,
+          monthly_downloads: kpiRow.monthly_downloads,
+          monthly_leads: kpiRow.monthly_leads,
+          revenue_attributed_fcfa: kpiRow.revenue_attributed_fcfa,
+        } : {
+          total_resources: allResources.length,
+          total_guides: guides.length,
+          total_templates: templates.length,
+          total_checklists: checklists.length,
+          total_matrices: matrices.length,
+          total_diagnostics: diagnostics.length,
+          total_downloads: allResources.reduce((s, r) => s + (r.downloads || 0), 0),
+          total_leads_generated: 0,
+          avg_conversion_rate: 0,
+          top_resource: guides[0]?.title || '',
+          top_resource_downloads: 0,
+          monthly_downloads: 0,
+          monthly_leads: 0,
+          revenue_attributed_fcfa: 0,
+        },
+        isLive: hasData,
+      });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Erreur inconnue';
+      setError(message);
+      setData({
+        knowledgeGuides: mockGuides as unknown as KnowledgeResource[],
+        knowledgeTemplates: mockTemplates as unknown as KnowledgeResource[],
+        knowledgeChecklists: mockChecklists as unknown as KnowledgeResource[],
+        knowledgeMatrices: mockMatrices as unknown as KnowledgeResource[],
+        knowledgeDiagnostics: mockDiagnostics as unknown as KnowledgeResource[],
+        knowledgeKPIs: mockKPIs as KnowledgeKPIs,
+        isLive: false,
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  return { ...data, loading, error, refetch: fetchData };
+}

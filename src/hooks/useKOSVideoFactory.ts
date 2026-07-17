@@ -1,0 +1,102 @@
+import { useState, useMemo, useCallback, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
+import {
+  VIDEO_PROJECTS,
+  VIDEO_FACTORY_KPIS,
+  VIDEO_FACTORY_STATS,
+} from '@/mocks/kosVideoFactory';
+import type { VideoProject } from '@/mocks/kosVideoFactory';
+
+export function useKOSVideoFactory() {
+  const [formatFilter, setFormatFilter] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isLive, setIsLive] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function checkLive() {
+      try {
+        const { data, error } = await supabase
+          .from('youtube_scripts')
+          .select('*')
+          .limit(1);
+        if (!cancelled && !error && data && data.length > 0) {
+          setIsLive(true);
+        }
+      } catch {
+        // fallback mock
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    checkLive();
+    return () => { cancelled = true; };
+  }, []);
+
+  const projects = useMemo(() => VIDEO_PROJECTS, []);
+
+  const getProjectById = useCallback((id: string) => projects.find(p => p.id === id) || null, [projects]);
+
+  const getProjectsByFormat = useCallback((format: string) => {
+    if (format === 'all') return projects;
+    return projects.filter(p => p.format === format);
+  }, [projects]);
+
+  const searchProjects = useCallback((q: string) => {
+    const lower = q.toLowerCase();
+    return projects.filter(p =>
+      p.title.toLowerCase().includes(lower) ||
+      p.synopsis.toLowerCase().includes(lower) ||
+      p.domain.toLowerCase().includes(lower) ||
+      p.formatLabel.toLowerCase().includes(lower)
+    );
+  }, [projects]);
+
+  const getProjectsByDomain = useCallback((domain: string) => {
+    if (domain === 'all') return projects;
+    return projects.filter(p => p.domain.toLowerCase() === domain.toLowerCase());
+  }, [projects]);
+
+  const getKPIs = useCallback(() => VIDEO_FACTORY_KPIS, []);
+  const getStats = useCallback(() => VIDEO_FACTORY_STATS, []);
+
+  const availableFormats = useMemo(() => [...new Set(projects.map(p => p.format))], [projects]);
+  const availableDomains = useMemo(() => [...new Set(projects.map(p => p.domain))], [projects]);
+
+  const formatIcons: Record<string, string> = {
+    'youtube-shorts': 'ri-youtube-line',
+    'youtube-long': 'ri-youtube-fill',
+    'linkedin-video': 'ri-linkedin-box-line',
+    'facebook-video': 'ri-facebook-box-line',
+  };
+
+  const formatColors: Record<string, string> = {
+    'youtube-shorts': 'accent',
+    'youtube-long': 'primary',
+    'linkedin-video': 'secondary',
+    'facebook-video': 'primary',
+  };
+
+  return {
+    projects,
+    formatFilter,
+    setFormatFilter,
+    searchQuery,
+    setSearchQuery,
+    getProjectById,
+    getProjectsByFormat,
+    searchProjects,
+    getProjectsByDomain,
+    kpis: VIDEO_FACTORY_KPIS,
+    getKPIs,
+    stats: VIDEO_FACTORY_STATS,
+    getStats,
+    availableFormats,
+    availableDomains,
+    formatIcons,
+    formatColors,
+    isLive,
+    loading,
+  };
+}

@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <!-- ════════════════════════════════════════════════════════════════════
+         GLOBAL ERROR CATCHER — Capture toute erreur JS avant le montage
+         de React et l'affiche VISIBLEMENT dans la page pour diagnostic.
+         Si React monte correctement, ce catcher se désactive automatiquement.
+         ════════════════════════════════════════════════════════════════════ -->
+    <script>
+      (function(){
+        var caughtErrors = [];
+        window.__KOS_CAUGHT_ERRORS__ = caughtErrors;
+        window.addEventListener('error', function(e){
+          caughtErrors.push({msg:e.message||String(e.error||''),src:e.filename||'',line:e.lineno||0,col:e.colno||0,ts:Date.now()});
+        });
+        window.addEventListener('unhandledrejection', function(e){
+          caughtErrors.push({msg:'Promise: '+(e.reason&&e.reason.message||String(e.reason||'')),src:'',line:0,col:0,ts:Date.now()});
+        });
+      })();
+    </script>
+
+    <!-- ════════════════════════════════════════════════════════════════════
+         EMERGENCY SW NUKE v8 — Nettoie SANS recharger en boucle.
+         Supprime SW, caches, IndexedDB une seule fois. Pas de reload auto.
+         ════════════════════════════════════════════════════════════════════ -->
+    <script>
+      (function(){
+        var didClean = false;
+        try { didClean = sessionStorage.getItem('__kos_did_clean_v8__') === '1'; } catch(e){}
+        if (didClean) return;
+
+        console.log('☠️ KILLER MODE — Nettoyage SW (1 fois)');
+
+        // 1. Unregister tous les Service Workers
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(function(regs) {
+            regs.forEach(function(reg) { reg.unregister(); });
+          });
+        }
+
+        // 2. Vider tous les caches
+        if ('caches' in window) {
+          caches.keys().then(function(keys) {
+            keys.forEach(function(key) { caches.delete(key); });
+          });
+        }
+
+        // 3. Nuke IndexedDB
+        if (window.indexedDB && indexedDB.databases) {
+          indexedDB.databases().then(function(dbs) {
+            dbs.forEach(function(db) { indexedDB.deleteDatabase(db.name); });
+          });
+        }
+        // Fallback Workbox
+        ['workbox-precache-v2','workbox-precache','workbox-runtime','workbox-expansion','workbox-background-sync'].forEach(function(n){
+          try { indexedDB.deleteDatabase(n); } catch(e){}
+        });
+
+        // 4. LocalStorage / SessionStorage (sauf notre flag)
+        try { localStorage.clear(); } catch(e){}
+        try { sessionStorage.clear(); } catch(e){}
+        try { sessionStorage.setItem('__kos_did_clean_v8__', '1'); } catch(e){}
+
+        console.log('✅ Nettoyage terminé. PAS de reload — React va monter maintenant.');
+      })();
+    </script>
+
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-WCCN42F6');</script>
+    <!-- End Google Tag Manager -->
+    <meta charset="UTF-8" />
+    <!-- KOS-BUILD-ID: 2026-07-10-v3-cachebreak -->
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <link rel="icon" type="image/jpeg" href="https://pgfwhahiwqvqeahpirjx.supabase.co/functions/v1/og-image-proxy?url=https%3A%2F%2Freaddy.ai%2Fapi%2Fsearch-image%3Fquery%3Dpremium%20dark%20black%20background%20with%20deloitte%20green%20geometric%20spiral%20pattern%20elegant%20minimalist%20corporate%20branding%20KHEPRA%20EXPERTS%20strategic%20consulting%20africa%20professional%20typography%20clean%20design%20high%20contrast%20dark%20green%20and%20white%20accents%20sophisticated%20modern%20aesthetic%20corporate%20identity%26width%3D1200%26height%3D630%26seq%3Dog-khepra-master-gold-v1%26orientation%3Dlandscape" />
+    <link rel="apple-touch-icon" href="https://pgfwhahiwqvqeahpirjx.supabase.co/functions/v1/og-image-proxy?url=https%3A%2F%2Freaddy.ai%2Fapi%2Fsearch-image%3Fquery%3Dpremium%20dark%20black%20background%20with%20deloitte%20green%20geometric%20spiral%20pattern%20elegant%20minimalist%20corporate%20branding%20KHEPRA%20EXPERTS%20strategic%20consulting%20africa%20professional%20typography%20clean%20design%20high%20contrast%20dark%20green%20and%20white%20accents%20sophisticated%20modern%20aesthetic%20corporate%20identity%26width%3D1200%26height%3D630%26seq%3Dog-khepra-master-gold-v1%26orientation%3Dlandscape" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Open Graph — Fallback meta tags pour toutes les pages (SPA fallback) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://khepraexperts.com/" />
+    <meta property="og:title" content="KOS — Régulation, Gouvernance, ESG &amp; KBR | Afrique Francophone" />
+    <meta property="og:description" content="KOS : plateforme d'intelligence réglementaire pour l'Afrique francophone. 4 Business Units, 17 pays UEMOA/CEMAC, 22 ans d'expertise. Devis confidentiel sur mesure." />
+    <meta property="og:image" content="https://pgfwhahiwqvqeahpirjx.supabase.co/functions/v1/og-image-proxy?url=https%3A%2F%2Freaddy.ai%2Fapi%2Fsearch-image%3Fquery%3Dpremium%20dark%20black%20background%20with%20deloitte%20green%20geometric%20spiral%20pattern%20elegant%20minimalist%20corporate%20branding%20KHEPRA%20EXPERTS%20strategic%20consulting%20africa%20professional%20typography%20clean%20design%20high%20contrast%20dark%20green%20and%20white%20accents%20sophisticated%20modern%20aesthetic%20corporate%20identity%26width%3D1200%26height%3D630%26seq%3Dog-khepra-master-gold-v1%26orientation%3Dlandscape" />
+    <meta property="og:image:secure_url" content="https://pgfwhahiwqvqeahpirjx.supabase.co/functions/v1/og-image-proxy?url=https%3A%2F%2Freaddy.ai%2Fapi%2Fsearch-image%3Fquery%3Dpremium%20dark%20black%20background%20with%20deloitte%20green%20geometric%20spiral%20pattern%20elegant%20minimalist%20corporate%20branding%20KHEPRA%20EXPERTS%20strategic%20consulting%20africa%20professional%20typography%20clean%20design%20high%20contrast%20dark%20green%20and%20white%20accents%20sophisticated%20modern%20aesthetic%20corporate%20identity%26width%3D1200%26height%3D630%26seq%3Dog-khepra-master-gold-v1%26orientation%3Dlandscape" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="KOS — Régulation, Gouvernance, ESG &amp; KBR — Afrique Francophone" />
+    <meta property="og:site_name" content="KOS — KHEPRA EXPERTS" />
+    <meta property="og:locale" content="fr_FR" />
+
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@KhepraExperts" />
+    <meta name="twitter:creator" content="@KhepraExperts" />
+    <meta name="twitter:title" content="KOS — Régulation, Gouvernance, ESG &amp; KBR | Afrique Francophone" />
+    <meta name="twitter:description" content="KOS : 4 Business Units, 17 pays UEMOA/CEMAC, 22 ans d'expertise. Intelligence réglementaire, due diligence, ESG. Devis confidentiel." />
+    <meta name="twitter:image" content="https://pgfwhahiwqvqeahpirjx.supabase.co/functions/v1/og-image-proxy?url=https%3A%2F%2Freaddy.ai%2Fapi%2Fsearch-image%3Fquery%3Dpremium%20dark%20black%20background%20with%20deloitte%20green%20geometric%20spiral%20pattern%20elegant%20minimalist%20corporate%20branding%20KHEPRA%20EXPERTS%20strategic%20consulting%20africa%20professional%20typography%20clean%20design%20high%20contrast%20dark%20green%20and%20white%20accents%20sophisticated%20modern%20aesthetic%20corporate%20identity%26width%3D1200%26height%3D630%26seq%3Dog-khepra-master-gold-v1%26orientation%3Dlandscape" />
+    <meta name="twitter:image:alt" content="KOS — Régulation, Gouvernance, ESG &amp; KBR — Afrique Francophone" />
+
+    <!-- WhatsApp / Telegram OG fallback -->
+    <meta property="og:image:url" content="https://pgfwhahiwqvqeahpirjx.supabase.co/functions/v1/og-image-proxy?url=https%3A%2F%2Freaddy.ai%2Fapi%2Fsearch-image%3Fquery%3Dpremium%20dark%20black%20background%20with%20deloitte%20green%20geometric%20spiral%20pattern%20elegant%20minimalist%20corporate%20branding%20KHEPRA%20EXPERTS%20strategic%20consulting%20africa%20professional%20typography%20clean%20design%20high%20contrast%20dark%20green%20and%20white%20accents%20sophisticated%20modern%20aesthetic%20corporate%20identity%26width%3D1200%26height%3D630%26seq%3Dog-khepra-master-gold-v1%26orientation%3Dlandscape" />
+
+    <!-- Resource Hints — 3 preconnect uniquement (Lighthouse rule: max 4, on garde de la marge) -->
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://pgfwhahiwqvqeahpirjx.supabase.co" crossorigin>
+    <link rel="preconnect" href="https://readdy.ai" crossorigin>
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+    <link rel="dns-prefetch" href="https://static.readdy.ai">
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+    <link rel="dns-prefetch" href="https://assets.calendly.com">
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <meta http-equiv="Accept-CH" content="DPR, Width, Viewport-Width">
+    <meta http-equiv="Accept-CH-Lifetime" content="86400">
+
+    <!-- Preload police critique — Space Grotesk (headings) pour LCP -->
+    <link rel="preload" href="https://fonts.gstatic.com/s/spacegrotesk/v16/V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj7aUXskPMBBSSJLm2FXTQ.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="https://fonts.gstatic.com/s/inter/v18/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7W0Q5nw.woff2" as="font" type="font/woff2" crossorigin>
+
+    <!-- Preload image hero — chargée AVANT tout JS, critique pour LCP -->
+    <!-- Le navigateur commence le téléchargement immédiatement, sans attendre le parsing du bundle JS -->
+    <link rel="preload" as="image" href="https://readdy.ai/api/search-image?query=Premium%20corporate%20law%20firm%20boardroom%20gold%20accents%20dark%20charcoal%20walls%20African%20financial%20district%20skyline%20viewed%20through%20panoramic%20floor%20to%20ceiling%20windows%20senior%20partners%20reviewing%20regulatory%20compliance%20documents%20green%20and%20gold%20color%20palette%20institutional%20photography%20professional%20atmosphere%20no%20people%20visible%20focused%20on%20architecture%20lighting%20and%20luxury%20materials&width=1920&height=1080&seq=khepra-hero-3poles-v1&orientation=landscape" fetchpriority="high" imagesrcset="https://readdy.ai/api/search-image?query=Premium%20corporate%20law%20firm%20boardroom%20gold%20accents%20dark%20charcoal%20walls%20African%20financial%20district%20skyline%20viewed%20through%20panoramic%20floor%20to%20ceiling%20windows%20senior%20partners%20reviewing%20regulatory%20compliance%20documents%20green%20and%20gold%20color%20palette%20institutional%20photography%20professional%20atmosphere%20no%20people%20visible%20focused%20on%20architecture%20lighting%20and%20luxury%20materials&width=640&height=360&seq=khepra-hero-3poles-v1&orientation=landscape 640w, https://readdy.ai/api/search-image?query=Premium%20corporate%20law%20firm%20boardroom%20gold%20accents%20dark%20charcoal%20walls%20African%20financial%20district%20skyline%20viewed%20through%20panoramic%20floor%20to%20ceiling%20windows%20senior%20partners%20reviewing%20regulatory%20compliance%20documents%20green%20and%20gold%20color%20palette%20institutional%20photography%20professional%20atmosphere%20no%20people%20visible%20focused%20on%20architecture%20lighting%20and%20luxury%20materials&width=1024&height=576&seq=khepra-hero-3poles-v1&orientation=landscape 1024w, https://readdy.ai/api/search-image?query=Premium%20corporate%20law%20firm%20boardroom%20gold%20accents%20dark%20charcoal%20walls%20African%20financial%20district%20skyline%20viewed%20through%20panoramic%20floor%20to%20ceiling%20windows%20senior%20partners%20reviewing%20regulatory%20compliance%20documents%20green%20and%20gold%20color%20palette%20institutional%20photography%20professional%20atmosphere%20no%20people%20visible%20focused%20on%20architecture%20lighting%20and%20luxury%20materials&width=1440&height=810&seq=khepra-hero-3poles-v1&orientation=landscape 1440w, https://readdy.ai/api/search-image?query=Premium%20corporate%20law%20firm%20boardroom%20gold%20accents%20dark%20charcoal%20walls%20African%20financial%20district%20skyline%20viewed%20through%20panoramic%20floor%20to%20ceiling%20windows%20senior%20partners%20reviewing%20regulatory%20compliance%20documents%20green%20and%20gold%20color%20palette%20institutional%20photography%20professional%20atmosphere%20no%20people%20visible%20focused%20on%20architecture%20lighting%20and%20luxury%20materials&width=1920&height=1080&seq=khepra-hero-3poles-v1&orientation=landscape 1920w" imagesizes="100vw">
+
+    <!-- Calendly CSS (chargé en différé pour ne pas bloquer le rendu) -->
+    <link rel="stylesheet" href="https://assets.calendly.com/assets/external/widget.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://assets.calendly.com/assets/external/widget.css"></noscript>
+
+    <!-- Google Fonts — Inter (body) + Space Grotesk (headings), chargement non-bloquant -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap" media="print" onload="this.media='all';this.onload=null;">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap"></noscript>
+
+    <!-- Critical CSS inline pour FCP -->
+    <style>
+      /* ── Reset minimal anti-CLS ── */
+      *,*::before,*::after{box-sizing:border-box}
+      body {
+        margin: 0;
+        font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        background: #ffffff;
+        color: #1a1a1a;
+        text-rendering: optimizeSpeed;
+        overflow-x: hidden;
+      }
+
+      /* ── @font-face explicites AVEC font-display:swap + size-adjust anti-CLS ── */
+      /* Space Grotesk — headings (taille ajustée pour matcher la fallback) */
+      @font-face {
+        font-family: 'Space Grotesk';
+        font-style: normal;
+        font-weight: 400 700;
+        font-display: swap;
+        src: url(https://fonts.gstatic.com/s/spacegrotesk/v16/V8mQoQDjQSkFtoMM3T6r8E7mF71Q-gOoraIAEj7aUXskPMBBSSJLm2FXTQ.woff2) format('woff2');
+      }
+      @font-face {
+        font-family: 'Space Grotesk Fallback';
+        font-style: normal;
+        font-weight: 400 700;
+        font-display: swap;
+        ascent-override: 95%;
+        descent-override: 25%;
+        line-gap-override: 0%;
+        size-adjust: 105%;
+        src: local('Georgia'), local('Times New Roman');
+      }
+
+      /* Inter — body (taille ajustée pour matcher la fallback) */
+      @font-face {
+        font-family: 'Inter';
+        font-style: normal;
+        font-weight: 400 700;
+        font-display: swap;
+        src: url(https://fonts.gstatic.com/s/inter/v18/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7W0Q5nw.woff2) format('woff2');
+      }
+      @font-face {
+        font-family: 'Inter Fallback';
+        font-style: normal;
+        font-weight: 400 700;
+        font-display: swap;
+        ascent-override: 90%;
+        descent-override: 22%;
+        line-gap-override: 0%;
+        size-adjust: 107%;
+        src: local('Arial'), local('Helvetica Neue'), local('sans-serif');
+      }
+
+      /* ── Heading / Display — fallback fonts avec swap ── */
+      h1, h2, h3, h4, h5, h6,
+      .font-playfair,
+      [class*="font-heading"],
+      [class*="font-display"] {
+        font-family: 'Space Grotesk', 'Space Grotesk Fallback', Georgia, 'Times New Roman', serif;
+        font-weight: 700;
+      }
+
+      /* ── Body text — fallback fonts avec swap ── */
+      body, p, span, div, li, a, button, input, textarea, select,
+      .font-inter,
+      [class*="font-body"],
+      [class*="font-sans"] {
+        font-family: 'Inter', 'Inter Fallback', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+      }
+
+      /* ── Shimmer skeleton — critique pour FCP ── */
+      .shimmer {
+        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+        background-size: 200% 100%;
+        animation: shimmer 2s infinite;
+      }
+      @keyframes shimmer {
+        0% { background-position: -200% 0; }
+        100% { background-position: 200% 0; }
+      }
+
+      /* ── Images — anti-CLS + lazy-ready ── */
+      img {
+        image-rendering: auto;
+        object-fit: cover;
+        max-width: 100%;
+        height: auto;
+        content-visibility: auto;
+      }
+      img[loading="eager"],
+      img[fetchpriority="high"] {
+        content-visibility: visible;
+      }
+
+      /* ── Sections — content-visibility for off-screen ── */
+      section[data-cv="auto"],
+      .lazy-section {
+        content-visibility: auto;
+        contain-intrinsic-size: auto 500px;
+      }
+      header, section:first-of-type, [data-cv="visible"] {
+        content-visibility: visible;
+      }
+
+      /* ── Root container — prevent CLS during React hydration ── */
+      #root {
+        min-height: 100vh;
+        contain: layout style;
+      }
+
+      /* ── Noscript fallback — visible without JS ── */
+      noscript article {
+        display: block;
+        padding: 2rem;
+        max-width: 960px;
+        margin: 0 auto;
+      }
+
+      /* ── Reduce motion preference ── */
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+        .shimmer { animation: none; background: #f0f0f0; }
+      }
+    </style>
+
+    <!-- SEO Meta Tags -->
+    <title>KOS — Régulation, Gouvernance, ESG &amp; KBR | Afrique Francophone</title>
+    <meta name="description" content="KOS : plateforme d'intelligence réglementaire pour l'Afrique francophone. 4 Business Units, 17 pays UEMOA/CEMAC, 22 ans d'expertise. Devis confidentiel sur mesure." />
+    <meta name="keywords" content="intelligence réglementaire Afrique, due diligence réglementaire, scoring conformité, BCEAO, COBAC, gouvernance, ESG, KBR Model, KHEPRA EXPERTS, Afrique Francophone, régulation financière UEMOA CEMAC" />
+    <meta name="author" content="KHEPRA EXPERTS" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="rating" content="general" />
+    <meta name="revisit-after" content="7 days" />
+    <meta name="language" content="French" />
+    <meta name="copyright" content="KHEPRA EXPERTS" />
+
+    <!-- Last Modified -->
+    <meta name="last-modified" content="2026-07-12" />
+    <meta name="date" content="2026-07-12" />
+    <meta name="revised" content="2026-07-12" />
+    <meta name="DC.date.modified" content="2026-07-12" />
+
+    <!-- Canonical URL (fallback statique - mis à jour dynamiquement par SeoHead via React) -->
+    <!-- Ce canonical est l'URL de la page racine. SeoHead le remplace par l'URL canonique
+         de chaque page dès que React monte. Pour les crawlers sans JS, la Netlify Edge Function
+         (social-og-redirect.ts) gère les bons meta via og-social-preview. -->
+    <link rel="canonical" href="https://khepraexperts.com/" />
+
+    <!-- Hreflang : 18 langues (10 pilotes africaines + fr/en + 6 communautaires) + x-default -- KOS i18n v2.0 -->
+    <link rel="alternate" hreflang="fr" href="https://khepraexperts.com/" />
+    <link rel="alternate" hreflang="en" href="https://khepraexperts.com/en/" />
+    <link rel="alternate" hreflang="sw" href="https://khepraexperts.com/sw/" />
+    <link rel="alternate" hreflang="ha" href="https://khepraexperts.com/ha/" />
+    <link rel="alternate" hreflang="ig" href="https://khepraexperts.com/ig/" />
+    <link rel="alternate" hreflang="am" href="https://khepraexperts.com/am/" />
+    <link rel="alternate" hreflang="wo" href="https://khepraexperts.com/wo/" />
+    <link rel="alternate" hreflang="ln" href="https://khepraexperts.com/ln/" />
+    <link rel="alternate" hreflang="mos" href="https://khepraexperts.com/mos/" />
+    <link rel="alternate" hreflang="ewo" href="https://khepraexperts.com/ewo/" />
+    <link rel="alternate" hreflang="dua" href="https://khepraexperts.com/dua/" />
+    <link rel="alternate" hreflang="fmp" href="https://khepraexperts.com/fmp/" />
+    <link rel="alternate" hreflang="x-default" href="https://khepraexperts.com/" />
+
+    <!-- RSS Feed discovery -->
+    <link rel="alternate" type="application/rss+xml" title="KOS — Veille Réglementaire &amp; Conformité Afrique" href="https://khepraexperts.com/rss.xml" />
+
+    <!-- Geo Tags -->
+    <meta name="geo.region" content="TG, CI, SN, BJ, BF, ML, NE, GW, CM, GA, CG, TD, GQ" />
+    <meta name="geo.placename" content="Lomé, Togo ; Abidjan, Côte d'Ivoire ; Dakar, Sénégal" />
+    <meta name="geo.position" content="6.1256;1.2223" />
+    <meta name="ICBM" content="6.1256, 1.2223" />
+
+    <!-- Prerendering Speculation Rules (GEO + Performance) -->
+    <!-- Permet aux navigateurs de prerender les pages probables (navigation fluide, meilleur INP) -->
+    <script type="speculationrules">
+    {
+      "prerender": [
+        {
+          "source": "list",
+          "urls": ["/services", "/blog", "/about", "/contact", "/case-studies"]
+        }
+      ],
+      "prefetch": [
+        {
+          "source": "document",
+          "where": {
+            "and": [
+              { "href_matches": "/*" },
+              { "not": { "href_matches": "/dashboard/*" } },
+              { "not": { "href_matches": "/administrateur/*" } },
+              { "not": { "href_matches": "/monitoring/*" } }
+            ]
+          },
+          "eagerness": "moderate"
+        }
+      ]
+    }
+    </script>
+
+    <!-- Google Search Console — ownership verification -->
+    <meta name="google-site-verification" content="CS2aP1AtCjtnyo6B5vSrliyc_tt64j6AfMhpfogjzko" />
+
+    <!-- Bing Webmaster Tools — remplacer par votre vrai token msvalidate.01 -->
+    <!-- <meta name="msvalidate.01" content="VOTRE-TOKEN-BING" /> -->
+
+    <!-- Facebook Domain Verification — remplacer par votre vrai token facebook-domain-verification -->
+    <!-- <meta name="facebook-domain-verification" content="VOTRE-TOKEN-FACEBOOK" /> -->
+
+    <!-- Google Search Console — Direct Link for quick access -->
+    <link rel="dns-prefetch" href="https://search.google.com" />
+
+    <!-- Schema.org JSON-LD is managed at runtime by the SeoHead component —
+         Organization (with founder + SoftwareApplication), ProfessionalService (with reviews + offers),
+         and WebSite (with SearchAction) are injected persistently on every page. -->
+
+    <!-- PWA — manifest injecté automatiquement par vite-plugin-pwa au build -->
+    <meta name="theme-color" content="#86BC25" />
+
+    <!-- Icons -->
+    <!-- Remixicon — chargé en async non-bloquant après le contenu -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.min.css" media="print" onload="this.media='all';this.onload=null;">
+    <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.min.css"></noscript>
+  </head>
+  <body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WCCN42F6"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+    <div id="root"></div>
+    <!-- Modal root — rendu en dehors de tout stacking context -->
+    <div id="modal-root" style="position:fixed;top:0;left:0;width:0;height:0;z-index:2147483647;pointer-events:none;"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <!-- Noscript fallback : contenu statique lisible par les crawlers IA sans JS -->
+    <noscript>
+      <article style="font-family:system-ui,sans-serif;max-width:960px;margin:40px auto;padding:0 20px;color:#1a1a1a;">
+        <header>
+          <h1 style="font-size:2rem;font-weight:700;color:#0a0a0a;">Khepra Experts &mdash; Conseil Strat&eacute;gique &amp; Transformation Digitale Afrique</h1>
+          <p style="color:#4b5563;line-height:1.7;">Cabinet de conseil bas&eacute; &agrave; Lom&eacute;, Togo. Strat&eacute;gie, finance, digital pour PME et institutions financi&egrave;res en Afrique de l&rsquo;Ouest et Centrale. +20 ans d&rsquo;expertise &bull; 15+ pays UEMOA/CEMAC &bull; Conformit&eacute; BCEAO/COBAC &bull; Gouvernance OHADA.</p>
+        </header>
+        <section>
+          <h2 style="font-size:1.5rem;font-weight:600;margin-top:2rem;">Nos Services Sp&eacute;cialis&eacute;s</h2>
+          <ul style="line-height:2;padding-left:1.5rem;">
+            <li><strong>Conseil Strat&eacute;gique</strong> &mdash; Plans strat&eacute;giques 3&ndash;5 ans, mod&egrave;les &eacute;conomiques, feuilles de route de transformation</li>
+            <li><strong>Due Diligence</strong> &mdash; Pluridisciplinaire : financi&egrave;re, l&eacute;gale, technique, ESG. Accompagnement jusqu&rsquo;au closing</li>
+            <li><strong>&Eacute;tudes de Faisabilit&eacute;</strong> &mdash; Technique, march&eacute;, financi&egrave;re, ESG conform&eacute;ment aux standards BAD, BIDC et IFC</li>
+            <li><strong>Investment Readiness</strong> &mdash; Business plan, pitch deck, data room, mise en relation fonds PE/VC et banques</li>
+            <li><strong>Transformation Digitale</strong> &mdash; Strat&eacute;gie digitale, core banking, mobile banking, fintech UEMOA/CEMAC</li>
+            <li><strong>Conformit&eacute; R&eacute;glementaire</strong> &mdash; Conformit&eacute; BCEAO, COBAC, LBC/FT, KYC, gouvernance OHADA</li>
+          </ul>
+        </section>
+        <section>
+          <h2 style="font-size:1.5rem;font-weight:600;margin-top:2rem;">Contact</h2>
+          <address style="font-style:normal;line-height:2;">
+            <p><strong>KHEPRA EXPERTS</strong></p>
+            <p>LOGOGOM&Egrave;, Rue CARREFOUR AISED &mdash; Lom&eacute;, Togo</p>
+            <p>T&eacute;l&eacute;phone&nbsp;: <a href="tel:+22893984909" style="color:#c9a227;">+228 93 98 49 09</a></p>
+            <p>Email&nbsp;: <a href="mailto:contact@khepraexperts.com" style="color:#c9a227;">contact@khepraexperts.com</a></p>
+          </address>
+        </section>
+        <section>
+          <h2 style="font-size:1.5rem;font-weight:600;margin-top:2rem;">Zones d&rsquo;Intervention</h2>
+          <p>Togo &bull; B&eacute;nin &bull; C&ocirc;te d&rsquo;Ivoire &bull; S&eacute;n&eacute;gal &bull; Burkina Faso &bull; Mali &bull; Niger &bull; Cameroun &bull; Gabon &bull; Congo &bull; Tchad &bull; Ghana &bull; Guin&eacute;e</p>
+        </section>
+        <p style="margin-top:2rem;font-size:0.85rem;color:#9ca3af;">Pour naviguer sur ce site, veuillez activer JavaScript dans votre navigateur.</p>
+      </article>
+    </noscript>
+
+    <!-- ════════════════════════════════════════════════════════════════════
+         POST-NUKE CLEANUP — Nettoie le paramètre ?sw-nuked de l'URL
+         après un rechargement propre, pour ne pas polluer les bookmarks.
+         ════════════════════════════════════════════════════════════════════ -->
+    <script>
+      (function(){
+        if (location.search.indexOf('sw-nuked') !== -1) {
+          try {
+            history.replaceState(null, '', location.pathname + location.hash);
+          } catch(e) {}
+        }
+      })();
+    </script>
+
+    <!-- Readdy Agent Widget — Assistant IA pour booking & Q&A — Mode hybride chat + vocal avec transcription automatique -->
+    <script 
+      src="https://readdy.ai/api/public/assistant/widget?projectId=9a3a8ffa-2627-4de5-8106-d57e2041c83b"
+      mode="hybrid"
+      voice-show-transcript="true"
+      theme="light"
+      position="bottom-right"
+      size="compact"
+      radius="medium"
+      accent-color="#86BC25"
+      button-base-color="#1a1a1a"
+      button-accent-color="#FFFFFF"
+      main-label="Parlez avec un expert KHEPRA"
+      start-button-text="Démarrer l'appel vocal"
+      end-button-text="Terminer"
+      empty-chat-message="Bonjour ! Je suis l'assistant IA de KHEPRA EXPERTS. Posez-moi vos questions sur la régulation financière, la gouvernance ou le financement en Afrique — ou laissez un message vocal, je le retranscrirai automatiquement."
+      empty-voice-message="Parlez-moi de votre besoin... Votre message sera automatiquement transcrit et traité par notre IA."
+      async
+    ></script>
+
+    <!-- ════════════════════════════════════════════════════════════════════
+         FALLBACK MOUNT DETECTION — Si React ne monte pas après 4s,
+         affiche un message visible et tente un nettoyage + reload.
+         ════════════════════════════════════════════════════════════════════ -->
+    <script>
+      (function(){
+        var checkInterval = setInterval(function(){
+          var root = document.getElementById('root');
+          var now = Date.now();
+          var start = window.__KOS_PAGE_START__ || now;
+          if (now - start > 4000) {
+            clearInterval(checkInterval);
+            if (!root || root.children.length === 0 || root.offsetHeight < 100) {
+              // React n'a pas monté — afficher fallback
+              var fallback = document.createElement('div');
+              fallback.id = 'kos-fallback';
+              fallback.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:#ffffff;z-index:99999;font-family:system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;text-align:center;box-sizing:border-box;';
+              fallback.innerHTML = '<div style="max-width:480px;">' +
+                '<h1 style="font-size:1.5rem;color:#1a1a1a;margin-bottom:1rem;font-weight:700;">Chargement en cours...</h1>' +
+                '<p style="color:#4b5563;line-height:1.6;margin-bottom:1.5rem;">Si cette page reste blanche, votre navigateur a probablement conservé une ancienne version vide en cache.</p>' +
+                '<button id="kos-hard-reload" style="background:#1a1a1a;color:#fff;border:none;padding:12px 24px;border-radius:6px;font-size:1rem;cursor:pointer;font-weight:600;">Cliquez ici pour recharger proprement</button>' +
+                '<p style="margin-top:1rem;font-size:0.85rem;color:#9ca3af;">Ou appuyez sur <strong>Ctrl + Shift + R</strong> (Windows/Linux) ou <strong>Cmd + Shift + R</strong> (Mac)</p>' +
+                '</div>';
+              document.body.appendChild(fallback);
+              document.getElementById('kos-hard-reload').addEventListener('click', function(){
+                if ('caches' in window) caches.keys().then(function(ks){ ks.forEach(function(k){ caches.delete(k); }); });
+                if ('serviceWorker' in navigator) navigator.serviceWorker.getRegistrations().then(function(rs){ rs.forEach(function(r){ r.unregister(); }); });
+                location.reload(true);
+              });
+            }
+          }
+        }, 500);
+        window.__KOS_PAGE_START__ = Date.now();
+      })();
+    </script>
+  </body>
+</html>

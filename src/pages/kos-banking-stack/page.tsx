@@ -1,0 +1,1009 @@
+import { useState } from 'react';
+import KOSHubLayout from '@/components/feature/KOSHubLayout';
+import { SeoHead } from '@/components/feature/SeoHead';
+import { Link } from 'react-router-dom';
+import { useKOSBankingStack } from '@/hooks/useKOSBankingStack';
+import { kaasPublicAPI } from '@/mocks/kosAutoDev10X';
+
+const SEVERITY_COLORS: Record<string, string> = {
+  critical: '#DC2626',
+  high: '#EA580C',
+  medium: '#CA8A04',
+  low: '#059669',
+};
+
+const LAYER_COLORS: Record<string, string> = {
+  'DATA INGESTION LAYER': '#0A66C2',
+  'DATA PROCESSING LAYER': '#7C3AED',
+  'KOS INTELLIGENCE CORE': '#EA580C',
+  'ORCHESTRATION ENGINE': '#86BC25',
+  'OUTPUT FACTORY LAYER': '#0891B2',
+  'OBSERVABILITY & SELF-IMPROVEMENT LAYER': '#059669',
+};
+
+export default function KOSBankingStackPage() {
+  const { loading, data } = useKOSBankingStack();
+  const [activeTab, setActiveTab] = useState<string>('flow');
+  const [expandedEngine, setExpandedEngine] = useState<string | null>(null);
+  const [expandedWorkflow, setExpandedWorkflow] = useState<string | null>(null);
+  const [expandedIngestion, setExpandedIngestion] = useState<string | null>(null);
+  const [expandedOutput, setExpandedOutput] = useState<string | null>(null);
+
+  if (loading || !data) {
+    return (
+      <KOSHubLayout hubId={80}>
+        <div className="min-h-screen bg-background-50 flex items-center justify-center">
+          <div className="text-center">
+            <i className="ri-bank-line text-4xl text-foreground-200 animate-pulse" />
+            <p className="mt-4 text-foreground-500">Chargement du KOS Banking Stack...</p>
+          </div>
+        </div>
+      </KOSHubLayout>
+    );
+  }
+
+  const tabs = [
+    { id: 'flow', label: 'Architecture Flow', icon: 'ri-flow-chart', count: '9 étapes' },
+    { id: 'ingestion', label: 'Data Ingestion', icon: 'ri-download-cloud-2-line', count: `${data.layer1.metrics.total_volume_jour.toLocaleString()}/j` },
+    { id: 'processing', label: 'Data Processing', icon: 'ri-cpu-line', count: `${data.layer2.pipelines.length} pipelines` },
+    { id: 'intelligence', label: 'Intelligence Core', icon: 'ri-brain-line', count: `${data.layer3.engines.length} moteurs` },
+    { id: 'orchestration', label: 'Orchestration', icon: 'ri-git-branch-line', count: `${data.layer4.metrics.workflows_actifs} workflows` },
+    { id: 'outputs', label: 'Output Factory', icon: 'ri-file-list-3-line', count: `${data.layer5.outputs.length} types` },
+    { id: 'observability', label: 'Observability', icon: 'ri-radar-line', count: `${data.layer6.self_improvements.length} améliorations` },
+    { id: 'tech', label: 'Tech Stack', icon: 'ri-stack-line', count: '8 composants' },
+    { id: 'kaas', label: 'KaaS API', icon: 'ri-terminal-box-line', count: `${kaasPublicAPI.stats.active_developers_monthly.toLocaleString()} devs` },
+  ];
+
+  return (
+    <KOSHubLayout hubId={80}>
+      <SeoHead
+        title="KOS Banking Stack™ — Infrastructure de Conformité Bancaire Autonome | KHEPRA EXPERTS"
+        description="KOS Banking Stack v1.0 — Plateforme bancaire réglementaire intelligente, modulaire et industrialisée. 6 couches industrielles, 4 moteurs IA, 8 workflows, 16 livrables. BCEAO, COBAC, FATF/GAFI, GIABA. Gouvernance financière en Afrique francophone."
+        keywords="KOS Banking Stack, conformité bancaire autonome, BCEAO, COBAC, FATF, GIABA, KHEPRA EXPERTS, régulation financière Afrique"
+        canonicalPath="/kos-banking-stack"
+        ogType="website"
+        ogLocale="fr_FR"
+      />
+
+      {/* Hero */}
+      <section className="relative bg-foreground-950 overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
+          <div className="absolute top-0 right-0 w-[700px] h-[700px] rounded-full opacity-[0.05]" style={{ background: 'radial-gradient(circle, #86BC25 0%, transparent 70%)' }} />
+          <div className="absolute bottom-0 left-0 w-[600px] h-[600px] rounded-full opacity-[0.04]" style={{ background: 'radial-gradient(circle, #EA580C 0%, transparent 70%)' }} />
+        </div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-14">
+          <div className="max-w-3xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#86BC25]/15 text-[#86BC25] text-xs font-semibold mb-4 backdrop-blur-sm border border-[#86BC25]/20">
+              <i className="ri-bank-line" />KOS Banking Stack™ v1.0
+            </div>
+            <h1 className="font-heading text-2xl md:text-4xl font-bold text-white tracking-tight">
+              Infrastructure de Conformité Bancaire Autonome
+            </h1>
+            <p className="text-sm md:text-base text-gray-400 mt-3 max-w-2xl">
+              <strong>6 couches industrielles</strong> — Data Ingestion · Data Processing · Intelligence Core · Orchestration Engine · Output Factory · Observability. <strong>4 moteurs IA</strong> (Regulatory, Risk, Compliance, Knowledge). <strong>8 workflows</strong>. <strong>17 pays</strong> UEMOA + CEMAC.
+            </p>
+            <div className="flex flex-wrap gap-2 mt-4">
+              {['BCEAO', 'COBAC', 'BEAC', 'FATF/GAFI', 'GIABA', 'OHADA', 'CIMA', 'ISO 20022'].map((t) => (
+                <span key={t} className="px-3 py-1.5 rounded-full text-xs font-semibold bg-white/10 text-white/70">{t}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* KPI Bar */}
+      <section className="bg-background-50 border-b border-background-200/70">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+            {[
+              { label: 'Transactions/j', value: `${(data.layer1.metrics.total_volume_jour / 1000).toFixed(0)}k`, icon: 'ri-exchange-dollar-line', color: '#0A66C2' },
+              { label: 'Risk Scores/j', value: `${(data.layer3.engines[1].scores_computed_day / 1000).toFixed(1)}k`, icon: 'ri-shield-flash-line', color: '#EA580C' },
+              { label: 'Obligations', value: data.layer3.engines[0].obligations_extraits.toLocaleString(), icon: 'ri-scales-3-line', color: '#86BC25' },
+              { label: 'Workflows', value: `${data.layer4.metrics.workflows_actifs}`, icon: 'ri-git-branch-line', color: '#7C3AED' },
+              { label: 'Gaps', value: data.layer3.engines[2].gaps_detectes, icon: 'ri-error-warning-line', color: '#DC2626' },
+              { label: 'Uptime', value: data.overview.uptime_percent + '%', icon: 'ri-timer-line', color: '#059669' },
+              { label: 'Outputs/mois', value: data.overview.outputs_per_month.toLocaleString(), icon: 'ri-file-list-3-line', color: '#0891B2' },
+              { label: 'Pays', value: data.overview.countries_covered, icon: 'ri-global-line', color: '#CA8A04' },
+            ].map((s, i) => (
+              <div key={i} className="rounded-xl bg-background-50 border border-background-200/70 p-3 text-center">
+                <div className="w-7 h-7 mx-auto mb-1.5 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${s.color}15` }}>
+                  <i className={`${s.icon} text-xs`} style={{ color: s.color }} />
+                </div>
+                <span className="block text-base font-bold text-foreground-950">{s.value}</span>
+                <span className="text-[10px] text-foreground-400">{s.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Tab Navigation */}
+      <section className="sticky top-20 z-30 bg-background-50 border-b border-background-200/70">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex gap-1 overflow-x-auto py-3">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-bold cursor-pointer transition-all whitespace-nowrap ${
+                  activeTab === tab.id ? 'bg-foreground-950 text-background-50' : 'text-foreground-600 hover:bg-background-100 hover:text-foreground-900'
+                }`}
+              >
+                <i className={`${tab.icon} text-base`} />{tab.label}
+                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-background-200">{tab.count}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════ ARCHITECTURE FLOW ═══════════════ */}
+      {activeTab === 'flow' && (
+        <section className="py-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="mb-6">
+              <h2 className="font-heading text-2xl font-bold text-foreground-950 mb-2">KOS Banking Stack — Flow Global End-to-End</h2>
+              <p className="text-sm text-foreground-500 max-w-3xl">
+                Le KOS Banking Stack opère en boucle continue 24/7. Chaque étape est automatisée, tracée et optimisée en continu.
+              </p>
+            </div>
+
+            {/* Architecture Layers Diagram */}
+            <div className="rounded-2xl bg-background-50 border border-background-200/70 p-6 mb-8">
+              <h3 className="font-heading text-lg font-bold text-foreground-950 mb-4">Les 6 Couches Industrielles</h3>
+              <div className="space-y-3">
+                {[
+                  { name: 'DATA INGESTION LAYER', desc: 'Webhooks, Cron Jobs, Email IMAP, APIs Bancaires, File Upload — 5 canaux, 846K+ entrées/jour' },
+                  { name: 'DATA PROCESSING LAYER', desc: 'OCR, Parsing PDF, Normalisation, Extraction Entités — 4 pipelines, 98%+ accuracy' },
+                  { name: 'KOS INTELLIGENCE CORE', desc: 'Regulatory Engine · Risk Engine · Compliance Engine · Knowledge Engine — 4 moteurs IA autonomes' },
+                  { name: 'ORCHESTRATION ENGINE', desc: '8 workflows n8n → Edge Functions Supabase, 12.45K exécutions/jour, 98.6% succès' },
+                  { name: 'OUTPUT FACTORY LAYER', desc: 'Rapports Audit, Compliance Reports, Dashboards, Alertes, Scripts TV, Emails — 4.9K/mois' },
+                  { name: 'OBSERVABILITY & SELF-IMPROVEMENT LAYER', desc: 'Monitoring 7 métriques, MTTR < 5min, Self-improvement autonome, Circuit Breaker' },
+                ].map((layer, i) => (
+                  <div key={layer.name} className="rounded-xl bg-background-50 border border-background-200/70 p-4 flex items-start gap-4">
+                    <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${LAYER_COLORS[layer.name]}15` }}>
+                      <span className="text-sm font-bold" style={{ color: LAYER_COLORS[layer.name] }}>L{i + 1}</span>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-foreground-950">{layer.name}</h4>
+                      <p className="text-xs text-foreground-500 mt-0.5">{layer.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* End-to-End Flow */}
+            <div className="rounded-2xl bg-background-50 border border-background-200/70 p-6 mb-8">
+              <h3 className="font-heading text-lg font-bold text-foreground-950 mb-4">Loop KOS Banking Stack — 9 Étapes</h3>
+              <div className="flex flex-wrap items-center gap-2">
+                {data.flow.steps.map((step, i) => (
+                  <div key={step.step} className="flex items-center gap-2">
+                    <div className="px-4 py-2.5 rounded-full bg-foreground-950 text-white text-xs font-bold whitespace-nowrap flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-[10px]">{step.step}</span>
+                      {step.name}
+                    </div>
+                    {i < data.flow.steps.length - 1 && (
+                      <i className="ri-arrow-right-line text-foreground-300 text-sm" />
+                    )}
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {data.flow.steps.map((step) => (
+                  <div key={step.step} className="rounded-lg bg-background-100 p-3">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="w-5 h-5 rounded-full bg-foreground-950 text-white flex items-center justify-center text-[10px] font-bold">{step.step}</span>
+                      <span className="text-xs font-bold text-foreground-950">{step.name}</span>
+                    </div>
+                    <p className="text-[11px] text-foreground-500">{step.description}</p>
+                    <div className="flex items-center gap-2 mt-2 text-[10px]">
+                      <span className="px-2 py-0.5 rounded-full bg-background-200 text-foreground-500">{step.status.replace(/_/g, ' ')}</span>
+                      <span className="text-foreground-400">{step.duration_s}s</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Decision Logic */}
+            <div className="rounded-2xl bg-background-50 border border-background-200/70 p-6">
+              <h3 className="font-heading text-lg font-bold text-foreground-950 mb-3">Moteur de Décision KOS</h3>
+              <div className="bg-foreground-950 rounded-xl p-5">
+                <div className="flex items-center gap-4 flex-wrap">
+                  {['Conformité', 'Qualité', 'Risque', 'Performance', 'Rapidité'].map((p, i) => (
+                    <div key={p} className="flex items-center gap-2">
+                      <span className="px-4 py-2 rounded-full text-xs font-bold" style={{
+                        backgroundColor: i === 0 ? '#86BC25' : i === 1 ? '#0A66C2' : i === 2 ? '#EA580C' : i === 3 ? '#7C3AED' : '#6B7280',
+                        color: '#fff',
+                      }}>{p}</span>
+                      {i < 4 && <span className="text-gray-500 text-sm">&gt;</span>}
+                    </div>
+                  ))}
+                </div>
+                <p className="text-gray-400 text-xs mt-3">
+                  {data.logic.priority_chain}
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ═══════════════ DATA INGESTION ═══════════════ */}
+      {activeTab === 'ingestion' && (
+        <section className="py-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="mb-6">
+              <h2 className="font-heading text-2xl font-bold text-foreground-950 mb-2">Layer 1 — Data Ingestion</h2>
+              <p className="text-sm text-foreground-500 max-w-3xl">
+                Capture de toutes les données bancaires et réglementaires via 5 canaux. Sources : BCEAO, COBAC, FATF/GAFI, GIABA, BEAC, OHADA, CIMA. Données internes : transactions, rapports conformité, audits, incidents AML.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3 mb-6">
+              {[
+                { label: 'Sources Actives', value: data.layer1.sources_active, color: '#0A66C2' },
+                { label: 'Volume/jour', value: data.layer1.metrics.total_volume_jour.toLocaleString(), color: '#86BC25' },
+                { label: 'Latence Moy.', value: data.layer1.metrics.avg_latency_ms + 'ms', color: '#7C3AED' },
+                { label: 'Fiabilité Globale', value: data.layer1.metrics.fiabilite_globale + '%', color: '#059669' },
+                { label: 'Fichiers/j', value: data.layer1.metrics.files_processed_day, color: '#EA580C' },
+              ].map((s, i) => (
+                <div key={i} className="rounded-xl bg-background-50 border border-background-200/70 p-4 text-center">
+                  <span className="block text-xl font-bold text-foreground-950">{s.value}</span>
+                  <span className="text-[10px] text-foreground-400">{s.label}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="space-y-3">
+              {data.layer1.ingestion_channels.map((channel) => {
+                const isExpanded = expandedIngestion === channel.id;
+                return (
+                  <div key={channel.id} className={`rounded-xl border transition-all bg-background-50 ${isExpanded ? 'border-foreground-300 shadow-sm' : 'border-background-200/70 hover:border-foreground-200'}`}>
+                    <button
+                      onClick={() => setExpandedIngestion(isExpanded ? null : channel.id)}
+                      className="w-full p-4 text-left flex items-start gap-4 cursor-pointer"
+                    >
+                      <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: channel.statut === 'running' ? '#D1FAE5' : '#FEE2E2' }}>
+                        <i className={`${channel.channel === 'Webhooks Régulateurs' ? 'ri-webhook-line' : channel.channel === 'Cron Jobs' ? 'ri-time-line' : channel.channel === 'Email Ingestion' ? 'ri-mail-line' : channel.channel === 'APIs Bancaires' ? 'ri-link' : 'ri-file-upload-line'} text-lg`} style={{ color: channel.statut === 'running' ? '#059669' : '#DC2626' }} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: channel.type === 'temps_réel' ? '#D1FAE5' : channel.type === 'planifié' ? '#FEF3C7' : channel.type === 'batch' ? '#DBEAFE' : '#EDE9FE', color: channel.type === 'temps_réel' ? '#059669' : channel.type === 'planifié' ? '#CA8A04' : channel.type === 'batch' ? '#0A66C2' : '#7C3AED' }}>
+                            {channel.type.replace(/_/g, ' ')}
+                          </span>
+                          <h3 className="text-sm font-bold text-foreground-950">{channel.channel}</h3>
+                        </div>
+                        <p className="text-xs text-foreground-500 mb-2">{channel.sources.join(' · ')}</p>
+                        <div className="flex flex-wrap items-center gap-3 text-[10px] text-foreground-400">
+                          <span><i className="ri-bar-chart-line mr-1" />{channel.volume_jour.toLocaleString()}/jour</span>
+                          <span><i className="ri-speed-line mr-1" />{channel.latency_ms}ms</span>
+                          <span><i className="ri-shield-check-line mr-1" />{channel.fiabilite}%</span>
+                        </div>
+                      </div>
+                      <i className={`ri-${isExpanded ? 'subtract' : 'add'}-line text-foreground-400 text-lg flex-shrink-0`} />
+                    </button>
+                    {isExpanded && (
+                      <div className="px-5 pb-5 border-t border-background-200/70 pt-4 animate-fade-in">
+                        {channel.schedule && (
+                          <div className="mb-3">
+                            <span className="text-[10px] font-bold text-foreground-500 uppercase tracking-wider">Schedule</span>
+                            <p className="text-xs text-foreground-700 font-bold mt-1">{channel.schedule}</p>
+                          </div>
+                        )}
+                        {channel.edge_function && (
+                          <div className="mb-3">
+                            <span className="text-[10px] font-bold text-foreground-500 uppercase tracking-wider">Edge Function</span>
+                            <p className="text-xs text-foreground-700 font-mono mt-1">{channel.edge_function}</p>
+                          </div>
+                        )}
+                        {channel.ocr_accuracy && (
+                          <div className="mb-3">
+                            <span className="text-[10px] font-bold text-foreground-500 uppercase tracking-wider">OCR Accuracy</span>
+                            <p className="text-xs text-foreground-700 font-bold mt-1">{channel.ocr_accuracy}%</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ═══════════════ DATA PROCESSING ═══════════════ */}
+      {activeTab === 'processing' && (
+        <section className="py-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="mb-6">
+              <h2 className="font-heading text-2xl font-bold text-foreground-950 mb-2">Layer 2 — Data Processing</h2>
+              <p className="text-sm text-foreground-500 max-w-3xl">
+                Structuration et nettoyage des données bancaires et réglementaires. 4 pipelines de traitement avec stack technique : n8n Orchestration + OpenAI Platform (LLM extraction) + Python Workers.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              {data.layer2.pipelines.map((pipeline) => (
+                <div key={pipeline.id} className="rounded-xl bg-background-50 border border-background-200/70 p-5 hover:border-foreground-200 transition-colors">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#7C3AED15' }}>
+                      <i className="ri-cpu-line text-lg" style={{ color: '#7C3AED' }} />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-foreground-950">{pipeline.pipeline}</h3>
+                      <span className="text-[10px] text-foreground-400 font-mono">{pipeline.tech}</span>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 text-xs">
+                    <div>
+                      <span className="text-foreground-400">Input</span>
+                      <p className="font-bold text-foreground-700">{pipeline.input_format.join(', ')}</p>
+                    </div>
+                    <div>
+                      <span className="text-foreground-400">Output</span>
+                      <p className="font-bold text-foreground-700 truncate">{pipeline.output_format}</p>
+                    </div>
+                    <div>
+                      <span className="text-foreground-400">Volume/j</span>
+                      <p className="font-bold text-foreground-700">{pipeline.volume_jour.toLocaleString()}</p>
+                    </div>
+                    <div>
+                      <span className="text-foreground-400">Accuracy</span>
+                      <p className="font-bold text-emerald-600">{pipeline.accuracy}%</p>
+                    </div>
+                  </div>
+                  <div className="mt-3 flex items-center gap-2 text-[10px] text-foreground-400">
+                    <span>Avg: {pipeline.avg_time_s ? pipeline.avg_time_s + 's' : pipeline.avg_time_ms + 'ms'}</span>
+                    <span className={`w-2 h-2 rounded-full ${pipeline.statut === 'running' ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`} />
+                    <span className="capitalize">{pipeline.statut}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ═══════════════ INTELLIGENCE CORE ═══════════════ */}
+      {activeTab === 'intelligence' && (
+        <section className="py-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="mb-6">
+              <h2 className="font-heading text-2xl font-bold text-foreground-950 mb-2">Layer 3 — KOS Intelligence Core</h2>
+              <p className="text-sm text-foreground-500 max-w-3xl">
+                4 moteurs IA autonomes qui transforment les données brutes en intelligence réglementaire actionable. Aucune dépendance externe — le KOS Automaton NLP Engine gère tout en local.
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              {data.layer3.engines.map((engine) => {
+                const isExpanded = expandedEngine === engine.id;
+                return (
+                  <div key={engine.id} className={`rounded-xl border transition-all bg-background-50 ${isExpanded ? 'border-foreground-300 shadow-sm' : 'border-background-200/70 hover:border-foreground-200'}`}>
+                    <button
+                      onClick={() => setExpandedEngine(isExpanded ? null : engine.id)}
+                      className="w-full p-5 text-left flex items-start gap-4 cursor-pointer"
+                    >
+                      <div className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${LAYER_COLORS['KOS INTELLIGENCE CORE']}10` }}>
+                        <i className={`${engine.icon} text-xl`} style={{ color: LAYER_COLORS['KOS INTELLIGENCE CORE'] }} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="text-base font-bold text-foreground-950">{engine.name}</h3>
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${engine.statut === 'optimal' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                            {engine.statut.toUpperCase()}
+                          </span>
+                        </div>
+                        <p className="text-xs text-foreground-500 mb-2">{engine.description}</p>
+                        {engine.regulators && (
+                          <div className="flex flex-wrap gap-1 mb-2">
+                            {engine.regulators.map((r: string) => (
+                              <span key={r} className="text-[10px] px-2 py-0.5 rounded-full bg-background-100 text-foreground-500">{r}</span>
+                            ))}
+                          </div>
+                        )}
+                        {engine.score_conformite && (
+                          <div className="flex items-center gap-2 text-xs">
+                            <span className="text-foreground-400">Score Conformité :</span>
+                            <span className={`font-bold ${engine.score_conformite >= 95 ? 'text-emerald-600' : 'text-amber-600'}`}>{engine.score_conformite}/100</span>
+                          </div>
+                        )}
+                        {engine.score_moyen !== undefined && (
+                          <div className="flex items-center gap-2 text-xs">
+                            <span className="text-foreground-400">Score Risque Moyen :</span>
+                            <span className={`font-bold ${engine.score_moyen >= 80 ? 'text-emerald-600' : 'text-amber-600'}`}>{engine.score_moyen}/100</span>
+                          </div>
+                        )}
+                      </div>
+                      <i className={`ri-${isExpanded ? 'subtract' : 'add'}-line text-foreground-400 text-lg flex-shrink-0`} />
+                    </button>
+                    {isExpanded && (
+                      <div className="px-5 pb-5 border-t border-background-200/70 pt-4 animate-fade-in">
+                        {engine.textes_analyses && (
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                            <div className="rounded-lg bg-background-100 p-3 text-center">
+                              <span className="block text-base font-bold text-foreground-950">{engine.textes_analyses.toLocaleString()}</span>
+                              <span className="text-[10px] text-foreground-400">Textes Analysés</span>
+                            </div>
+                            <div className="rounded-lg bg-background-100 p-3 text-center">
+                              <span className="block text-base font-bold text-foreground-950">{engine.obligations_extraits.toLocaleString()}</span>
+                              <span className="text-[10px] text-foreground-400">Obligations Extraits</span>
+                            </div>
+                            <div className="rounded-lg bg-background-100 p-3 text-center">
+                              <span className="block text-base font-bold text-foreground-950">{engine.controles_generes.toLocaleString()}</span>
+                              <span className="text-[10px] text-foreground-400">Contrôles Générés</span>
+                            </div>
+                            <div className="rounded-lg bg-background-100 p-3 text-center">
+                              <span className="block text-base font-bold text-foreground-950">{engine.precision_extraction}%</span>
+                              <span className="text-[10px] text-foreground-400">Précision</span>
+                            </div>
+                          </div>
+                        )}
+                        {engine.gaps_details && (
+                          <div>
+                            <span className="text-[10px] font-bold text-foreground-500 uppercase tracking-wider">Gaps Critiques</span>
+                            <div className="mt-2 space-y-2">
+                              {engine.gaps_details.map((gap: any, i: number) => (
+                                <div key={i} className="flex items-center gap-3 p-2 rounded-lg bg-background-100">
+                                  <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: SEVERITY_COLORS[gap.severite] || '#6B7280' }} />
+                                  <div className="flex-1">
+                                    <span className="text-xs font-bold text-foreground-950">{gap.gap}</span>
+                                    <div className="flex items-center gap-2 text-[10px] text-foreground-400 mt-0.5">
+                                      <span>{gap.obligations} obligations</span>
+                                      <span>Deadline: {gap.deadline}</span>
+                                    </div>
+                                  </div>
+                                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: `${SEVERITY_COLORS[gap.severite]}15`, color: SEVERITY_COLORS[gap.severite] }}>
+                                    {gap.severite.toUpperCase()}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {engine.typologies && (
+                          <div>
+                            <span className="text-[10px] font-bold text-foreground-500 uppercase tracking-wider">Typologies de Risques</span>
+                            <div className="mt-2 grid grid-cols-2 gap-2">
+                              {engine.typologies.map((t: any, i: number) => (
+                                <div key={i} className="rounded-lg bg-background-100 p-3 flex items-center justify-between">
+                                  <span className="text-xs text-foreground-700">{t.type}</span>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-xs font-bold text-foreground-950">{t.score_moyen}/100</span>
+                                    <span className={`text-[10px] ${t.tendance === 'improving' ? 'text-emerald-600' : 'text-foreground-400'}`}>
+                                      {t.tendance === 'improving' ? '▲' : '→'}
+                                    </span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {engine.vector_db && (
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                            <div className="rounded-lg bg-background-100 p-3 text-center">
+                              <span className="block text-base font-bold text-foreground-950">{engine.documents_indexes.toLocaleString()}</span>
+                              <span className="text-[10px] text-foreground-400">Documents Indexés</span>
+                            </div>
+                            <div className="rounded-lg bg-background-100 p-3 text-center">
+                              <span className="block text-base font-bold text-foreground-950">{(engine.embeddings_total / 1000000).toFixed(2)}M</span>
+                              <span className="text-[10px] text-foreground-400">Embeddings</span>
+                            </div>
+                            <div className="rounded-lg bg-background-100 p-3 text-center">
+                              <span className="block text-base font-bold text-foreground-950">{engine.precision_recherche}%</span>
+                              <span className="text-[10px] text-foreground-400">Précision Recherche</span>
+                            </div>
+                            <div className="rounded-lg bg-background-100 p-3 text-center">
+                              <span className="block text-base font-bold text-foreground-950">{engine.temps_reponse_ms}ms</span>
+                              <span className="text-[10px] text-foreground-400">Temps Réponse</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ═══════════════ ORCHESTRATION ═══════════════ */}
+      {activeTab === 'orchestration' && (
+        <section className="py-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="mb-6">
+              <h2 className="font-heading text-2xl font-bold text-foreground-950 mb-2">Layer 4 — Orchestration Engine (n8n → Edge Functions)</h2>
+              <p className="text-sm text-foreground-500 max-w-3xl">
+                Les patterns n8n sont implémentés via Edge Functions Supabase et Cron Jobs PostgreSQL. 8 workflows actifs, 12 450 exécutions/jour, 98.6% taux de succès.
+              </p>
+            </div>
+
+            {/* n8n Equivalence */}
+            <div className="rounded-2xl bg-background-50 border border-background-200/70 p-5 mb-6">
+              <h3 className="font-heading text-lg font-bold text-foreground-950 mb-3">Équivalence n8n → KOS Edge Functions</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                {data.layer4.patterns.map((pat) => (
+                  <div key={pat.pattern} className="rounded-lg bg-background-100 p-3">
+                    <span className="text-[10px] font-bold text-foreground-400 uppercase tracking-wider">n8n {pat.n8n_node}</span>
+                    <p className="text-xs font-bold text-foreground-950 mt-1">{pat.kosequivalent}</p>
+                    <span className="text-[10px] text-foreground-400 mt-1 block">{pat.workflows} workflows</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Workflows */}
+            <div className="space-y-3">
+              {data.layer4.workflows.map((wf) => {
+                const isExpanded = expandedWorkflow === wf.id;
+                return (
+                  <div key={wf.id} className={`rounded-xl border transition-all bg-background-50 ${isExpanded ? 'border-foreground-300 shadow-sm' : 'border-background-200/70 hover:border-foreground-200'}`}>
+                    <button
+                      onClick={() => setExpandedWorkflow(isExpanded ? null : wf.id)}
+                      className="w-full p-4 text-left flex items-start gap-4 cursor-pointer"
+                    >
+                      <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#86BC2515' }}>
+                        <i className="ri-git-branch-line text-lg" style={{ color: '#86BC25' }} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-xs font-mono text-foreground-400">{wf.id}</span>
+                          <h3 className="text-sm font-bold text-foreground-950">{wf.name}</h3>
+                          <span className={`w-2 h-2 rounded-full flex-shrink-0 ${wf.statut === 'running' ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`} />
+                        </div>
+                        <p className="text-xs text-foreground-500 mb-2 line-clamp-1">{wf.steps.join(' → ')}</p>
+                        <div className="flex flex-wrap items-center gap-3 text-[10px] text-foreground-400">
+                          <span>{wf.trigger}</span>
+                          <span><i className="ri-check-line text-emerald-500 mr-1" />{wf.taux_succes}%</span>
+                          <span><i className="ri-time-line mr-1" />{wf.avg_duration_s}s</span>
+                          <span className="text-foreground-500">{wf.freq}</span>
+                        </div>
+                      </div>
+                      <i className={`ri-${isExpanded ? 'subtract' : 'add'}-line text-foreground-400 text-lg flex-shrink-0`} />
+                    </button>
+                    {isExpanded && (
+                      <div className="px-5 pb-5 border-t border-background-200/70 pt-4 animate-fade-in">
+                        <div className="mb-3">
+                          <span className="text-[10px] font-bold text-foreground-500 uppercase tracking-wider">Étapes du Workflow</span>
+                          <div className="mt-2 space-y-1.5">
+                            {wf.steps.map((step: string, i: number) => (
+                              <div key={i} className="flex items-center gap-2 text-xs">
+                                <div className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 bg-[#86BC25]/15 text-[#86BC25]">
+                                  {i + 1}
+                                </div>
+                                <span className="text-foreground-700">{step}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
+                          <div><span className="text-foreground-400">Taux Succès</span><p className="font-bold text-emerald-600">{wf.taux_succes}%</p></div>
+                          <div><span className="text-foreground-400">Durée Moy.</span><p className="font-bold text-foreground-700">{wf.avg_duration_s}s</p></div>
+                          <div><span className="text-foreground-400">Edge Functions</span><p className="font-bold text-foreground-700 text-[10px] font-mono">{wf.edge_functions.join(', ')}</p></div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ═══════════════ OUTPUT FACTORY ═══════════════ */}
+      {activeTab === 'outputs' && (
+        <section className="py-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="mb-6">
+              <h2 className="font-heading text-2xl font-bold text-foreground-950 mb-2">Layer 5 — Output Factory</h2>
+              <p className="text-sm text-foreground-500 max-w-3xl">
+                Génération automatique de livrables exploitables. 6 types doutputs, 4 905 livrables/mois, 100% automatisés.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+              {[
+                { label: 'Outputs/mois', value: data.layer5.metrics.outputs_total_mois.toLocaleString(), color: '#0891B2' },
+                { label: 'Automatisation', value: data.layer5.metrics.taux_automatisation + '%', color: '#059669' },
+                { label: 'Satisfaction', value: data.layer5.metrics.satisfaction_recipients + '/10', color: '#86BC25' },
+                { label: 'On-Time', value: data.layer5.metrics.on_time_delivery + '%', color: '#0A66C2' },
+              ].map((s, i) => (
+                <div key={i} className="rounded-xl bg-background-50 border border-background-200/70 p-4 text-center">
+                  <span className="block text-xl font-bold text-foreground-950">{s.value}</span>
+                  <span className="text-[10px] text-foreground-400">{s.label}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {data.layer5.outputs.map((output) => (
+                <div key={output.id} className="rounded-xl bg-background-50 border border-background-200/70 p-5 hover:border-foreground-200 transition-colors">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: '#0891B215' }}>
+                      <i className={`${output.type.includes('Audit') ? 'ri-file-search-line' : output.type.includes('Report') ? 'ri-file-chart-line' : output.type.includes('Dashboard') ? 'ri-dashboard-line' : output.type.includes('Alert') ? 'ri-notification-3-line' : output.type.includes('TV') ? 'ri-movie-line' : 'ri-mail-line'} text-lg`} style={{ color: '#0891B2' }} />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-foreground-950">{output.type}</h3>
+                      <span className="text-[10px] text-foreground-400">{output.format}</span>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-xs mb-3">
+                    <div>
+                      <span className="text-foreground-400">Volume/mois</span>
+                      <p className="font-bold text-foreground-700">{output.volume_mois}</p>
+                    </div>
+                    <div>
+                      <span className="text-foreground-400">Qualité</span>
+                      <p className="font-bold text-emerald-600">{output.quality_score}/10</p>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-1 text-[10px]">
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">{output.tool}</span>
+                    {output.auto_generated && (
+                      <span className="px-2 py-0.5 rounded-full bg-[#86BC25]/15 text-[#86BC25] font-bold">AUTO</span>
+                    )}
+                  </div>
+                  <p className="text-[10px] text-foreground-400 mt-2">Destinataires : {output.recipients.join(', ')}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ═══════════════ OBSERVABILITY ═══════════════ */}
+      {activeTab === 'observability' && (
+        <section className="py-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="mb-6">
+              <h2 className="font-heading text-2xl font-bold text-foreground-950 mb-2">Layer 6 — Observability & Self-Improvement</h2>
+              <p className="text-sm text-foreground-500 max-w-3xl">
+                Auto-optimisation continue du système. 7 métriques de monitoring, 5 actions damélioration, MTTR &lt; 5 min.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+              {data.layer6.monitoring.map((m) => (
+                <div key={m.component} className="rounded-xl bg-background-50 border border-background-200/70 p-4">
+                  <span className="text-[10px] text-foreground-400 uppercase tracking-wider">{m.component}</span>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-lg font-bold text-foreground-950">{m.value}</span>
+                    <span className={`w-2 h-2 rounded-full ${m.status === 'optimal' ? 'bg-[#86BC25]' : m.status === 'ok' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                  </div>
+                  <span className="text-[10px] text-foreground-400">Cible : {m.target}</span>
+                  <span className={`text-[10px] ml-2 ${m.trend === 'improving' ? 'text-emerald-600' : 'text-foreground-400'}`}>
+                    {m.trend === 'improving' ? '▲' : m.trend === 'declining' ? '▼' : '→'}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <div className="rounded-2xl bg-background-50 border border-background-200/70 p-6 mb-6">
+              <h3 className="font-heading text-lg font-bold text-foreground-950 mb-3">Self-Improvement Actions</h3>
+              <div className="space-y-2">
+                {data.layer6.self_improvements.map((si, i) => (
+                  <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-background-100">
+                    <span className={`w-2 h-2 rounded-full ${si.status === 'completed' ? 'bg-emerald-500' : si.status === 'in_progress' ? 'bg-amber-500 animate-pulse' : 'bg-gray-300'}`} />
+                    <div className="flex-1">
+                      <span className="text-xs font-bold text-foreground-950">{si.action}</span>
+                      <div className="flex items-center gap-2 text-[10px] text-foreground-400 mt-0.5">
+                        <span>Impact : {si.impact}</span>
+                        <span>{si.date}</span>
+                      </div>
+                    </div>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                      si.status === 'completed' ? 'bg-emerald-100 text-emerald-700' :
+                      si.status === 'in_progress' ? 'bg-amber-100 text-amber-700' :
+                      'bg-gray-100 text-gray-600'
+                    }`}>
+                      {si.status === 'completed' ? 'COMPLÉTÉ' : si.status === 'in_progress' ? 'EN COURS' : 'PLANIFIÉ'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ═══════════════ TECH STACK ═══════════════ */}
+      {activeTab === 'tech' && (
+        <section className="py-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="mb-6">
+              <h2 className="font-heading text-2xl font-bold text-foreground-950 mb-2">Architecture Technique Production</h2>
+              <p className="text-sm text-foreground-500 max-w-3xl">
+                Stack technologique complète du KOS Banking Stack. Chaque composant est déployé en production avec zéro dépendance externe non maîtrisée.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              {Object.entries(data.tech).map(([key, comp]) => (
+                <div key={key} className="rounded-xl bg-background-50 border border-background-200/70 p-5">
+                  <div className="flex items-center gap-3 mb-2">
+                    <i className={`${key === 'frontend' ? 'ri-reactjs-line' : key === 'orchestration' ? 'ri-cloud-line' : key === 'backend' ? 'ri-database-2-line' : key === 'ia_core' ? 'ri-brain-line' : key === 'vector_db' ? 'ri-search-line' : key === 'bi_reporting' ? 'ri-bar-chart-line' : key === 'storage' ? 'ri-hard-drive-2-line' : 'ri-shield-check-line'} text-lg text-foreground-400`} />
+                    <h3 className="text-sm font-bold text-foreground-950 capitalize">{key.replace(/_/g, ' ')}</h3>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div>
+                      <span className="text-foreground-400">Composant</span>
+                      <p className="font-bold text-foreground-700">{comp.component}</p>
+                    </div>
+                    <div>
+                      <span className="text-foreground-400">Technologie</span>
+                      <p className="font-bold text-foreground-700">{comp.tech}</p>
+                    </div>
+                  </div>
+                  {comp.equivalent && (
+                    <div className="mt-2 text-[10px]">
+                      <span className="text-foreground-400">Équivalent : </span>
+                      <span className="text-foreground-600">{comp.equivalent}</span>
+                    </div>
+                  )}
+                  <span className={`inline-block mt-2 text-[10px] font-bold px-2 py-0.5 rounded-full ${comp.status === 'deployed' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                    {comp.status.toUpperCase()}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {/* KPIs Section */}
+            <div className="rounded-2xl bg-background-50 border border-background-200/70 p-6 mb-6">
+              <h3 className="font-heading text-lg font-bold text-foreground-950 mb-3">KPI Cibles — Conformité Bancaire</h3>
+              <div className="space-y-2">
+                {data.kpis.performance.map((kpi) => (
+                  <div key={kpi.kpi} className="flex items-center justify-between p-3 rounded-lg bg-background-100">
+                    <span className="text-xs text-foreground-700">{kpi.kpi}</span>
+                    <div className="flex items-center gap-3">
+                      <span className={`text-xs font-bold ${kpi.status === 'achieved' || kpi.status === 'exceeded' ? 'text-emerald-600' : 'text-amber-600'}`}>
+                        {kpi.value}{kpi.unit} / {kpi.target}{kpi.unit}
+                      </span>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                        kpi.status === 'achieved' ? 'bg-[#86BC25]/15 text-[#86BC25]' :
+                        kpi.status === 'exceeded' ? 'bg-emerald-100 text-emerald-700' :
+                        'bg-amber-100 text-amber-700'
+                      }`}>
+                        {kpi.status === 'achieved' ? 'CIEL ATTEINT' : kpi.status === 'exceeded' ? 'DÉPASSÉ' : 'EN COURS'}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Positioning */}
+            <div className="rounded-2xl bg-background-50 border border-background-200/70 p-6">
+              <h3 className="font-heading text-lg font-bold text-foreground-950 mb-3">Positionnement Stratégique</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="rounded-xl bg-foreground-950 p-5">
+                  <i className="ri-bank-line text-2xl text-[#86BC25] mb-2 block" />
+                  <h4 className="text-sm font-bold text-white mb-1">Infrastructure Bancaire</h4>
+                  <p className="text-xs text-gray-400">Conformité automatisée pour l&apos;Afrique francophone — 17 pays UEMOA + CEMAC</p>
+                </div>
+                <div className="rounded-xl bg-foreground-950 p-5">
+                  <i className="ri-scales-3-line text-2xl text-[#EA580C] mb-2 block" />
+                  <h4 className="text-sm font-bold text-white mb-1">Concurrent Big Four</h4>
+                  <p className="text-xs text-gray-400">Concurrent structurel des Big Four sur la compliance digitale — 100% autonome</p>
+                </div>
+                <div className="rounded-xl bg-foreground-950 p-5">
+                  <i className="ri-rocket-2-line text-2xl text-[#0A66C2] mb-2 block" />
+                  <h4 className="text-sm font-bold text-white mb-1">Régulation Augmentée</h4>
+                  <p className="text-xs text-gray-400">Plateforme de régulation augmentée — 8 régulateurs, analyse en temps réel</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ═══════════════ KaaS PUBLIC API ═══════════════ */}
+      {activeTab === 'kaas' && (
+        <section className="py-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="mb-6">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 mb-3">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span className="text-xs font-bold text-emerald-700">SWITCH 3 ACTIVÉ — KaaS PUBLIC API</span>
+              </div>
+              <h2 className="font-heading text-2xl font-bold text-foreground-950 mb-2">
+                KaaS Public API — {kaasPublicAPI.layer}
+              </h2>
+              <p className="text-sm text-foreground-500 max-w-3xl">
+                API publique de recherche réglementaire. Freemium : <strong>100 appels/mois gratuits</strong>. Auth par email.
+                {kaasPublicAPI.effect_90j}
+              </p>
+            </div>
+
+            {/* Stats Bar */}
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
+              {[
+                { label: 'Développeurs', value: kaasPublicAPI.stats.total_registered_developers.toLocaleString(), icon: 'ri-user-star-line', color: '#86BC25' },
+                { label: 'Actifs/mois', value: kaasPublicAPI.stats.active_developers_monthly.toLocaleString(), icon: 'ri-user-heart-line', color: '#0D7B5F' },
+                { label: 'Appels/mois', value: kaasPublicAPI.stats.api_calls_this_month.toLocaleString(), icon: 'ri-arrow-left-right-line', color: '#E8C547' },
+                { label: 'Temps Réponse', value: `${kaasPublicAPI.stats.avg_response_time_ms}ms`, icon: 'ri-timer-flash-line', color: '#7C3AED' },
+                { label: 'Uptime', value: `${kaasPublicAPI.stats.uptime_percent}%`, icon: 'ri-shield-check-line', color: '#059669' },
+              ].map((s, i) => (
+                <div key={i} className="rounded-xl bg-background-50 border border-background-200/70 p-4 text-center">
+                  <div className="w-8 h-8 mx-auto mb-2 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${s.color}15` }}>
+                    <i className={`${s.icon} text-sm`} style={{ color: s.color }} />
+                  </div>
+                  <span className="block text-lg font-bold text-foreground-950">{s.value}</span>
+                  <span className="text-[10px] text-foreground-400">{s.label}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Top Countries + Growth */}
+            <div className="rounded-2xl bg-foreground-950 p-6 mb-6 text-white">
+              <h3 className="font-heading text-lg font-bold text-white mb-4">Croissance Développeurs — {kaasPublicAPI.stats.projected_devs_90j.toLocaleString()} cible J+90</h3>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="flex-1 h-3 rounded-full bg-white/10 overflow-hidden">
+                  <div className="h-full rounded-full bg-emerald-500" style={{ width: `${(kaasPublicAPI.stats.total_registered_developers / kaasPublicAPI.stats.projected_devs_90j) * 100}%` }} />
+                </div>
+                <span className="text-sm font-bold text-emerald-400">{Math.round((kaasPublicAPI.stats.total_registered_developers / kaasPublicAPI.stats.projected_devs_90j) * 100)}%</span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {kaasPublicAPI.stats.top_countries.map((c) => (
+                  <span key={c} className="px-3 py-1.5 rounded-full text-xs font-semibold bg-white/10 text-white/70">{c}</span>
+                ))}
+              </div>
+            </div>
+
+            {/* API Endpoints */}
+            <div className="mb-6">
+              <h3 className="font-heading text-lg font-bold text-foreground-950 mb-4 flex items-center gap-2">
+                <i className="ri-terminal-box-line text-emerald-500" />
+                Endpoints — {kaasPublicAPI.api_version}
+              </h3>
+              <div className="space-y-4">
+                {kaasPublicAPI.endpoints.map((ep) => (
+                  <div key={ep.path} className="rounded-xl bg-background-50 border border-background-200/70 p-5">
+                    <div className="flex items-center gap-3 mb-3 flex-wrap">
+                      <span className={`px-2 py-1 rounded text-xs font-bold font-mono ${ep.method === 'POST' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}`}>
+                        {ep.method}
+                      </span>
+                      <span className="text-sm font-mono font-bold text-foreground-950">{ep.path}</span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-background-200 text-foreground-500">{ep.freemium_limit} req/{ep.period}</span>
+                    </div>
+                    <p className="text-sm text-foreground-600 mb-3">{ep.description}</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                      <div className="p-3 rounded-lg bg-background-100">
+                        <span className="text-foreground-400 uppercase tracking-wider text-[10px]">Auth</span>
+                        <p className="font-bold text-foreground-950 mt-1">{ep.auth}</p>
+                      </div>
+                      {ep.request_body && (
+                        <div className="p-3 rounded-lg bg-background-100">
+                          <span className="text-foreground-400 uppercase tracking-wider text-[10px]">Request Body</span>
+                          <div className="mt-1 space-y-0.5">
+                            {Object.entries(ep.request_body).map(([k, v]) => (
+                              <p key={k} className="text-foreground-600 font-mono text-[11px]"><strong>{k}</strong>: {v}</p>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    {ep.example_curl && (
+                      <div className="mt-3 p-3 rounded-lg bg-foreground-950 text-emerald-400 font-mono text-[11px] overflow-x-auto whitespace-pre">
+                        {ep.example_curl}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Pricing Tiers */}
+            <div className="rounded-2xl bg-background-50 border border-background-200/70 p-6 mb-6">
+              <h3 className="font-heading text-lg font-bold text-foreground-950 mb-4">Pricing Tiers</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {kaasPublicAPI.pricing_tiers.map((tier) => (
+                  <div key={tier.tier} className={`rounded-xl border p-5 ${tier.tier === 'Enterprise' ? 'border-foreground-300 bg-foreground-950 text-white' : 'border-background-200/70 bg-background-50'}`}>
+                    <h4 className={`text-sm font-bold mb-1 ${tier.tier === 'Enterprise' ? 'text-white' : 'text-foreground-950'}`}>{tier.tier}</h4>
+                    <div className={`text-2xl font-bold font-heading mb-2 ${tier.tier === 'Enterprise' ? 'text-emerald-400' : 'text-foreground-950'}`}>
+                      {typeof tier.price_fcfa === 'number' ? `${tier.price_fcfa.toLocaleString()} FCFA` : tier.price_fcfa}
+                    </div>
+                    <p className={`text-xs mb-3 ${tier.tier === 'Enterprise' ? 'text-gray-400' : 'text-foreground-500'}`}>
+                      {typeof tier.calls_per_month === 'number' ? `${tier.calls_per_month.toLocaleString()} appels/mois` : tier.calls_per_month}
+                    </p>
+                    <ul className="space-y-1.5">
+                      {tier.features.map((f) => (
+                        <li key={f} className={`text-xs flex items-start gap-1.5 ${tier.tier === 'Enterprise' ? 'text-gray-300' : 'text-foreground-600'}`}>
+                          <i className={`ri-check-line mt-0.5 flex-shrink-0 ${tier.tier === 'Enterprise' ? 'text-emerald-400' : 'text-emerald-500'}`} />
+                          {f}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* API Key Management */}
+            <div className="rounded-2xl bg-background-50 border border-background-200/70 p-6 mb-6">
+              <h3 className="font-heading text-lg font-bold text-foreground-950 mb-4 flex items-center gap-2">
+                <i className="ri-key-2-line text-amber-500" />
+                Gestion des API Keys
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                {[
+                  { label: 'Génération', value: kaasPublicAPI.api_key_management.generation, icon: 'ri-user-add-line' },
+                  { label: 'Rate Limiting', value: kaasPublicAPI.api_key_management.rate_limiting, icon: 'ri-speed-line' },
+                  { label: 'Headers', value: kaasPublicAPI.api_key_management.headers, icon: 'ri-code-line' },
+                  { label: 'Monitoring', value: kaasPublicAPI.api_key_management.monitoring, icon: 'ri-dashboard-line' },
+                ].map((item) => (
+                  <div key={item.label} className="rounded-xl bg-background-100 p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <i className={`${item.icon} text-foreground-400 text-sm`} />
+                      <span className="text-[10px] font-bold text-foreground-400 uppercase tracking-wider">{item.label}</span>
+                    </div>
+                    <p className="text-xs text-foreground-700">{item.value}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-3 p-3 rounded-lg bg-emerald-50/50 border border-emerald-100 text-xs text-foreground-600">
+                <i className="ri-information-line text-emerald-500 mr-1" />
+                Edge Function : <span className="font-mono font-bold">{kaasPublicAPI.api_key_management.edge_function}</span> — gère le routage, le billing et le rate limiting automatiquement.
+              </div>
+            </div>
+
+            {/* Effect 90j */}
+            <div className="rounded-2xl bg-emerald-50/50 border border-emerald-200 p-6 text-center">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-emerald-100 flex items-center justify-center">
+                <i className="ri-global-line text-3xl text-emerald-600" />
+              </div>
+              <h3 className="font-heading text-xl font-bold text-foreground-950 mb-2">SWITCH 3 — ACTIVÉ !</h3>
+              <p className="text-sm text-foreground-600 max-w-lg mx-auto">
+                {kaasPublicAPI.effect_90j}. Croissance développeurs : +{kaasPublicAPI.stats.developer_growth_rate}%/mois.
+                Prochaine étape : documentation OpenAPI complète et SDK Python.
+              </p>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Footer — Banking KPIs & CTA */}
+      <section className="py-8 border-t border-background-200/70">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="font-heading text-2xl font-bold text-foreground-950 mb-4">KPIs Bancaires</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 mb-8">
+            {data.kpis.banking.map((kpi) => (
+              <div key={kpi.kpi} className="rounded-xl bg-background-50 border border-background-200/70 p-3 text-center">
+                <span className="block text-base font-bold text-foreground-950">{typeof kpi.value === 'number' ? kpi.value.toLocaleString() : kpi.value}</span>
+                <span className="text-[10px] text-foreground-400">{kpi.kpi}</span>
+                <span className={`text-[10px] ${kpi.trending === 'up' ? 'text-emerald-600' : kpi.trending === 'down' ? 'text-red-600' : 'text-foreground-400'}`}>
+                  {kpi.trending === 'up' ? '▲' : kpi.trending === 'down' ? '▼' : '→'}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          <div className="rounded-2xl bg-foreground-950 p-6 text-center">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#86BC25]/15 text-[#86BC25] text-xs font-semibold mb-3 border border-[#86BC25]/20">
+              <i className="ri-bank-line" />KOS Banking Stack™ — Règle Absolue
+            </div>
+            <p className="text-white font-bold text-lg mb-2">
+              KOS ne produit jamais une analyse seule.
+            </p>
+            <p className="text-gray-400 text-sm max-w-2xl mx-auto">
+              Il produit : <strong className="text-white">un système</strong> · <strong className="text-white">un workflow</strong> · <strong className="text-white">une automatisation</strong> · <strong className="text-white">une amélioration continue</strong>
+            </p>
+            <div className="flex flex-wrap justify-center gap-2 mt-4">
+              {['EXACTITUDE', 'CONFORMITÉ', 'TRAÇABILITÉ', 'QUALITÉ', 'AMÉLIORATION CONTINUE', 'PROTECTION RÉPUTATION'].map((p) => (
+                <span key={p} className="px-3 py-1 rounded-full text-[10px] font-bold bg-white/10 text-white/70">{p}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+    </KOSHubLayout>
+  );
+}

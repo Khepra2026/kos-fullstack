@@ -1,0 +1,126 @@
+const about = {
+  about: {
+    title: 'À propos de KHEPRA EXPERTS',
+    mission: 'Notre Mission',
+    missionText: 'Accompagner les PME, institutions de microfinance et organisations dans leur transformation stratégique, leur gouvernance d\'entreprise et leur performance financière pour créer un impact durable et mesurable. Forts d\'une expertise financière internationale forgée au Togo, au Gabon et dans toute l\'Afrique de l\'Ouest et Centrale, nous apportons un conseil stratégique ancré dans les réalités africaines et les exigences de conformité BCEAO.',
+    vision: 'Notre Vision',
+    visionText: 'Être le partenaire de référence en conseil stratégique, gouvernance d\'entreprise et inclusion financière en Afrique de l\'Ouest et en Afrique Centrale, reconnu pour notre excellence en audit financier, notre expertise en transformation digitale et notre expérience internationale — notamment au Gabon où notre fondateur a dirigé des institutions de microfinance de premier plan.',
+    interventions: 'Domaines d\'Expertise',
+    intervention1: 'Pilotage financier, audit financier & appui à la Direction Générale',
+    intervention2: 'Structuration financière, levée de fonds et suivi des financements',
+    intervention3: 'Analyse de rentabilité, modélisation financière avancée et expertise comptable',
+    intervention4: 'Audit financier, contrôle interne, conformité réglementaire et conformité BCEAO',
+    intervention5: 'Gestion des risques financiers, opérationnels et stratégiques (ERM)',
+    intervention6: 'Gouvernance d\'entreprise, conseil stratégique et restructuration organisationnelle',
+    intervention7: 'Direction de la démarche d\'agrément d\'Atlantique Microfinance (AMIFA) au Gabon, conformément aux règlements COBAC ; déploiement des activités de microfinance et d\'inclusion financière du Groupe Banque Populaire (filiale : Atlantique Microfinance – GABON)',
+    intervention8: 'Périmètre d\'intervention : Togo, Gabon, Afrique de l\'Ouest et Centrale',
+    cta: 'En savoir plus sur notre approche',
+    mapTitle: 'Périmètre d\'intervention',
+    mapSubtitle: 'Togo · Gabon · Afrique de l\'Ouest et Centrale',
+    ctaSection: {
+      title: 'Prêt à transformer votre organisation ?',
+      description: 'Demandez un diagnostic stratégique gratuit. Nos experts analysent vos défis et vous proposent un plan d\'action adapté à vos enjeux.',
+      contact: 'Demander un diagnostic stratégique',
+      brochure: 'Télécharger la brochure',
+      subtitle: 'Diagnostic gratuit · Sans engagement · Réponse sous 24h',
+    },
+    founder: {
+      badge: 'Parcours professionnel',
+      title: 'Un cabinet né d\'une expertise terrain',
+      subtitle: 'KHEPRA EXPERTS a été fondé en 2026 à Lomé, Togo, fort de plus de 22 ans d\'expérience au sein d\'institutions financières, de gouvernements et d\'organisations internationales en Afrique.',
+      education1: { title: 'Maîtrise en Sciences de Gestion', institution: 'Université de Lomé, Togo' },
+      experience1: { title: 'Inspecteur Contrôleur des SFD', institution: 'Ministère des Finances, Togo', description: 'Supervision de plus de 50 institutions de microfinance sur l\'ensemble du territoire. Inspections sur place selon la méthodologie CAMELS, émission de rapports de recommandations formelles et contrôle de la conformité à la Loi PARMEC et au cadre UEMOA.', metric1: 'SFD supervisés', metric2: 'Méthodologie', metric3: 'Conformité' },
+      experience2: { title: 'Auditeur Senior & Chef de mission', institution: 'FINAM — Gabon', description: 'Conduite de missions d\'audit financier, de conformité et opérationnel sur un réseau de 14 agences. Approche basée sur les risques (référentiel COSO) ; plus de 120 recommandations soumises à la Direction Générale et au Conseil d\'Administration.', metric1: 'Agences auditées', metric2: 'Recommandations', metric3: 'Approche' },
+      experience3: { title: 'Directeur Général', institution: 'Atlantique Microfinance (AMIFA) — Gabon', description: 'Obtention de l\'agrément COBAC et lancement opérationnel d\'AMIFA au Gabon. Construction du cadre institutionnel, management de plus de 30 collaborateurs et atteinte des objectifs de qualité de portefeuille sous supervision COBAC.', metric1: 'Agrément obtenu', metric2: 'Collaborateurs', metric3: 'Lancement' },
+      education2: { title: 'MBA en Gestion des Entreprises', institution: 'Université Laval, Canada' },
+      experience4: { title: 'Conseiller Technique National', institution: 'Ministère de l\'Inclusion Financière, Togo', description: 'Pilotage des réformes nationales d\'inclusion financière en coordination avec la BCEAO et l\'UEMOA. Co-rédaction de la Stratégie Nationale d\'Inclusion Financière (SNIF), instruction de 12 dossiers d\'agrément SFD et coordination de 8 groupes de travail techniques.', metric1: 'Taux d\'inclusion', metric2: 'Agréments instruits', metric3: 'Textes en Conseil' },
+      experience5: { title: 'Expert Senior & Chef de mission', institution: 'Synergie Finance SA — Togo & Afrique', description: 'Diagnostic organisationnel complet d\'une structure faîtière de microfinance. Livraison d\'un manuel de procédures révisé, d\'une cartographie des risques et d\'une boîte à outils de supervision du réseau, validés par le Conseil d\'Administration.', metric1: 'Manuel de procédures', metric2: 'Cartographie des risques', metric3: 'Plan triennal validé' },
+      current: { year: 'Depuis 2026', title: 'Directeur Associé & Fondateur', institution: 'KHEPRA EXPERTS — Togo & Afrique', description: 'Création d\'un cabinet panafricain spécialisé en audit financier, gouvernance et inclusion financière, fort de plus de 22 ans d\'expérience terrain en Afrique de l\'Ouest et Centrale.', metric1: 'Fondé', metric2: 'Zone CEMAC', metric3: 'Ans d\'expérience' },
+      name: 'SIMDA Essoyomèwè',
+      bio: 'Directeur Associé et Fondateur de KHEPRA EXPERTS, il cumule plus de 22 ans d\'expérience en audit financier, gouvernance d\'entreprise, inclusion financière et transformation organisationnelle en Afrique de l\'Ouest et Centrale. Son parcours exceptionnel l\'a conduit du Ministère des Finances du Togo au Gabon, où il a dirigé Atlantique Microfinance (AMIFA), avant de devenir Conseiller Technique National en Inclusion Financière auprès du gouvernement togolais.',
+      expertise: { 1: 'Gouvernance & Audit Financier', 2: 'Inclusion Financière & Fintech', 3: 'Transformation Organisationnelle' },
+      timeline: {
+        1: { title: 'Inspecteur & Auditeur Senior', description: 'Supervision de 50+ institutions de microfinance au Togo (Ministère des Finances) et conduite de missions d\'audit financier sur 14 agences au Gabon (FINAM). Méthodologie CAMELS et approche COSO.' },
+        2: { title: 'Directeur Général — AMIFA Gabon', description: 'Obtention de l\'agrément COBAC et lancement opérationnel d\'Atlantique Microfinance au Gabon. Management de 30+ collaborateurs, atteinte des objectifs de qualité de portefeuille sous supervision COBAC.' },
+        3: { title: 'Conseiller Technique National & Fondateur KHEPRA', description: 'Co-rédaction de la Stratégie Nationale d\'Inclusion Financière du Togo (SNIF), puis création de KHEPRA EXPERTS — cabinet panafricain spécialisé en audit, gouvernance et transformation.', present: 'Aujourd\'hui' },
+      },
+      cta: { title: 'Une expertise au service de votre transformation', description: 'Découvrez comment notre expérience terrain peut accompagner votre institution vers l\'excellence opérationnelle et la conformité réglementaire.', button: 'Découvrir nos services' },
+    },
+  },
+
+  aboutHero: {
+    badge: 'Cabinet de conseil stratégique',
+    title: 'Partenaire de confiance pour vos décisions stratégiques en Afrique',
+    description: 'KHEPRA EXPERTS accompagne les entreprises, investisseurs et institutions dans leurs décisions critiques : gouvernance, conformité, gestion des risques et transformation organisationnelle.',
+    ctaDiagnostic: 'Demander un diagnostic stratégique',
+    ctaBooking: 'Prendre rendez-vous',
+    ctaExpert: 'Parler à un expert',
+  },
+
+  aboutPresence: {
+    badge: 'Notre Présence', title: 'Actifs dans 20+ pays africains',
+    description: 'Basés à Lomé, Togo, KHEPRA EXPERTS intervient dans toute l\'Afrique de l\'Ouest et Centrale, avec une connaissance approfondie des contextes réglementaires, économiques et culturels locaux.',
+    westAfrica: 'Afrique de l\'Ouest', centralAfrica: 'Afrique Centrale',
+    headquarters: 'Siège social', headquartersLocation: 'Lomé, Togo — Afrique de l\'Ouest',
+    imageAlt: 'Carte de présence KHEPRA EXPERTS — Afrique de l\'Ouest et Centrale',
+  },
+
+  aboutCTA: {
+    badge: 'Démarrez votre transformation', title: 'Prêt à transformer votre organisation ?',
+    description: 'Demandez un diagnostic stratégique gratuit. Nos experts analysent vos défis et vous proposent un plan d\'action adapté à vos enjeux.',
+    benefits: { confidential: 'Échange confidentiel et sécurisé', response: 'Réponse sous 24 heures ouvrées', actionPlan: 'Plan d\'action personnalisé', expert: 'Expert senior dédié' },
+    ctaDiagnostic: 'Demander un diagnostic stratégique', ctaServices: 'Nos services', ctaBrochure: 'Télécharger la brochure',
+    contactTitle: 'Nous contacter', contactEmail: 'E-mail', contactPhone: 'Téléphone', contactAddress: 'Adresse', contactLinkedIn: 'LinkedIn',
+  },
+
+  aboutExpertise: {
+    badge: 'Domaines d\'expertise', title: 'Nos compétences clés',
+    description: 'Six domaines d\'expertise pour accompagner votre organisation à chaque étape de son développement.',
+    domains: {
+      governance: { title: 'Gouvernance d\'entreprise', description: 'Structuration des organes de gouvernance, conseil d\'administration, politiques de conformité et gestion des parties prenantes.', tags: ['Conseil d\'administration', 'Conformité', 'Parties prenantes'] },
+      financial: { title: 'Expertise Financière & Audit', description: 'Audit financier, contrôle interne, due diligence et évaluation d\'entreprise pour sécuriser vos décisions stratégiques.', tags: ['Audit', 'Due Diligence', 'Contrôle interne'] },
+      risk: { title: 'Gestion des Risques', description: 'Identification, évaluation et atténuation des risques opérationnels, financiers et stratégiques.', tags: ['ERM', 'Évaluation', 'Atténuation'] },
+      strategy: { title: 'Conseil Stratégique', description: 'Élaboration de stratégies de croissance, plans d\'affaires, études de marché et accompagnement à la levée de fonds.', tags: ['Stratégie', 'Business Plan', 'Levée de fonds'] },
+      digital: { title: 'Transformation Digitale', description: 'Digitalisation des processus, mise en place d\'outils de gestion et accompagnement au changement technologique.', tags: ['Digitalisation', 'Conduite du changement', 'Innovation'] },
+      incubation: { title: 'Incubation & Accompagnement', description: 'Accompagnement des startups et PME : structuration, modèle économique, recherche de financement et développement commercial.', tags: ['Startups', 'PME', 'Financement'] },
+    },
+    ctaExplore: 'Explorer tous nos services',
+  },
+
+  whyKhepra: {
+    badge: 'Pourquoi nous choisir', title: 'Pourquoi KHEPRA ?',
+    subtitle: 'Ce qui nous distingue fondamentalement des autres cabinets de conseil en Afrique.',
+    differentiators: {
+      local: { tag: 'Ancrage local', title: 'Une expertise forgée sur le terrain africain', description: 'Contrairement aux grands cabinets internationaux qui appliquent des modèles standardisés, KHEPRA intervient avec une connaissance intime des réalités réglementaires, culturelles et économiques d\'Afrique de l\'Ouest et Centrale.', proof: '20+ pays couverts · Présence terrain au Togo, Bénin, Côte d\'Ivoire', highlights: ['Maîtrise des cadres OHADA, UEMOA, CEMAC', 'Réseau d\'experts locaux dans chaque pays', 'Approche adaptée aux PME et SFD africains'] },
+      expertise: { tag: 'Spécialisation sectorielle', title: 'La seule expertise combinant gouvernance, audit et inclusion financière', description: 'KHEPRA est le seul cabinet de la région à maîtriser simultanément la gouvernance d\'entreprise, l\'audit financier certifié et l\'accompagnement des institutions de microfinance — trois piliers indissociables pour une transformation durable.', proof: '50+ clients accompagnés · Taux de satisfaction 97 %', highlights: ['Triple expertise : gouvernance · audit · microfinance', 'Consultants certifiés (CPA, CGAP, COSO)', 'Méthodologies propriétaires éprouvées'] },
+      results: { tag: 'Résultats mesurables', title: 'Des recommandations qui se traduisent en résultats concrets', description: 'Chaque mission KHEPRA est pilotée par des indicateurs de performance définis en amont. Nous ne livrons pas des rapports — nous livrons des transformations mesurables avec un suivi post-mission systématique.', proof: '22+ ans d\'expérience · ROI moyen ×3 sur nos missions', highlights: ['KPIs définis avant chaque mission', 'Suivi post-mission à 3, 6 et 12 mois', 'Rapport d\'impact chiffré remis au client'] },
+    },
+    ctaLabel: 'Prêt à passer à l\'action ?', ctaTitle: 'Discutons de votre projet',
+    ctaDescription: 'Un premier échange de 30 minutes suffit pour identifier les leviers de transformation de votre organisation.',
+    ctaButton: 'Réserver un diagnostic gratuit',
+  },
+
+  team: {
+    title: 'Notre équipe',
+    subtitle: 'Des experts en conseil stratégique, audit financier, gouvernance et transformation digitale au service de votre réussite',
+    founder: 'Directeur Associé',
+    founderBio: 'Directeur Associé et Fondateur de KHEPRA EXPERTS, SIMDA Essoyomèwè est spécialisé en gouvernance d\'entreprise (Corporate Governance), gestion des risques (Enterprise Risk Management — ERM), inclusion financière et digitale, audit financier et conseil stratégique. Titulaire d\'un MBA en Gestion des Entreprises (Université Laval, 2018) et d\'une Maîtrise en Sciences de Gestion (Université de Lomé, 2003), il cumule plus de 22 ans d\'expérience terrain en Afrique de l\'Ouest et Centrale. Son parcours l\'a conduit au Gabon, où il a exercé comme Auditeur Senior à la FINAM, puis comme Directeur Général d\'Atlantique Microfinance — AMIFA. De retour au Togo, il a occupé le poste de Conseiller Technique National en Inclusion Financière auprès du Ministère chargé de l\'Inclusion Financière, où il a joué un rôle central dans la co-rédaction de la Stratégie Nationale d\'Inclusion Financière (SNIF) du Togo. Il accompagne aujourd\'hui les PME, institutions de microfinance et organisations dans la gouvernance d\'entreprise, la gestion des risques, l\'audit financier, la conformité BCEAO et la structuration financière.',
+    consultant1: 'Consultant Senior en Gouvernance & Risques | Inclusion Financière & Digitale | Conseil Stratégique',
+    consultant1Bio: 'Disponible pour des missions de conseil stratégique, audit financier, gouvernance d\'entreprise, collaborations stratégiques et projets à fort impact en Afrique.',
+    consultant2: 'Consultant en Stratégie',
+    consultant2Bio: 'Expert en conseil stratégique, transformation digitale et innovation. Accompagne les startups, PME et institutions de microfinance dans leur croissance, leur gouvernance et leur transformation digitale.',
+    consultant3: 'Consultante RH',
+    consultant3Bio: 'Spécialiste en gestion des ressources humaines, audit social, conformité RH et renforcement des capacités. 10 ans d\'expérience en formation, coaching et conseil stratégique RH.',
+  },
+
+  expertise: {
+    title: 'Nos domaines d\'expertise',
+    subtitle: 'Des solutions spécialisées pour chaque secteur, ancrées dans les réalités africaines',
+    microfinance: { title: 'Microfinance & SFD', description: 'Conformité BCEAO, gouvernance institutionnelle, gestion des risques et transformation digitale pour les institutions de microfinance.' },
+    fintech: { title: 'Fintech & Inclusion Digitale', description: 'Stratégie, conformité réglementaire, obtention d\'agréments et levée de fonds pour les startups fintech africaines.' },
+    pme: { title: 'PME & Startups', description: 'Conseil stratégique, gouvernance d\'entreprise, structuration financière et accompagnement à la croissance.' },
+    public: { title: 'Secteur Public', description: 'Conception de stratégies nationales d\'inclusion financière et renforcement des capacités institutionnelles.' },
+  },
+};
+
+export default about;

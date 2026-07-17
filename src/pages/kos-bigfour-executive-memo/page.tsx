@@ -1,0 +1,820 @@
+import { useState } from 'react';
+import KOSHubLayout from '@/components/feature/KOSHubLayout';
+import { supabase } from '@/lib/supabase';
+import { kosBigFourMemoMockHistory, kosBigFourMemoQuickQueries } from '@/mocks/kosBigFourExecutiveMemo';
+import { PDFDownloadLink, BlobProvider } from '@react-pdf/renderer';
+import { KOSMemoPDFDocument } from '@/pages/kos-bigfour-executive-memo/components/KOSMemoPDFDocument';
+
+type Tab = 'generate' | 'history';
+
+// --- Types ---
+interface RAGFreshness {
+  total_sources: number;
+  regulatory_sources: number;
+  fresh_sources: number;
+  avg_age_months: number;
+  coverage_pct: number;
+}
+
+interface RAGSource {
+  title: string;
+  content: string;
+  source: string;
+  score: number;
+  authority?: string;
+  date_pub?: string;
+  age_months?: number;
+  reference?: string;
+}
+
+interface RAGPenalty {
+  authority: string;
+  article: string;
+  penalty_min: number;
+  penalty_max: number;
+  type: string;
+}
+
+interface RAGAnswer {
+  executive_summary: string;
+  context: { objectif: string; perimetre: string; date: string };
+  constats: Array<{ title?: string; content: string; source?: string; score?: number; authority?: string; reference?: string; age_months?: number }>;
+  risques: string;
+  penalties: RAGPenalty[];
+  recommandations: Array<{ p: string; action: string; delai: string; cout: number }>;
+  decision: string;
+  freshness: RAGFreshness;
+}
+
+interface RAGRawResponse {
+  answer: string;
+  sources: RAGSource[];
+  penalties: RAGPenalty[];
+  freshness: RAGFreshness;
+  confidence: number;
+  model: string;
+  coverage: string;
+  qa_flag: string;
+}
+
+interface MemoRisk {
+  type: string;
+  niveau: string;
+  mitigation: string;
+}
+
+interface MemoRecommendation {
+  priorite: string;
+  action: string;
+  delai: string;
+  impact: string;
+  cout_fcfa: number;
+}
+
+interface Memo {
+  memo_id: string;
+  memo_code: string;
+  executive_summary: string;
+  context: { objectif: string; perimetre: string; date: string; documents_analyses: number };
+  findings: Array<{ texte: string; source: string; reference: string; confiance: string; article: string }>;
+  risks: MemoRisk[];
+  recommendations: MemoRecommendation[];
+  decision_required: boolean;
+  qa_score: number;
+  confidence: number;
+  confidence_level: string;
+  qa_flag: string;
+  freshness: RAGFreshness;
+  penalties: RAGPenalty[];
+  agents: string[];
+  sources_count: number;
+  regulatory_sources_count: number;
+  model: string;
+  compliance: string;
+  decision: string;
+  mode: 'live' | 'mock';
+}
+
+export default function KOSBigFourExecutiveMemoPage() {
+  const [activeTab, setActiveTab] = useState<Tab>('generate');
+  const [query, setQuery] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [currentMemo, setCurrentMemo] = useState<Memo | null>(null);
+  const [history, setHistory] = useState<Memo[]>(kosBigFourMemoMockHistory as Memo[]);
+  const [selectedHistoryMemo, setSelectedHistoryMemo] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [showPdfPreview, setShowPdfPreview] = useState(false);
+
+  const tabs = [
+    { key: 'generate' as Tab, label: 'Générer un Memo', icon: 'ri-edit-line' },
+    { key: 'history' as Tab, label: 'Historique', icon: 'ri-history-line' },
+  ];
+
+  const handleGenerate = async () => {
+    if (!query.trim() || isGenerating) return;
+    setIsGenerating(true);
+    setErrorMessage(null);
+    setCurrentMemo(null);
+
+    try {
+      // --- LIVE MODE: appel réel au RAG V4.1 ---
+      const { data: ragData, error: rpcError } = await supabase.rpc('kos_local_rag_v4', {
+        p_query: query,
+        p_limit: 10,
+      });
+
+      if (rpcError || !ragData) throw new Error(rpcError?.message || 'RPC returned empty');
+
+      const raw = ragData as unknown as RAGRawResponse;
+
+      let parsedAnswer: RAGAnswer;
+      try {
+        parsedAnswer = typeof raw.answer === 'string' ? JSON.parse(raw.answer) : raw.answer;
+      } catch {
+        throw new Error('Failed to parse RAG answer');
+      }
+
+      const findings = (raw.sources || []).map((s) => ({
+        texte: s.content?.slice(0, 500) || s.title || '',
+        source: s.authority || s.source || 'Inconnu',
+        reference: s.reference || s.title?.slice(0, 50) || 'N/A',
+        confiance: (s.score || 0) > 8 ? 'HIGH' : (s.score || 0) > 5 ? 'MEDIUM' : 'LOW',
+        article: 'N/A',
+      }));
+
+      const risquesLines = (parsedAnswer.risques || '').split(/[•\n]/).map((l: string) => l.trim()).filter(Boolean);
+      const risks: MemoRisk[] = risquesLines.length > 0
+        ? risquesLines.map((line: string) => {
+            const isHigh = /ÉLEVÉ|CRITIQUE|NO-GO/i.test(line);
+            return { type: line.slice(0, 60), niveau: isHigh ? 'ÉLEVÉ' : 'MODÉRÉ', mitigation: line };
+          })
+        : [{ type: 'Aucun risque critique détecté', niveau: 'MAÎTRISÉ', mitigation: 'Validation conforme selon corpus réglementaire' }];
+
+      const recommendations: MemoRecommendation[] = (parsedAnswer.recommandations || []).map((r) => ({
+        priorite: r.p,
+        action: r.action,
+        delai: r.delai,
+        impact: r.p === 'P1' ? 'Critique' : r.p === 'P2' ? 'Élevé' : 'Modéré',
+        cout_fcfa: r.cout || 0,
+      }));
+
+      const confidenceNum = raw.confidence || 0;
+      const qaFlag = raw.qa_flag || 'OK';
+      const confidenceLevel = confidenceNum >= 0.80 ? 'HIGH' : confidenceNum >= 0.50 ? 'MEDIUM' : 'LIMITED';
+      const penaltyMax = (raw.penalties || []).reduce((max: number, p: RAGPenalty) => Math.max(max, p.penalty_max || 0), 0);
+      const isNoGo = penaltyMax > 100000000 || (raw.freshness?.fresh_sources || 0) < 3;
+
+      const fallbackRecs = (pmax: number): MemoRecommendation[] => [
+        { priorite: 'P1', action: 'Validation conformité textes identifiés', delai: 'Immédiat', impact: 'Élevé', cout_fcfa: pmax },
+        { priorite: 'P2', action: 'Provision risque réglementaire', delai: '30 jours', impact: 'Élevé', cout_fcfa: Math.floor(pmax * 0.3) },
+        { priorite: 'P3', action: 'Audit conformité complet', delai: '90 jours', impact: 'Modéré', cout_fcfa: Math.floor(pmax * 0.1) },
+        { priorite: 'P4', action: 'Veille réglementaire automatisée', delai: '6 mois', impact: 'Modéré', cout_fcfa: Math.floor(pmax * 0.05) },
+      ];
+
+      const newMemo: Memo = {
+        memo_id: `memo-${Date.now()}`,
+        memo_code: `KOS-MEMO-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`,
+        executive_summary: parsedAnswer.executive_summary || raw.coverage || '',
+        context: {
+          objectif: parsedAnswer.context?.objectif || `Analyse réglementaire ${query}`,
+          perimetre: parsedAnswer.context?.perimetre || 'Multi-juridictionnel',
+          date: new Date().toLocaleDateString('fr-FR'),
+          documents_analyses: raw.freshness?.total_sources || raw.sources?.length || 0,
+        },
+        findings,
+        risks,
+        recommendations: recommendations.length > 0 ? recommendations : fallbackRecs(penaltyMax),
+        decision_required: isNoGo || qaFlag === 'NO_REGULATORY_SOURCE',
+        qa_score: Math.round(confidenceNum * 100),
+        confidence: Math.round(confidenceNum * 100) / 100,
+        confidence_level: confidenceLevel,
+        qa_flag: qaFlag,
+        freshness: raw.freshness || { total_sources: 0, regulatory_sources: 0, fresh_sources: 0, avg_age_months: 0, coverage_pct: 0 },
+        penalties: raw.penalties || [],
+        agents: ['Hermes-Orchestrator', 'BigFour-SOC2', 'BigFour-ISO27001', 'RegTech-BCEAO'],
+        sources_count: raw.freshness?.total_sources || raw.sources?.length || 0,
+        regulatory_sources_count: raw.freshness?.regulatory_sources || 0,
+        model: raw.model || 'kos-automaton-native-v4.1',
+        compliance: 'ISO 27001/42001 • SOC2 • RGPD • ISO 42001',
+        decision: parsedAnswer.decision || (isNoGo ? 'NO-GO : Risque réglementaire > 100M FCFA. Action immédiate requise.' : 'GO : Risque maîtrisé.'),
+        mode: 'live' as const,
+      };
+
+      setCurrentMemo(newMemo);
+      setHistory((prev) => [newMemo, ...prev]);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Erreur inconnue';
+      console.warn('[KOS Memo] Live RPC failed, falling back to mock engine:', msg);
+      setErrorMessage('Mode dégradé : données simulées (Edge Function indisponible). Résultats basés sur le moteur mock V4.1.');
+      generateMockMemo(query);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const generateMockMemo = (searchQuery: string) => {
+    const isBCEAO = searchQuery.includes('BCEAO') || searchQuery.includes('UEMOA');
+    const isCOBAC = searchQuery.includes('COBAC') || searchQuery.includes('CEMAC');
+    const perimetre = isBCEAO ? 'UEMOA' : isCOBAC ? 'CEMAC' : searchQuery.includes('GAFI') ? 'GAFI/FATF' : searchQuery.includes('OHADA') ? 'OHADA' : 'Multi-juridictionnel';
+
+    const regSources = isBCEAO ? Math.floor(Math.random() * 15 + 8) : isCOBAC ? Math.floor(Math.random() * 10 + 5) : Math.floor(Math.random() * 7 + 3);
+    const freshSources = Math.floor(regSources * (Math.random() * 0.4 + 0.4));
+    const avgAge = Math.floor(Math.random() * 30 + 5);
+    const coverage = Math.round((regSources / 57) * 100);
+
+    const penaltyMax = isBCEAO ? 500000000 : isCOBAC ? 750000000 : 2000000000;
+    const isNoGo = penaltyMax > 100000000 || freshSources < 3;
+    const qaFlag = freshSources < 3 ? 'NO_REGULATORY_SOURCE' : avgAge > 24 ? 'CONDITIONAL_GO' : 'OK';
+    const confidenceNum = qaFlag === 'OK' ? (Math.random() * 0.1 + 0.85) : qaFlag === 'CONDITIONAL_GO' ? (Math.random() * 0.2 + 0.55) : (Math.random() * 0.2 + 0.20);
+    const confidenceLevel = confidenceNum >= 0.80 ? 'HIGH' : confidenceNum >= 0.50 ? 'MEDIUM' : 'LIMITED';
+
+    const decision = isNoGo
+      ? `NO-GO : Risque réglementaire > 100M FCFA (${penaltyMax.toLocaleString('fr-FR')} FCFA max). Action immédiate requise.`
+      : freshSources < 5
+        ? 'CONDITIONAL GO : Base documentaire partiellement obsolète. Mettre à jour KB avant décision finale.'
+        : `GO : Risque maîtrisé sous réserve P1. Budget provision : ${(penaltyMax * 0.3).toLocaleString('fr-FR')} FCFA.`;
+
+    const penalties = [
+      { authority: isBCEAO ? 'BCEAO' : 'COBAC', article: isBCEAO ? 'Circulaire 03-2017' : 'R-2018/03', penalty_min: Math.floor(penaltyMax * 0.1), penalty_max: penaltyMax, type: 'AMENDE' },
+    ];
+
+    const mockMemo: Memo = {
+      memo_id: `memo-${Date.now()}`,
+      memo_code: `KOS-MEMO-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`,
+      executive_summary: `Analyse ${perimetre} : ${regSources + Math.floor(Math.random() * 8 + 3)} documents identifiés dont ${regSources} réglementaires. ${freshSources} sources fraîches (< 24 mois). ${penalties.length} pénalité${penalties.length > 1 ? 's' : ''} détectée${penalties.length > 1 ? 's' : ''}. Risque max : ${penaltyMax.toLocaleString('fr-FR')} FCFA. Décision : ${decision.split(' :')[0]}.`,
+      context: {
+        objectif: `Analyse réglementaire ${searchQuery}`,
+        perimetre,
+        date: new Date().toLocaleDateString('fr-FR'),
+        documents_analyses: regSources + Math.floor(Math.random() * 8 + 3),
+      },
+      findings: [
+        { texte: `Texte principal ${perimetre} : Dispositions relatives à ${searchQuery.slice(0, 40)}. Obligations de conformité documentées...`, source: isBCEAO ? 'BCEAO' : isCOBAC ? 'COBAC' : 'UEMOA', reference: isBCEAO ? 'Circulaire 03-2017' : isCOBAC ? 'R-2017/01' : 'Directive 02/2015', confiance: 'HIGH', article: `Art. ${Math.floor(Math.random() * 20 + 3)}` },
+        { texte: `Instruction technique ${perimetre} : Modalités d'application du dispositif de ${searchQuery.slice(0, 30)}...`, source: isBCEAO ? 'BCEAO' : 'BEAC', reference: `Instruction 00${Math.floor(Math.random() * 9 + 1)}`, confiance: 'HIGH', article: `Art. ${Math.floor(Math.random() * 15 + 2)}` },
+        { texte: `Règlement additionnel : Exigences relatives à la gestion des ${searchQuery.slice(0, 25)} dans le secteur financier...`, source: isBCEAO ? 'UEMOA' : 'COBAC', reference: isBCEAO ? 'Directive 02/2015' : 'R-2020/02', confiance: 'MEDIUM', article: `Art. ${Math.floor(Math.random() * 12 + 1)}` },
+      ],
+      risks: [
+        { type: 'Non-conformité réglementaire', niveau: isNoGo ? 'ÉLEVÉ' : 'MAÎTRISÉ', mitigation: 'Audit ciblé sur textes identifiés' },
+        { type: 'Obsolescence réglementaire', niveau: avgAge > 24 ? 'ÉLEVÉ' : 'MODÉRÉ', mitigation: `${freshSources}/${regSources} sources < 24 mois — ${freshSources < 5 ? 'KB obsolète, enrichir urgemment' : 'acceptable'}` },
+        { type: 'Risque financier', niveau: penaltyMax > 500000000 ? 'CRITIQUE' : 'ÉLEVÉ', mitigation: `Amende max ${penaltyMax.toLocaleString('fr-FR')} FCFA — provision obligatoire` },
+      ],
+      recommendations: [
+        { priorite: 'P1', action: 'Validation conformité textes identifiés', delai: 'Immédiat', impact: 'Élevé', cout_fcfa: penaltyMax },
+        { priorite: 'P2', action: `Gap analysis vs exigences ${perimetre}`, delai: '1-3 mois', impact: 'Élevé', cout_fcfa: Math.floor(penaltyMax * 0.3) },
+        { priorite: 'P3', action: 'Veille automatisée réglementaire', delai: '3-6 mois', impact: 'Modéré', cout_fcfa: Math.floor(penaltyMax * 0.1) },
+        { priorite: 'P4', action: 'Documentation procédures', delai: '6-12 mois', impact: 'Modéré', cout_fcfa: Math.floor(penaltyMax * 0.05) },
+      ],
+      decision_required: isNoGo,
+      qa_score: Math.floor(confidenceNum * 100),
+      confidence: Math.round(confidenceNum * 100) / 100,
+      confidence_level: confidenceLevel,
+      qa_flag: qaFlag,
+      freshness: {
+        total_sources: regSources + Math.floor(Math.random() * 8 + 3),
+        regulatory_sources: regSources,
+        fresh_sources: freshSources,
+        avg_age_months: avgAge,
+        coverage_pct: coverage,
+      },
+      penalties,
+      agents: ['Hermes-Orchestrator', 'BigFour-SOC2', 'BigFour-ISO27001', 'RegTech-BCEAO'],
+      sources_count: regSources + Math.floor(Math.random() * 8 + 3),
+      regulatory_sources_count: regSources,
+      model: 'kos-automaton-native-v4.1',
+      compliance: 'ISO 27001/42001 • SOC2 • RGPD • ISO 42001',
+      decision,
+      mode: 'mock' as const,
+    };
+
+    setCurrentMemo(mockMemo);
+    setHistory((prev) => [mockMemo, ...prev]);
+  };
+
+  const riskLevelColors: Record<string, string> = {
+    MAÎTRISÉ: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    MAITRISE: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    MODÉRÉ: 'bg-amber-50 text-amber-700 border-amber-200',
+    MODERE: 'bg-amber-50 text-amber-700 border-amber-200',
+    ÉLEVÉ: 'bg-red-50 text-red-700 border-red-200',
+    ELEVE: 'bg-red-50 text-red-700 border-red-200',
+    CRITIQUE: 'bg-red-100 text-red-800 border-red-300',
+    'À VÉRIFIER': 'bg-amber-50 text-amber-700 border-amber-200',
+    'A VERIFIER': 'bg-amber-50 text-amber-700 border-amber-200',
+    CONDITIONAL: 'bg-amber-50 text-amber-700 border-amber-200',
+  };
+
+  const confidenceColors: Record<string, string> = {
+    HIGH: 'bg-emerald-100 text-emerald-800',
+    MEDIUM: 'bg-amber-100 text-amber-800',
+    LIMITED: 'bg-red-100 text-red-800',
+  };
+
+  const priorityColors: Record<string, string> = {
+    P1: 'bg-red-100 text-red-800 border-red-300',
+    P2: 'bg-amber-100 text-amber-800 border-amber-300',
+    P3: 'bg-blue-100 text-blue-800 border-blue-300',
+    P4: 'bg-background-100 text-foreground-600 border-background-300',
+  };
+
+  const qaFlagConfig: Record<string, { color: string; label: string; icon: string }> = {
+    OK: { color: 'bg-emerald-100 text-emerald-800 border-emerald-300', label: 'QA OK — Sources réglementaires validées', icon: 'ri-check-double-line' },
+    CONDITIONAL_GO: { color: 'bg-amber-100 text-amber-800 border-amber-300', label: 'QA CONDITIONAL — Base partiellement obsolète', icon: 'ri-alert-line' },
+    NO_REGULATORY_SOURCE: { color: 'bg-red-100 text-red-800 border-red-300', label: 'QA ALERT — Aucune source réglementaire détectée', icon: 'ri-close-circle-line' },
+  };
+
+  return (
+    <KOSHubLayout hubId={129}>
+      <div className="min-h-screen bg-background-50">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 py-8">
+          {/* Header */}
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-2 flex-wrap">
+              <span className="px-3 py-1 rounded-full text-xs font-semibold bg-foreground-950 text-background-50 whitespace-nowrap">KOS REGTECH AI — BIG FOUR SUPREME</span>
+              <span className="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 whitespace-nowrap">V4.1 — RAG Corpus Réglementaire 57 textes</span>
+              <span className="px-3 py-1 rounded-full text-xs font-semibold bg-primary-100 text-primary-800 whitespace-nowrap">Memo Board Niveau COMEX</span>
+            </div>
+            <h1 className="text-3xl md:text-4xl font-bold text-foreground-950 font-heading">KOS REGTECH AI — Executive Memo Engine V4.1</h1>
+            <p className="text-foreground-600 mt-2 max-w-3xl">Générateur de mémos exécutifs format Big Four — QA Flag + Confidence chiffrée + Décision GO/NO-GO. Alimenté par le RAG KOS Native V4.1 (57 textes BCEAO/COBAC/OHADA/BEAC/UEMOA).</p>
+          </div>
+
+          {/* Tabs */}
+          <div className="flex flex-wrap gap-1 mb-6 bg-background-100 rounded-full p-1 w-fit">
+            {tabs.map((tab) => (
+              <button key={tab.key} onClick={() => setActiveTab(tab.key)} className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors cursor-pointer ${activeTab === tab.key ? 'bg-background-50 text-foreground-950 shadow-sm' : 'text-foreground-600 hover:text-foreground-900'}`}>
+                <i className={tab.icon} />{tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Generate Tab */}
+          {activeTab === 'generate' && (
+            <div className="space-y-8">
+              {/* Query Input */}
+              <div className="bg-background-50 border border-background-200/70 rounded-xl p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <i className="ri-brain-line text-lg text-primary-600 w-5 h-5 flex items-center justify-center" />
+                  <span className="font-semibold text-foreground-950 text-sm">KOS REGTECH AI V4.1 — Saisir une question réglementaire</span>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <input
+                    type="text"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleGenerate()}
+                    placeholder="Ex: contrôle interne BCEAO, agrément microfinance COBAC, LCB/FT GAFI..."
+                    className="flex-1 bg-background-100 border border-background-200/70 rounded-lg px-4 py-3 text-sm text-foreground-950 placeholder-foreground-400 focus:outline-none focus:border-primary-400"
+                  />
+                  <button onClick={handleGenerate} disabled={isGenerating || !query.trim()} className="bg-primary-500 hover:bg-primary-600 disabled:opacity-50 text-background-50 px-6 py-3 rounded-lg text-sm font-semibold cursor-pointer whitespace-nowrap transition-colors flex items-center gap-2">
+                    {isGenerating ? (
+                      <><i className="ri-loader-4-line animate-spin" />Génération en cours...</>
+                    ) : (
+                      <><i className="ri-file-text-line" />Générer le Memo</>
+                    )}
+                  </button>
+                </div>
+                <div className="flex flex-wrap gap-2 mt-4">
+                  <span className="text-xs text-foreground-500 pt-1">Suggestions :</span>
+                  {kosBigFourMemoQuickQueries.slice(0, 6).map((q) => (
+                    <button key={q.label} onClick={() => setQuery(q.query)} className="px-2.5 py-1 rounded-full text-xs bg-background-100 text-foreground-600 hover:text-foreground-900 hover:bg-background-200/70 cursor-pointer whitespace-nowrap transition-colors">{q.label}</button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Loading State */}
+              {isGenerating && (
+                <div className="bg-background-50 border border-background-200/70 rounded-xl p-10 text-center">
+                  <div className="inline-flex items-center gap-3 mb-4">
+                    <i className="ri-loader-4-line animate-spin text-2xl text-primary-600 w-6 h-6 flex items-center justify-center" />
+                    <span className="text-foreground-700 font-semibold">Analyse RAG KOS Native V4.1 en cours...</span>
+                  </div>
+                  <div className="text-sm text-foreground-500">Scan des 57 textes réglementaires BCEAO/COBAC/OHADA/BEAC/UEMOA — Corpus officiel</div>
+                  <div className="mt-4 flex justify-center gap-2 flex-wrap">
+                    {['Hermes-Orchestrator', 'BigFour-SOC2', 'BigFour-ISO27001', 'RegTech-BCEAO'].map((agent) => (
+                      <span key={agent} className="px-2.5 py-1 rounded-full text-xs bg-background-100 text-foreground-600 whitespace-nowrap">{agent}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Error / Mock Fallback Banner */}
+              {errorMessage && currentMemo && (
+                <div className="bg-amber-50 border border-amber-200/70 rounded-lg p-3 flex items-start gap-2">
+                  <i className="ri-alert-line text-amber-600 w-5 h-5 flex items-center justify-center mt-0.5 shrink-0" />
+                  <p className="text-sm text-amber-800">{errorMessage}</p>
+                </div>
+              )}
+
+              {/* Memo Result */}
+              {currentMemo && !isGenerating && (
+                <div className="space-y-6">
+                  {/* V4.1 QA Dashboard — Top Bar */}
+                  <div className="bg-background-50 border border-background-200/70 rounded-xl p-5">
+                    <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                      <div className="flex items-center gap-3">
+                        <span className="font-mono text-xs text-foreground-500 bg-background-100 px-2 py-1 rounded">{currentMemo.memo_code}</span>
+                        <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-primary-100 text-primary-700 whitespace-nowrap">{currentMemo.model}</span>
+                        {currentMemo.mode === 'live' ? (
+                          <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 border border-emerald-300 whitespace-nowrap flex items-center gap-1">
+                            <i className="ri-broadcast-line w-3 h-3 flex items-center justify-center" />LIVE RAG
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-700 border border-amber-300 whitespace-nowrap flex items-center gap-1">
+                            <i className="ri-computer-line w-3 h-3 flex items-center justify-center" />MOCK
+                          </span>
+                        )}
+                        <PDFDownloadLink
+                          document={<KOSMemoPDFDocument memo={currentMemo} />}
+                          fileName={`${currentMemo.memo_code}.pdf`}
+                          className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-foreground-950 text-background-50 hover:bg-foreground-800 transition-colors whitespace-nowrap flex items-center gap-1.5 cursor-pointer no-underline"
+                        >
+                          {({ loading }: { loading: boolean }) => (
+                            loading ? (
+                              <><i className="ri-loader-4-line animate-spin w-3 h-3 flex items-center justify-center" />Génération...</>
+                            ) : (
+                              <><i className="ri-download-line w-3 h-3 flex items-center justify-center" />Télécharger PDF</>
+                            )
+                          )}
+                        </PDFDownloadLink>
+                        <button
+                          onClick={() => setShowPdfPreview(!showPdfPreview)}
+                          className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-background-100 text-foreground-700 hover:bg-background-200/70 transition-colors whitespace-nowrap flex items-center gap-1.5 cursor-pointer border border-background-200/70"
+                        >
+                          <i className={`${showPdfPreview ? 'ri-eye-off-line' : 'ri-eye-line'} w-3 h-3 flex items-center justify-center`} />
+                          {showPdfPreview ? 'Masquer Preview' : 'Prévisualiser PDF'}
+                        </button>
+                      </div>
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <span className="text-xs text-foreground-500">Sources réglementaires :</span>
+                        <span className="font-bold text-sm text-foreground-950">{currentMemo.regulatory_sources_count}/{currentMemo.freshness.total_sources}</span>
+                      </div>
+                    </div>
+
+                    {/* QA Flag + Confidence + Decision row */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {/* QA Flag */}
+                      <div className={`rounded-lg p-4 border ${qaFlagConfig[currentMemo.qa_flag]?.color || 'bg-background-100 text-foreground-600 border-background-200'}`}>
+                        <div className="flex items-center gap-2 mb-1">
+                          <i className={`${qaFlagConfig[currentMemo.qa_flag]?.icon || 'ri-question-line'} w-5 h-5 flex items-center justify-center`} />
+                          <span className="text-xs font-bold uppercase">QA Flag V4.1</span>
+                        </div>
+                        <span className="text-sm font-semibold">{qaFlagConfig[currentMemo.qa_flag]?.label || currentMemo.qa_flag}</span>
+                      </div>
+
+                      {/* Confidence */}
+                      <div className="bg-background-50 border border-background-200/70 rounded-lg p-4">
+                        <div className="flex items-center gap-2 mb-1">
+                          <i className="ri-bar-chart-line text-primary-600 w-5 h-5 flex items-center justify-center" />
+                          <span className="text-xs font-bold uppercase text-foreground-500">Confidence V4.1</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className={`text-2xl font-bold ${currentMemo.confidence >= 0.80 ? 'text-emerald-600' : currentMemo.confidence >= 0.50 ? 'text-amber-600' : 'text-red-600'}`}>
+                            {(currentMemo.confidence * 100).toFixed(0)}%
+                          </span>
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-semibold whitespace-nowrap ${confidenceColors[currentMemo.confidence_level]}`}>
+                            {currentMemo.confidence_level === 'HIGH' ? 'HAUTE' : currentMemo.confidence_level === 'MEDIUM' ? 'MOYENNE' : 'LIMITÉE'}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Decision GO/NO-GO */}
+                      <div className={`rounded-lg p-4 border ${currentMemo.decision.startsWith('NO-GO') ? 'bg-red-50 border-red-300 text-red-800' : currentMemo.decision.startsWith('CONDITIONAL') ? 'bg-amber-50 border-amber-300 text-amber-800' : 'bg-emerald-50 border-emerald-300 text-emerald-800'}`}>
+                        <div className="flex items-center gap-2 mb-1">
+                          <i className={`${currentMemo.decision.startsWith('NO-GO') ? 'ri-close-circle-line' : currentMemo.decision.startsWith('CONDITIONAL') ? 'ri-alert-line' : 'ri-check-line'} w-5 h-5 flex items-center justify-center`} />
+                          <span className="text-xs font-bold uppercase">Décision Big Four</span>
+                        </div>
+                        <span className="text-sm font-semibold leading-tight">{currentMemo.decision}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Freshness Metrics */}
+                  <div className="bg-background-50 border border-background-200/70 rounded-xl p-5">
+                    <div className="flex items-center gap-2 mb-3">
+                      <i className="ri-time-line text-primary-600 w-5 h-5 flex items-center justify-center" />
+                      <span className="font-semibold text-foreground-950 text-sm">Fraîcheur du Corpus Réglementaire</span>
+                      <span className="text-xs text-foreground-500 ml-auto">
+                        {currentMemo.freshness.coverage_pct}% des {currentMemo.freshness.regulatory_sources > 0 ? '57' : '0'} textes réglementaires
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="text-center p-3 bg-background-100 rounded-lg">
+                        <div className="text-2xl font-bold text-foreground-950">{currentMemo.freshness.regulatory_sources}</div>
+                        <div className="text-xs text-foreground-500 mt-1">Sources réglementaires</div>
+                      </div>
+                      <div className="text-center p-3 bg-background-100 rounded-lg">
+                        <div className={`text-2xl font-bold ${currentMemo.freshness.fresh_sources >= 5 ? 'text-emerald-600' : currentMemo.freshness.fresh_sources >= 3 ? 'text-amber-600' : 'text-red-600'}`}>
+                          {currentMemo.freshness.fresh_sources}
+                        </div>
+                        <div className="text-xs text-foreground-500 mt-1">Sources &lt; 24 mois</div>
+                      </div>
+                      <div className="text-center p-3 bg-background-100 rounded-lg">
+                        <div className={`text-2xl font-bold ${currentMemo.freshness.avg_age_months <= 12 ? 'text-emerald-600' : currentMemo.freshness.avg_age_months <= 24 ? 'text-amber-600' : 'text-red-600'}`}>
+                          {currentMemo.freshness.avg_age_months}
+                        </div>
+                        <div className="text-xs text-foreground-500 mt-1">Âge moyen (mois)</div>
+                      </div>
+                      <div className="text-center p-3 bg-background-100 rounded-lg">
+                        <div className={`text-2xl font-bold ${currentMemo.freshness.coverage_pct >= 50 ? 'text-emerald-600' : currentMemo.freshness.coverage_pct >= 25 ? 'text-amber-600' : 'text-red-600'}`}>
+                          {currentMemo.freshness.coverage_pct}%
+                        </div>
+                        <div className="text-xs text-foreground-500 mt-1">Couverture corpus</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Penalties Panel */}
+                  {currentMemo.penalties && currentMemo.penalties.length > 0 && (
+                    <div className="bg-red-50 border border-red-200/70 rounded-xl p-5">
+                      <div className="flex items-center gap-2 mb-3">
+                        <i className="ri-scales-3-line text-red-600 w-5 h-5 flex items-center justify-center" />
+                        <span className="font-semibold text-red-800 text-sm">Pénalités Réglementaires Détectées ({currentMemo.penalties.length})</span>
+                      </div>
+                      <div className="space-y-3">
+                        {currentMemo.penalties.map((p, i) => (
+                          <div key={i} className="flex items-center justify-between bg-white rounded-lg p-3 border border-red-100 flex-wrap gap-2">
+                            <div className="flex items-center gap-3">
+                              <span className="font-bold text-red-800 text-sm">{p.authority}</span>
+                              <span className="text-xs text-red-600">{p.article}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-red-500">{p.type}</span>
+                              <span className="font-bold text-red-800 text-sm whitespace-nowrap">
+                                {p.penalty_min.toLocaleString('fr-FR')} – {p.penalty_max.toLocaleString('fr-FR')} FCFA
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Executive Summary Card */}
+                  <div className="bg-background-50 border border-background-200/70 rounded-xl p-6">
+                    <div className="flex items-center gap-2 mb-3">
+                      <i className="ri-file-text-line text-primary-600 w-5 h-5 flex items-center justify-center" />
+                      <span className="font-semibold text-foreground-950 text-sm">Executive Summary</span>
+                    </div>
+                    <p className="text-foreground-700 text-sm leading-relaxed">{currentMemo.executive_summary}</p>
+                  </div>
+
+                  {/* Context + Findings Grid */}
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Context Panel */}
+                    <div className="bg-background-50 border border-background-200/70 rounded-xl p-5">
+                      <div className="flex items-center gap-2 mb-3">
+                        <i className="ri-information-line text-primary-600 w-5 h-5 flex items-center justify-center" />
+                        <span className="font-semibold text-foreground-950 text-sm">Contexte</span>
+                      </div>
+                      <div className="space-y-3 text-sm">
+                        <div>
+                          <span className="text-foreground-500">Objectif</span>
+                          <p className="text-foreground-800 font-medium">{currentMemo.context.objectif}</p>
+                        </div>
+                        <div className="flex gap-4">
+                          <div>
+                            <span className="text-foreground-500">Périmètre</span>
+                            <p className="text-foreground-800 font-semibold">{currentMemo.context.perimetre}</p>
+                          </div>
+                          <div>
+                            <span className="text-foreground-500">Date</span>
+                            <p className="text-foreground-800">{currentMemo.context.date}</p>
+                          </div>
+                        </div>
+                        <div>
+                          <span className="text-foreground-500">Documents analysés</span>
+                          <p className="text-foreground-800 font-bold text-lg">{currentMemo.context.documents_analyses}</p>
+                        </div>
+                        <div className="pt-2 border-t border-background-200/70">
+                          <span className="text-foreground-500">Agents KOS REGTECH AI</span>
+                          <div className="flex flex-wrap gap-1.5 mt-1.5">
+                            {currentMemo.agents.map((a) => (
+                              <span key={a} className="px-2 py-0.5 rounded-full text-xs bg-primary-50 text-primary-700 whitespace-nowrap">{a}</span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Findings Panel */}
+                    <div className="lg:col-span-2 bg-background-50 border border-background-200/70 rounded-xl p-5">
+                      <div className="flex items-center gap-2 mb-3">
+                        <i className="ri-search-eye-line text-primary-600 w-5 h-5 flex items-center justify-center" />
+                        <span className="font-semibold text-foreground-950 text-sm">Constats ({currentMemo.findings.length})</span>
+                      </div>
+                      <div className="space-y-3">
+                        {currentMemo.findings.map((f, i) => (
+                          <div key={i} className="border-l-2 border-primary-300 pl-3 py-1">
+                            <p className="text-sm text-foreground-800 leading-relaxed">{f.texte}</p>
+                            <div className="flex items-center gap-3 mt-1.5 text-xs">
+                              <span className="text-foreground-500 font-medium">{f.reference}</span>
+                              <span className="text-foreground-400">{f.source}</span>
+                              {f.article && f.article !== 'N/A' && <span className="text-foreground-400">{f.article}</span>}
+                              <span className={`px-1.5 py-0.5 rounded-full text-xs font-semibold ${f.confiance === 'HIGH' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>{f.confiance}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Risks + Recommendations Grid */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Risks Panel */}
+                    <div className="bg-background-50 border border-background-200/70 rounded-xl p-5">
+                      <div className="flex items-center gap-2 mb-3">
+                        <i className="ri-alert-line text-amber-600 w-5 h-5 flex items-center justify-center" />
+                        <span className="font-semibold text-foreground-950 text-sm">Risques Identifiés ({currentMemo.risks.length})</span>
+                      </div>
+                      <div className="space-y-3">
+                        {currentMemo.risks.map((r, i) => (
+                          <div key={i} className="bg-background-100/70 rounded-lg p-3">
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="font-semibold text-foreground-900 text-sm">{r.type}</span>
+                              <span className={`px-2 py-0.5 rounded-full text-xs font-semibold border whitespace-nowrap ${riskLevelColors[r.niveau] || 'bg-background-100 text-foreground-600 border-background-200'}`}>{r.niveau}</span>
+                            </div>
+                            <p className="text-xs text-foreground-600">{r.mitigation}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Recommendations Panel */}
+                    <div className="bg-background-50 border border-background-200/70 rounded-xl p-5">
+                      <div className="flex items-center gap-2 mb-3">
+                        <i className="ri-lightbulb-line text-amber-500 w-5 h-5 flex items-center justify-center" />
+                        <span className="font-semibold text-foreground-950 text-sm">Recommandations ({currentMemo.recommendations.length})</span>
+                      </div>
+                      <div className="space-y-3">
+                        {currentMemo.recommendations.map((rec, i) => (
+                          <div key={i} className={`border rounded-lg p-3 ${priorityColors[rec.priorite] || 'border-background-200'}`}>
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className={`px-1.5 py-0.5 rounded text-xs font-bold whitespace-nowrap ${rec.priorite === 'P1' ? 'bg-red-200 text-red-800' : rec.priorite === 'P2' ? 'bg-amber-200 text-amber-800' : rec.priorite === 'P3' ? 'bg-blue-200 text-blue-800' : 'bg-background-200 text-foreground-600'}`}>{rec.priorite}</span>
+                              <span className="font-semibold text-foreground-900 text-sm">{rec.action}</span>
+                            </div>
+                            <div className="flex items-center gap-4 text-xs text-foreground-500 flex-wrap">
+                              <span><i className="ri-timer-line mr-1" />{rec.delai}</span>
+                              <span><i className="ri-flashlight-line mr-1" />Impact : {rec.impact}</span>
+                              {rec.cout_fcfa && (
+                                <span className="font-bold text-foreground-700"><i className="ri-money-dollar-circle-line mr-1" />{rec.cout_fcfa.toLocaleString('fr-FR')} FCFA</span>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Compliance Footer */}
+                  <div className="bg-emerald-50 border border-emerald-200/70 rounded-xl p-5 text-center">
+                    <div className="font-semibold text-emerald-800 text-sm">{currentMemo.compliance}</div>
+                    <div className="text-xs text-emerald-700 mt-1">
+                      Memo généré par KOS REGTECH AI V4.1 · Format Big Four · Corpus BCEAO/COBAC/OHADA/BEAC/UEMOA · 57 textes réglementaires
+                    </div>
+                  </div>
+
+                  {/* PDF Inline Preview */}
+                  {showPdfPreview && (
+                    <div className="bg-background-50 border border-background-200/70 rounded-xl overflow-hidden">
+                      <div className="flex items-center justify-between px-5 py-3 border-b border-background-200/70 bg-background-100/50">
+                        <div className="flex items-center gap-2">
+                          <i className="ri-file-pdf-line text-red-500 w-5 h-5 flex items-center justify-center" />
+                          <span className="font-semibold text-foreground-950 text-sm">Prévisualisation — {currentMemo.memo_code}.pdf</span>
+                        </div>
+                        <button
+                          onClick={() => setShowPdfPreview(false)}
+                          className="text-foreground-400 hover:text-foreground-700 transition-colors cursor-pointer"
+                        >
+                          <i className="ri-close-line w-5 h-5 flex items-center justify-center" />
+                        </button>
+                      </div>
+                      <BlobProvider document={<KOSMemoPDFDocument memo={currentMemo} />}>
+                        {({ url, loading, error }: { url: string | null; loading: boolean; error: Error | null }) => {
+                          if (loading) {
+                            return (
+                              <div className="flex items-center justify-center py-20">
+                                <div className="flex items-center gap-3">
+                                  <i className="ri-loader-4-line animate-spin text-xl text-primary-600 w-6 h-6 flex items-center justify-center" />
+                                  <span className="text-foreground-600 font-semibold text-sm">Génération du PDF en cours...</span>
+                                </div>
+                              </div>
+                            );
+                          }
+                          if (error) {
+                            return (
+                              <div className="flex items-center justify-center py-20 text-red-600 gap-2">
+                                <i className="ri-error-warning-line w-5 h-5 flex items-center justify-center" />
+                                <span className="text-sm">Erreur lors de la génération du PDF : {error.message}</span>
+                              </div>
+                            );
+                          }
+                          if (!url) return null;
+                          return (
+                            <iframe
+                              src={url}
+                              style={{ width: '100%', height: '780px', border: 'none' }}
+                              title={`Preview ${currentMemo.memo_code}`}
+                            />
+                          );
+                        }}
+                      </BlobProvider>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* History Tab */}
+          {activeTab === 'history' && (
+            <div className="space-y-4">
+              {history.map((memo) => (
+                <div key={memo.memo_id} onClick={() => setSelectedHistoryMemo(selectedHistoryMemo === memo.memo_id ? null : memo.memo_id)} className="bg-background-50 border border-background-200/70 rounded-xl cursor-pointer hover:bg-background-100/50 transition-colors">
+                  <div className="p-5">
+                    <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
+                      <div className="flex items-center gap-3">
+                        <span className="font-mono text-xs text-foreground-500 bg-background-100 px-2 py-1 rounded">{memo.memo_code}</span>
+                        <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-primary-100 text-primary-700 whitespace-nowrap">{memo.model}</span>
+                        {'mode' in memo && (memo as Memo).mode === 'live' ? (
+                          <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 border border-emerald-300 whitespace-nowrap">LIVE</span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-700 border border-amber-300 whitespace-nowrap">MOCK</span>
+                        )}
+                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold whitespace-nowrap ${confidenceColors[memo.confidence_level]}`}>
+                          {memo.confidence_level} ({(memo.confidence * 100).toFixed(0)}%)
+                        </span>
+                        {memo.qa_flag && (
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-bold whitespace-nowrap ${qaFlagConfig[memo.qa_flag]?.color || 'bg-background-100 text-foreground-600'}`}>
+                            {memo.qa_flag}
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-xs text-foreground-500">{memo.context.date}</span>
+                    </div>
+                    <p className="text-sm text-foreground-700 mb-2 line-clamp-2">{memo.executive_summary}</p>
+                    <div className="flex items-center gap-3 text-xs text-foreground-500 flex-wrap">
+                      <span>Périmètre : <strong className="text-foreground-700">{memo.context.perimetre}</strong></span>
+                      <span>Sources rég. : <strong className="text-foreground-700">{memo.regulatory_sources_count}/{memo.sources_count} docs</strong></span>
+                      <span>Fraîcheur : <strong className={memo.freshness?.fresh_sources >= 5 ? 'text-emerald-600' : memo.freshness?.fresh_sources >= 3 ? 'text-amber-600' : 'text-red-600'}>{memo.freshness?.fresh_sources || '-'} &lt; 24 mois</strong></span>
+                      <span>Décision : <strong className={memo.decision.startsWith('NO-GO') ? 'text-red-600' : memo.decision.startsWith('CONDITIONAL') ? 'text-amber-600' : 'text-emerald-600'}>{memo.decision.split(' :')[0]}</strong></span>
+                    </div>
+                  </div>
+                  {selectedHistoryMemo === memo.memo_id && (
+                    <div className="px-5 pb-5 border-t border-background-200/70 pt-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div className="space-y-3">
+                          <div>
+                            <span className="font-semibold text-foreground-900">Constats</span>
+                            {memo.findings.map((f, i) => (
+                              <div key={i} className="mt-1 text-xs text-foreground-600 pl-2 border-l-2 border-primary-200">
+                                <span className="font-medium">{f.reference}</span> — {f.source} ({f.confiance})
+                              </div>
+                            ))}
+                          </div>
+                          <div>
+                            <span className="font-semibold text-foreground-900">Risques</span>
+                            {memo.risks.map((r, i) => (
+                              <div key={i} className="mt-1 text-xs text-foreground-600 pl-2 border-l-2 border-amber-200">
+                                {r.type} — <span className="font-medium">{r.niveau}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="space-y-3">
+                          <div>
+                            <span className="font-semibold text-foreground-900">Recommandations</span>
+                            {memo.recommendations.map((rec, i) => (
+                              <div key={i} className="mt-1 text-xs text-foreground-600 pl-2 border-l-2 border-emerald-200">
+                                <span className="font-bold">{rec.priorite}</span> — {rec.action} — <span className="text-foreground-400">{rec.delai}</span>
+                                {rec.cout_fcfa && <span className="ml-1 font-medium text-foreground-700">{rec.cout_fcfa.toLocaleString('fr-FR')} FCFA</span>}
+                              </div>
+                            ))}
+                          </div>
+                          <div>
+                            <span className="font-semibold text-foreground-900">Décision V4.1</span>
+                            <div className={`mt-1 text-xs font-bold px-2 py-1 rounded ${memo.decision.startsWith('NO-GO') ? 'bg-red-50 text-red-700' : memo.decision.startsWith('CONDITIONAL') ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'}`}>
+                              {memo.decision}
+                            </div>
+                          </div>
+                          <div>
+                            <span className="font-semibold text-foreground-900">Compliance</span>
+                            <div className="mt-1 text-xs text-emerald-700">{memo.compliance}</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Footer */}
+          <div className="mt-8 pt-6 border-t border-background-200/70 text-center text-xs text-foreground-400 space-y-1">
+            <p>KOS REGTECH AI · Executive Memo Engine V4.1 · Format Big Four (Deloitte/EY/KPMG/PwC)</p>
+            <p>Corpus réglementaire : 57 textes — BCEAO (26) · COBAC (15) · OHADA (8) · BEAC (4) · UEMOA (4)</p>
+          </div>
+        </div>
+      </div>
+    </KOSHubLayout>
+  );
+}

@@ -1,0 +1,133 @@
+import { pageWeightBreakdown, lcpAuditResults, cacheConfiguration } from '@/mocks/kosPerformanceSEOCommand';
+
+interface PerformanceTabProps {
+  isLive?: boolean;
+}
+
+function PageWeightCard({ item }: { item: typeof pageWeightBreakdown[0] }) {
+  const pct = (item.currentKB / (item.currentKB + 200)) * 100;
+  const statusColor = item.status === 'critical' ? 'bg-red-500' : item.status === 'warning' ? 'bg-amber-500' : 'bg-emerald-500';
+  return (
+    <div className="bg-background-50 rounded-xl border border-background-200/70 p-4">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-sm font-medium text-foreground-950 font-body">{item.category}</span>
+        <span className={`text-xs font-semibold font-body ${item.status === 'critical' ? 'text-red-600' : item.status === 'warning' ? 'text-amber-600' : 'text-emerald-600'}`}>
+          {item.currentKB} / {item.targetKB} Ko
+        </span>
+      </div>
+      <div className="h-2 bg-background-200 rounded-full overflow-hidden">
+        <div className={`h-full rounded-full transition-all duration-500 ${statusColor}`} style={{ width: `${Math.min(pct, 100)}%` }}></div>
+      </div>
+      <div className="flex items-center gap-1 mt-1.5">
+        <i className={`text-[10px] ${item.trend === 'down' ? 'ri-arrow-down-line text-emerald-600' : 'ri-subtract-line text-foreground-400'}`}></i>
+        <span className="text-[10px] text-foreground-500 font-body">Cible : {item.targetKB} Ko</span>
+      </div>
+    </div>
+  );
+}
+
+function LcpAuditRow({ item }: { item: typeof lcpAuditResults[0] }) {
+  const statusBadge = item.status === 'optimal' ? 'bg-emerald-100 text-emerald-700' : item.status === 'ok' ? 'bg-primary-100 text-primary-700' : item.status === 'warning' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700';
+  return (
+    <div className="flex items-center gap-4 p-3 bg-background-50 rounded-lg border border-background-200/70 hover:border-background-300/60 transition-colors">
+      <div className={`w-8 h-8 flex items-center justify-center rounded-lg shrink-0 ${statusBadge}`}>
+        <i className={`text-sm ${item.status === 'optimal' ? 'ri-check-line' : item.status === 'critical' ? 'ri-error-warning-line' : 'ri-alert-line'}`}></i>
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 mb-0.5">
+          <span className="text-sm font-medium text-foreground-950 font-body truncate">{item.page}</span>
+          <span className="text-[10px] text-foreground-400 font-body">{item.element}</span>
+        </div>
+        <div className="flex items-center gap-3 text-xs">
+          <span className={`font-semibold ${item.currentLCP > 2.5 ? 'text-red-600' : 'text-emerald-600'}`}>{item.currentLCP}s</span>
+          <span className="text-foreground-400">LCP</span>
+          <span className="text-foreground-500">{item.format} · {item.sizeKB} Ko</span>
+        </div>
+      </div>
+      <span className="text-[10px] text-foreground-500 font-body text-right max-w-[180px] hidden lg:block">{item.optimization}</span>
+    </div>
+  );
+}
+
+function CacheRow({ item }: { item: typeof cacheConfiguration[0] }) {
+  return (
+    <div className="flex items-center justify-between p-3 bg-background-50 rounded-lg border border-background-200/70">
+      <div className="flex items-center gap-3 min-w-0">
+        <div className={`w-8 h-8 flex items-center justify-center rounded-lg shrink-0 ${item.status === 'optimal' ? 'bg-emerald-100 text-emerald-700' : item.status === 'ok' ? 'bg-primary-100 text-primary-700' : 'bg-amber-100 text-amber-700'}`}>
+          <i className={`text-sm ${item.status === 'optimal' ? 'ri-check-double-line' : item.status === 'ok' ? 'ri-check-line' : 'ri-alert-line'}`}></i>
+        </div>
+        <div>
+          <span className="text-sm font-medium text-foreground-950 font-body">{item.assetType}</span>
+          <div className="flex items-center gap-2 text-[10px] text-foreground-500 mt-0.5">
+            <span>max-age={item.currentMaxAge}</span>
+            {item.cdnEdge && <span className="text-emerald-600">CDN Edge</span>}
+            {item.immutable && <span className="text-emerald-600">Immutable</span>}
+          </div>
+        </div>
+      </div>
+      <span className={`text-xs font-semibold font-body shrink-0 ${item.status === 'optimal' ? 'text-emerald-600' : item.status === 'ok' ? 'text-primary-600' : 'text-amber-600'}`}>
+        {item.status === 'optimal' ? 'Optimal' : item.status === 'ok' ? 'OK' : 'Warning'}
+      </span>
+    </div>
+  );
+}
+
+export default function PerformanceTab({ isLive }: PerformanceTabProps) {
+  return (
+    <div className="space-y-8">
+      {/* Live Data Badge */}
+      {isLive !== undefined && (
+        <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium ${isLive ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'}`}>
+          <span className={`w-2 h-2 rounded-full ${isLive ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`}></span>
+          {isLive ? 'Données Live — Supabase' : 'Données Mock — Démo'}
+        </div>
+      )}
+
+      {/* Page Weight Breakdown */}
+      <div>
+        <h3 className="text-sm font-semibold text-foreground-950 mb-4 font-heading">Poids Total par Catégorie (cible &lt; 2 Mo)</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {pageWeightBreakdown.map(item => <PageWeightCard key={item.category} item={item} />)}
+        </div>
+        <div className="mt-4 p-4 bg-background-100 rounded-xl border border-background-200/70">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-semibold text-foreground-950 font-heading">Total actuel</span>
+            <span className="text-lg font-bold text-foreground-950 font-heading">
+              {pageWeightBreakdown.reduce((s, i) => s + i.currentKB, 0) / 1000} Mo
+              <span className="text-sm font-normal text-foreground-500"> / 2.0 Mo cible</span>
+            </span>
+          </div>
+          <div className="h-2.5 bg-background-200 rounded-full overflow-hidden mt-2">
+            {(() => {
+              const total = pageWeightBreakdown.reduce((s, i) => s + i.currentKB, 0);
+              const target = 2000;
+              let acc = 0;
+              return pageWeightBreakdown.map((item, i) => {
+                const w = (item.currentKB / target) * 100;
+                acc += item.currentKB;
+                const colors = ['bg-primary-500', 'bg-accent-500', 'bg-secondary-500', 'bg-emerald-500', 'bg-amber-400', 'bg-foreground-300'];
+                return <div key={i} className={`h-full ${colors[i]} rounded-full`} style={{ width: `${w}%`, display: 'inline-block' }}></div>;
+              });
+            })()}
+          </div>
+        </div>
+      </div>
+
+      {/* LCP Audit */}
+      <div>
+        <h3 className="text-sm font-semibold text-foreground-950 mb-4 font-heading">Audit LCP — Largest Contentful Paint (cible &lt; 2.5s)</h3>
+        <div className="space-y-2">
+          {lcpAuditResults.map(item => <LcpAuditRow key={item.page} item={item} />)}
+        </div>
+      </div>
+
+      {/* Cache Configuration */}
+      <div>
+        <h3 className="text-sm font-semibold text-foreground-950 mb-4 font-heading">Configuration Cache</h3>
+        <div className="space-y-2">
+          {cacheConfiguration.map(item => <CacheRow key={item.assetType} item={item} />)}
+        </div>
+      </div>
+    </div>
+  );
+}

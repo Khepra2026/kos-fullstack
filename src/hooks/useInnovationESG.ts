@@ -1,0 +1,122 @@
+import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '@/lib/supabase';
+import { esgAssessmentsMock, innovationLabMock, methodologiesMock } from '@/mocks/kosInnovationESG';
+
+export interface ESGAssessment {
+  id: number;
+  company_name: string;
+  sector: string;
+  country: string;
+  environmental_score: number;
+  social_score: number;
+  governance_score: number;
+  overall_esg_score: number;
+  framework: string;
+  gaps: string[];
+  recommendations: string[];
+  roadmap: string[];
+  sdg_alignment: string[];
+  summary: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface InnovationProject {
+  id: number;
+  innovation_name: string;
+  category: string;
+  technology: string;
+  readiness_level: number;
+  market_potential: string;
+  implementation_time: string;
+  impact_score: number;
+  feasibility_score: number;
+  description: string;
+  use_case: string;
+  prototype_status: string;
+  tags: string[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Methodology {
+  id: number;
+  methodology_name: string;
+  category: string;
+  framework: string;
+  sop_count: number;
+  checklist_count: number;
+  template_count: number;
+  reference_mission: string;
+  last_updated: string;
+  usage_count: number;
+  quality_score: number;
+  description: string;
+  tags: string[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface InnovationESGData {
+  esgAssessments: ESGAssessment[];
+  innovationLab: InnovationProject[];
+  methodologies: Methodology[];
+  isLive: boolean;
+}
+
+export function useInnovationESG() {
+  const [data, setData] = useState<InnovationESGData>({
+    esgAssessments: [],
+    innovationLab: [],
+    methodologies: [],
+    isLive: false,
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const [esgRes, innovRes, methRes] = await Promise.all([
+        supabase.from('esg_assessments').select('*').order('overall_esg_score', { ascending: false }),
+        supabase.from('innovation_lab').select('*').order('impact_score', { ascending: false }),
+        supabase.from('methodologies').select('*').order('quality_score', { ascending: false }),
+      ]);
+
+      if (esgRes.error) throw esgRes.error;
+      if (innovRes.error) throw innovRes.error;
+      if (methRes.error) throw methRes.error;
+
+      const esgData = (esgRes.data || []) as ESGAssessment[];
+      const innovData = (innovRes.data || []) as InnovationProject[];
+      const methData = (methRes.data || []) as Methodology[];
+      const hasData = esgData.length > 0 || innovData.length > 0 || methData.length > 0;
+
+      setData({
+        esgAssessments: esgData,
+        innovationLab: innovData,
+        methodologies: methData,
+        isLive: hasData,
+      });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Erreur inconnue';
+      setError(message);
+      setData({
+        esgAssessments: esgAssessmentsMock as ESGAssessment[],
+        innovationLab: innovationLabMock as InnovationProject[],
+        methodologies: methodologiesMock as Methodology[],
+        isLive: false,
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  return { ...data, loading, error, refetch: fetchData };
+}

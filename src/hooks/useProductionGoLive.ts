@@ -1,0 +1,140 @@
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { supabase } from '@/lib/supabase';
+import {
+  PRODUCTION_GLOBAL_STATE,
+  DEPLOYMENT_SUMMARY,
+  GO_LIVE_CHECKLIST,
+  HUB_DEPLOYMENT_REGISTRY,
+  INFRASTRUCTURE_METRICS,
+  PRODUCTION_EVENTS,
+  PRODUCTION_KPIS,
+  PRODUCTION_ALERTS,
+  GO_LIVE_REPORT,
+  GO_LIVE_TIMELINE,
+  COMMANDERS_GO_LIVE_INTENT,
+  SYSTEM_LAYERS,
+} from '@/mocks/kosProductionGoLive';
+import type {
+  ProductionGlobalState,
+  DeploymentSummary,
+  GoLiveChecklistItem,
+  HubDeploymentEntry,
+  InfrastructureMetrics,
+  ProductionEvent,
+  ProductionKPI,
+  ProductionAlert,
+  GoLiveReport,
+  GoLiveTimelineEntry,
+  CommandersIntent,
+  SystemLayer,
+} from '@/mocks/kosProductionGoLive';
+
+interface ProductionGoLiveState {
+  globalState: ProductionGlobalState;
+  deploymentSummary: DeploymentSummary[];
+  checklist: GoLiveChecklistItem[];
+  hubs: HubDeploymentEntry[];
+  infrastructure: InfrastructureMetrics;
+  events: ProductionEvent[];
+  kpis: ProductionKPI[];
+  alerts: ProductionAlert[];
+  report: GoLiveReport;
+  timeline: GoLiveTimelineEntry[];
+  commandersIntent: CommandersIntent;
+  systemLayers: SystemLayer[];
+  loading: boolean;
+  error: string | null;
+  dataSource: 'mock' | 'supabase';
+  lastUpdated: Date | null;
+}
+
+export function useProductionGoLive() {
+  const [state, setState] = useState<ProductionGoLiveState>({
+    globalState: PRODUCTION_GLOBAL_STATE,
+    deploymentSummary: [],
+    checklist: [],
+    hubs: [],
+    infrastructure: INFRASTRUCTURE_METRICS,
+    events: [],
+    kpis: [],
+    alerts: [],
+    report: GO_LIVE_REPORT,
+    timeline: [],
+    commandersIntent: COMMANDERS_GO_LIVE_INTENT,
+    systemLayers: [],
+    loading: true,
+    error: null,
+    dataSource: 'mock',
+    lastUpdated: null,
+  });
+
+  const refresh = useCallback(async () => {
+    setState((prev) => ({ ...prev, loading: true, error: null }));
+    try {
+      // Try Supabase health check
+      let dataSource: 'mock' | 'supabase' = 'mock';
+      try {
+        const { data } = await supabase.from('kos_unified_global_state').select('id').limit(1);
+        if (data && data.length > 0) dataSource = 'supabase';
+      } catch { /* mock fallback */ }
+
+      await new Promise((r) => setTimeout(r, 600));
+      setState({
+        globalState: PRODUCTION_GLOBAL_STATE,
+        deploymentSummary: DEPLOYMENT_SUMMARY,
+        checklist: GO_LIVE_CHECKLIST,
+        hubs: HUB_DEPLOYMENT_REGISTRY,
+        infrastructure: INFRASTRUCTURE_METRICS,
+        events: PRODUCTION_EVENTS,
+        kpis: PRODUCTION_KPIS,
+        alerts: PRODUCTION_ALERTS,
+        report: GO_LIVE_REPORT,
+        timeline: GO_LIVE_TIMELINE,
+        commandersIntent: COMMANDERS_GO_LIVE_INTENT,
+        systemLayers: SYSTEM_LAYERS,
+        loading: false,
+        error: null,
+        dataSource,
+        lastUpdated: new Date(),
+      });
+    } catch (err) {
+      setState((prev) => ({
+        ...prev,
+        loading: false,
+        error: (err as Error).message || 'Erreur de chargement du cockpit de production',
+      }));
+    }
+  }, []);
+
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
+
+  const globalStatus = useMemo(() => {
+    if (state.globalState.status === 'live') return 'GO — Système en production';
+    if (state.globalState.status === 'deploying') return 'DÉPLOIEMENT EN COURS';
+    if (state.globalState.status === 'rollback') return 'ROLLBACK ACTIF';
+    return 'DÉGRADÉ — Vérification requise';
+  }, [state.globalState.status]);
+
+  const passedChecks = useMemo(() => state.checklist.filter(c => c.status === 'passed').length, [state.checklist]);
+  const failedChecks = useMemo(() => state.checklist.filter(c => c.status === 'failed').length, [state.checklist]);
+  const inProgressChecks = useMemo(() => state.checklist.filter(c => c.status === 'in_progress').length, [state.checklist]);
+  const criticalAlertsOpen = useMemo(() => state.alerts.filter(a => a.severity === 'critical' && !a.autoResolved).length, [state.alerts]);
+  const majorAlertsOpen = useMemo(() => state.alerts.filter(a => a.severity === 'major' && !a.autoResolved).length, [state.alerts]);
+  const optimalHubs = useMemo(() => state.hubs.filter(h => h.status === 'optimal').length, [state.hubs]);
+  const totalModules = useMemo(() => state.hubs.reduce((s, h) => s + h.modules, 0), [state.hubs]);
+
+  return {
+    ...state,
+    refresh,
+    globalStatus,
+    passedChecks,
+    failedChecks,
+    inProgressChecks,
+    criticalAlertsOpen,
+    majorAlertsOpen,
+    optimalHubs,
+    totalModules,
+  };
+}

@@ -1,0 +1,44 @@
+import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '@/lib/supabase';
+import { SEO_CLUSTERS, SEO_AGENTS, SEO_GLOBAL_METRICS, type SEOCluster, type SEOAgent } from '@/mocks/kosBloc04SEOBigFour';
+
+interface UseSEOBigFourReturn {
+  clusters: SEOCluster[];
+  agents: SEOAgent[];
+  globalMetrics: typeof SEO_GLOBAL_METRICS;
+  isLive: boolean;
+  loading: boolean;
+  error: string | null;
+  refetch: () => void;
+}
+
+export function useSEOBigFour(): UseSEOBigFourReturn {
+  const [clusters, setClusters] = useState<SEOCluster[]>([]);
+  const [agents] = useState<SEOAgent[]>(SEO_AGENTS);
+  const [globalMetrics] = useState(SEO_GLOBAL_METRICS);
+  const [isLive, setIsLive] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data: liveData, error: supabaseErr } = await supabase
+        .from('kos_seo_audit_results')
+        .select('*');
+      if (!supabaseErr && liveData && liveData.length > 0) {
+        setIsLive(true);
+      }
+      setClusters(SEO_CLUSTERS);
+    } catch {
+      setClusters(SEO_CLUSTERS);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchData(); }, [fetchData]);
+  
+  return { clusters, agents, globalMetrics, isLive, loading, error, refetch: fetchData };
+}

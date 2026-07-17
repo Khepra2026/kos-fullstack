@@ -1,0 +1,224 @@
+import { useState } from 'react';
+import KOSHubLayout from '@/components/feature/KOSHubLayout';
+import { knowledgeGraphMock, enterpriseOSMock } from '@/mocks/kosEnterpriseCore';
+
+type Tab = 'knowledge-graph' | 'enterprise-os';
+
+export default function KOSEnterpriseOSCoreCommandPage() {
+  const [activeTab, setActiveTab] = useState<Tab>('knowledge-graph');
+  const [selectedEntity, setSelectedEntity] = useState(knowledgeGraphMock[0]);
+  const [selectedModule, setSelectedModule] = useState(enterpriseOSMock[0]);
+
+  const getTypeIcon = (type: string) => {
+    const map: Record<string, string> = { mission: 'ri-briefcase-line', methodology: 'ri-settings-3-line', regulation: 'ri-scales-line', study: 'ri-book-open-line', client: 'ri-user-line' };
+    return map[type] || 'ri-file-line';
+  };
+
+  const domains = ['advisory', 'risk', 'audit', 'finance', 'knowledge', 'growth', 'marketing', 'governance', 'orchestration'] as const;
+
+  const tabs = [
+    { id: 'knowledge-graph' as Tab, label: 'Knowledge Graph', icon: 'ri-git-branch-line', count: knowledgeGraphMock.length },
+    { id: 'enterprise-os' as Tab, label: 'Enterprise OS', icon: 'ri-cpu-line', count: enterpriseOSMock.length },
+  ];
+
+  return (
+    <KOSHubLayout hubId={21}>
+      <section className="relative bg-background-100 border-b border-background-200/70">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 py-10 md:py-14">
+          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-foreground-100 text-foreground-700 text-xs font-semibold mb-4">
+                <i className="ri-stack-line"></i>
+                KOS Enterprise+ — Core Operating System
+              </div>
+              <h1 className="text-2xl md:text-4xl font-heading font-bold text-foreground-950 tracking-tight">
+                Enterprise OS Core Command
+              </h1>
+              <p className="text-sm md:text-base text-foreground-600 mt-3 max-w-2xl">
+                Graphe de connaissances stratégique et système d'exploitation du cabinet augmenté — la mémoire et le cerveau de Khepra Experts.
+              </p>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="text-center px-4 py-3 bg-background-50 rounded-lg border border-background-200/70">
+                <div className="text-2xl font-bold text-foreground-950">2</div>
+                <div className="text-xs text-foreground-500">BLOCS actifs</div>
+              </div>
+              <div className="text-center px-4 py-3 bg-background-50 rounded-lg border border-background-200/70">
+                <div className="text-2xl font-bold text-accent-500">95%</div>
+                <div className="text-xs text-foreground-500">Maturité cible</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div className="sticky top-0 z-30 bg-background-50 border-b border-background-200/70">
+        <div className="max-w-7xl mx-auto px-4 md:px-6">
+          <div className="flex gap-1 py-3 overflow-x-auto">
+            {tabs.map((tab) => (
+              <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2 transition-colors cursor-pointer ${activeTab === tab.id ? 'bg-foreground-950 text-background-50' : 'text-foreground-600 hover:bg-background-100'}`}>
+                <i className={`${tab.icon} text-sm`}></i>{tab.label}
+                <span className="text-xs opacity-60">{tab.count}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 md:px-6 py-8">
+        {/* BLOC 25 — Knowledge Graph */}
+        {activeTab === 'knowledge-graph' && (
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <div className="lg:col-span-1 space-y-3">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-accent-100 text-accent-700">
+                  <i className="ri-git-branch-line text-lg"></i>
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-foreground-950">Knowledge Graph™</h3>
+                  <p className="text-xs text-foreground-500">BLOC 25 — Mémoire Stratégique</p>
+                </div>
+              </div>
+              {knowledgeGraphMock.map((entity) => (
+                <div key={entity.id} onClick={() => setSelectedEntity(entity)} className={`p-3 rounded-lg border cursor-pointer transition-colors ${selectedEntity.id === entity.id ? 'border-accent-300 bg-accent-50/50' : 'border-background-200/70 bg-background-50 hover:border-background-300/60'}`}>
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 flex items-center justify-center rounded-md bg-background-100">
+                      <i className={`${getTypeIcon(entity.entity_type)} text-foreground-500 text-xs`}></i>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h4 className="text-xs font-semibold text-foreground-950 truncate">{entity.entity_name}</h4>
+                      <p className="text-[10px] text-foreground-400">{entity.entity_type} · {entity.document_count} docs</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="lg:col-span-3">
+              <div className="bg-background-50 rounded-lg border border-background-200/70 p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-accent-100 text-accent-700 font-medium uppercase">{selectedEntity.entity_type}</span>
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-secondary-100 text-secondary-700 font-medium">{selectedEntity.domain}</span>
+                </div>
+                <h2 className="text-lg font-bold text-foreground-950 mb-4">{selectedEntity.entity_name}</h2>
+                <p className="text-sm text-foreground-600 mb-6">{selectedEntity.description}</p>
+
+                {selectedEntity.related_entities && selectedEntity.related_entities.length > 0 && (
+                  <div className="mb-6">
+                    <h4 className="text-sm font-semibold text-foreground-950 mb-3">Entités Liées ({selectedEntity.related_entities.length})</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedEntity.related_entities.map((rel: string, i: number) => (
+                        <span key={i} className="text-xs px-3 py-1.5 rounded-full bg-background-100 border border-background-200/70 text-foreground-700">
+                          {rel}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {selectedEntity.tags && (
+                  <div className="flex flex-wrap gap-2">
+                    {selectedEntity.tags.map((tag: string, i: number) => (
+                      <span key={i} className="text-[10px] px-2 py-0.5 rounded-full bg-secondary-100 text-secondary-700">{tag}</span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* BLOC 30 — Enterprise Operating System */}
+        {activeTab === 'enterprise-os' && (
+          <div className="space-y-6">
+            {/* Vision 2030 */}
+            <div className="bg-background-50 rounded-lg border border-background-200/70 p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 flex items-center justify-center rounded-lg bg-foreground-950 text-background-50">
+                  <i className="ri-cpu-line text-lg"></i>
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-foreground-950">KOS Enterprise Operating System™</h2>
+                  <p className="text-xs text-foreground-500">BLOC 30 — Vision KOS 2030™</p>
+                </div>
+              </div>
+              <p className="text-sm text-foreground-600 mb-6">
+                À maturité, KOS devient un système d'exploitation de cabinet de conseil, capable d'orchestrer la production intellectuelle, les missions, la gouvernance, la veille stratégique, le marketing, la connaissance et l'amélioration continue.
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+                {['Conseil', 'Audit', 'Recherche', 'Gouvernance', 'Marketing', 'SEO', 'Finance', 'Innovation', 'Formation', 'Opérations'].map((fn) => (
+                  <div key={fn} className="p-3 bg-background-100 rounded-lg text-center border border-background-200/70">
+                    <i className="ri-check-line text-accent-500 text-xs"></i>
+                    <div className="text-xs font-medium text-foreground-700 mt-1">{fn}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Modules Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {enterpriseOSMock.map((mod) => (
+                <div key={mod.id} onClick={() => setSelectedModule(mod)} className={`p-4 rounded-lg border cursor-pointer transition-colors ${selectedModule.id === mod.id ? 'border-foreground-300 bg-foreground-50/50 ring-1 ring-foreground-200' : 'border-background-200/70 bg-background-50 hover:border-background-300/60'}`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-secondary-100 text-secondary-700">{mod.capability_domain}</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${mod.integration_status === 'active' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>{mod.integration_status}</span>
+                  </div>
+                  <h3 className="text-sm font-bold text-foreground-950 mb-2">{mod.module_name}</h3>
+                  <p className="text-xs text-foreground-600 mb-3 line-clamp-2">{mod.description}</p>
+                  <div className="mb-2">
+                    <div className="flex items-center justify-between text-xs mb-1">
+                      <span className="text-foreground-500">Maturité</span>
+                      <span className="font-bold text-foreground-950">{mod.maturity_score}% → {mod.target_score}%</span>
+                    </div>
+                    <div className="h-1.5 bg-background-200/70 rounded-full overflow-hidden">
+                      <div className="h-full bg-accent-500 rounded-full" style={{ width: `${mod.maturity_score}%` }}></div>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-foreground-500">Automation</span>
+                    <span className="font-bold text-foreground-950">{mod.automation_level}%</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Maturité Cible */}
+            <div className="bg-background-50 rounded-lg border border-background-200/70 p-6">
+              <h3 className="text-sm font-bold text-foreground-950 mb-4">Maturité Cible KOS 2030™ — Échelle Big Four</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                {[
+                  { domain: 'Gouvernance', current: 100, target: 95 },
+                  { domain: 'Capitalisation', current: 100, target: 95 },
+                  { domain: 'Production intellectuelle', current: 100, target: 95 },
+                  { domain: 'Recherche & Veille', current: 100, target: 95 },
+                  { domain: 'Automatisation', current: 100, target: 90 },
+                  { domain: 'SEO & Autorité', current: 100, target: 90 },
+                  { domain: 'DevOps & WebOps', current: 100, target: 90 },
+                  { domain: 'Pilotage KPI', current: 100, target: 95 },
+                  { domain: 'Expérience client', current: 100, target: 90 },
+                  { domain: 'Intelligence décisionnelle', current: 100, target: 95 },
+                ].map((item) => (
+                  <div key={item.domain} className="p-4 bg-background-100 rounded-lg border border-background-200/70">
+                    <div className="text-xs text-foreground-500 mb-2">{item.domain}</div>
+                    <div className="flex items-end gap-2 mb-2">
+                      <span className="text-lg font-bold text-foreground-950">{item.current}%</span>
+                      <span className="text-xs text-foreground-400 mb-0.5">→ {item.target}%</span>
+                    </div>
+                    <div className="h-2 bg-background-200/70 rounded-full overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all"
+                        style={{
+                          width: `${item.current}%`,
+                          background: `linear-gradient(90deg, oklch(var(--accent-500)) ${item.current}%, oklch(var(--accent-200)) ${item.target}%)`,
+                        }}
+                      ></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </KOSHubLayout>
+  );
+}

@@ -1,0 +1,75 @@
+import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '@/lib/supabase';
+import {
+  MOCK_BUILDS,
+  MOCK_PIPELINE_STAGES,
+  MOCK_QUALITY_GATES,
+  MOCK_DEPLOYMENTS,
+  MOCK_POST_DEPLOY_REPORTS,
+  MOCK_PIPELINE_OVERVIEW,
+} from '@/mocks/kosDeploymentPipeline';
+import type {
+  BuildRecord,
+  PipelineStage,
+  QualityGate,
+  DeploymentRecord,
+  PostDeployReport,
+  PipelineOverview,
+} from '@/mocks/kosDeploymentPipeline';
+
+interface PipelineState {
+  overview: PipelineOverview;
+  builds: BuildRecord[];
+  stages: PipelineStage[];
+  gates: QualityGate[];
+  deployments: DeploymentRecord[];
+  reports: PostDeployReport[];
+  loading: boolean;
+  error: string | null;
+}
+
+export function useDeploymentPipeline() {
+  const [state, setState] = useState<PipelineState>({
+    overview: MOCK_PIPELINE_OVERVIEW,
+    builds: [],
+    stages: [],
+    gates: [],
+    deployments: [],
+    reports: [],
+    loading: true,
+    error: null,
+  });
+  const [isLive, setIsLive] = useState(false);
+
+  const refresh = useCallback(async () => {
+    setState((prev) => ({ ...prev, loading: true, error: null }));
+    try {
+      const { data } = await supabase.from('pipeline_state').select('id').limit(1);
+      if (data && data.length > 0) setIsLive(true);
+      
+      await new Promise((r) => setTimeout(r, 400));
+      setState({
+        overview: MOCK_PIPELINE_OVERVIEW,
+        builds: MOCK_BUILDS,
+        stages: MOCK_PIPELINE_STAGES,
+        gates: MOCK_QUALITY_GATES,
+        deployments: MOCK_DEPLOYMENTS,
+        reports: MOCK_POST_DEPLOY_REPORTS,
+        loading: false,
+        error: null,
+      });
+    } catch (err) {
+      setState((prev) => ({
+        ...prev,
+        loading: false,
+        error: (err as Error).message || 'Erreur de chargement du pipeline',
+      }));
+    }
+  }, []);
+
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
+
+  return { ...state, refresh, isLive };
+}

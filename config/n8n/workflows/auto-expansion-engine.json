@@ -1,0 +1,333 @@
+{
+  "name": "KOS Auto-Expansion Engine — Croissance Organique",
+  "active": true,
+  "settings": {
+    "saveExecutionProgress": true,
+    "saveManualExecutions": true,
+    "timezone": "Africa/Douala",
+    "executionOrder": "v1"
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "hours", "hoursInterval": 3 }]
+        }
+      },
+      "id": "trigger-auto-expand",
+      "name": "Every 3 Hours — Auto-Expansion Scan",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/regulatory_sources?select=*&is_active=eq.true&order=last_crawled_at.asc.nullslast&limit=5",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_ANON_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_ANON_KEY }}" }
+          ]
+        }
+      },
+      "id": "fetch-stale-sources",
+      "name": "Fetch Stale Regulatory Sources",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [450, 200]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/rag_documents?select=count&status=eq.pending_embedding",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_ANON_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_ANON_KEY }}" },
+            { "name": "Prefer", "value": "count=exact" }
+          ]
+        }
+      },
+      "id": "count-pending-embeddings",
+      "name": "Count Pending Embeddings",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [450, 400]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/kos_agents?select=*&status=eq.active&last_run_at=lt.NOW() - INTERVAL '12 hours'&limit=10",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_ANON_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_ANON_KEY }}" }
+          ]
+        }
+      },
+      "id": "fetch-stale-agents",
+      "name": "Fetch Stale Agents",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [450, 600]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "http://qdrant:6333/collections",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": []
+        }
+      },
+      "id": "check-qdrant-health",
+      "name": "Check Qdrant Collections Health",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [450, 800]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ═══ KOS AUTO-EXPANSION SYNTHESIS ENGINE ═══\nconst staleSources = $input.all()[0]?.json || [];\nconst pendingCount = $input.all()[1]?.headers?.content_range ? parseInt($input.all()[1].headers.content_range.split('/')[1]) : 0;\nconst staleAgents = $input.all()[2]?.json || [];\nconst qdrantStatus = $input.all()[3]?.json || {};\n\nconst now = new Date().toISOString();\n\n// Build expansion decision engine\nconst expansion = {\n  timestamp: now,\n  decisions: [],\n  summary: {\n    sources_to_crawl: staleSources.length,\n    pending_embeddings: pendingCount,\n    agents_to_reactivate: staleAgents.length,\n    qdrant_collections_ok: qdrantStatus.result?.collections?.length > 0 || false,\n    action_required: false\n  }\n};\n\n// Decision 1: Trigger crawls for stale sources\nif (staleSources.length > 0) {\n  expansion.summary.action_required = true;\n  for (const source of staleSources) {\n    expansion.decisions.push({\n      type: 'crawl_source',\n      source_id: source.id,\n      source_name: source.name,\n      source_url: source.url,\n      regulator: source.regulator,\n      priority: source.priority || 'medium',\n      reason: 'stale_source',\n      last_crawled: source.last_crawled_at\n    });\n  }\n}\n\n// Decision 2: Trigger embedding for pending documents\nif (pendingCount > 0) {\n  expansion.summary.action_required = true;\n  expansion.decisions.push({\n    type: 'embed_documents',\n    count: pendingCount,\n    priority: 'high',\n    reason: 'pending_embeddings',\n    target_collections: ['kos_regulatory_knowledge', 'kos_business_knowledge']\n  });\n}\n\n// Decision 3: Reactivate stale agents\nif (staleAgents.length > 0) {\n  expansion.summary.action_required = true;\n  for (const agent of staleAgents) {\n    expansion.decisions.push({\n      type: 'reactivate_agent',\n      agent_id: agent.id,\n      agent_name: agent.name,\n      agent_type: agent.agent_type,\n      last_run: agent.last_run_at\n    });\n  }\n}\n\n// Decision 4: Optimize Qdrant collections if fragmentation > 20%\nif (expansion.summary.qdrant_collections_ok) {\n  expansion.decisions.push({\n    type: 'optimize_qdrant',\n    collections: qdrantStatus.result?.collections?.map(c => c.name) || [],\n    reason: 'routine_optimization'\n  });\n}\n\nreturn expansion;\n"
+      },
+      "id": "synthesize-expansion",
+      "name": "Synthesize Expansion Decisions",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [650, 400]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            { "value1": "={{ $json.summary.action_required }}", "value2": true }
+          ]
+        }
+      },
+      "id": "check-action-required",
+      "name": "Action Required?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [850, 400]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ═══ EXECUTE CRAWL DECISIONS ═══\nconst expansion = $input.all()[0]?.json;\nconst crawlDecisions = (expansion.decisions || []).filter(d => d.type === 'crawl_source');\n\nif (crawlDecisions.length === 0) {\n  return { executed: false, reason: 'no_crawl_decisions' };\n}\n\n// Build crawl payloads\nconst crawlPayloads = crawlDecisions.map(d => ({\n  source_id: d.source_id,\n  source_name: d.source_name,\n  source_url: d.source_url,\n  regulator: d.regulator,\n  priority: d.priority,\n  timestamp: new Date().toISOString()\n}));\n\nreturn {\n  executed: true,\n  count: crawlPayloads.length,\n  payloads: crawlPayloads\n};\n"
+      },
+      "id": "prepare-crawl-jobs",
+      "name": "Prepare Crawl Jobs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1050, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://kos-universal-crawler:3400/api/crawl",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ sources: $json.payloads, mode: 'expansion' }) }}"
+      },
+      "id": "trigger-crawls",
+      "name": "Trigger Universal Crawler",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1250, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ═══ EXECUTE EMBEDDING DECISIONS ═══\nconst expansion = $input.all()[0]?.json;\nconst embedDecisions = (expansion.decisions || []).filter(d => d.type === 'embed_documents');\n\nif (embedDecisions.length === 0) {\n  return { executed: false };\n}\n\nreturn {\n  executed: true,\n  count: embedDecisions[0]?.count || 0,\n  collections: embedDecisions[0]?.target_collections || []\n};\n"
+      },
+      "id": "prepare-embed-jobs",
+      "name": "Prepare Embedding Jobs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1050, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://kos-embedder:8001/embed/batch",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ mode: 'auto_expansion', collections: $json.collections, limit: $json.count }) }}"
+      },
+      "id": "trigger-embeddings",
+      "name": "Trigger Embedding Pipeline",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1250, 400]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ═══ EXECUTE AGENT REACTIVATION ═══\nconst expansion = $input.all()[0]?.json;\nconst agentDecisions = (expansion.decisions || []).filter(d => d.type === 'reactivate_agent');\n\nif (agentDecisions.length === 0) {\n  return { executed: false };\n}\n\nconst agentPayloads = agentDecisions.map(d => ({\n  agent_id: d.agent_id,\n  agent_name: d.agent_name,\n  trigger: 'auto_expansion',\n  timestamp: new Date().toISOString()\n}));\n\nreturn {\n  executed: true,\n  count: agentPayloads.length,\n  agents: agentPayloads\n};\n"
+      },
+      "id": "prepare-agent-jobs",
+      "name": "Prepare Agent Reactivation",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1050, 600]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/kos_agents",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_ANON_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_ANON_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "Prefer", "value": "return=minimal" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.agents.map(a => ({ id: a.agent_id, status: 'active', last_run_at: new Date().toISOString() }))) }}"
+      },
+      "id": "reactivate-agents",
+      "name": "Reactivate Stale Agents",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1250, 600]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://qdrant:6333/collections/kos_regulatory_knowledge/points/scroll",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \"limit\": 1, \"with_vector\": false }"
+      },
+      "id": "check-collection-health",
+      "name": "Verify Qdrant Collection Health",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1250, 800]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ═══ COMPILE EXPANSION EXECUTION REPORT ═══\nconst crawlResult = $input.all()[0]?.json || {};\nconst embedResult = $input.all()[1]?.json || {};\nconst agentResult = $input.all()[2]?.json || {};\nconst qdrantCheck = $input.all()[3]?.json || {};\n\nconst report = {\n  timestamp: new Date().toISOString(),\n  cycle: 'auto_expansion',\n  executions: {\n    crawls_triggered: crawlResult.count || 0,\n    embeddings_triggered: embedResult.count || 0,\n    agents_reactivated: agentResult.count || 0,\n    qdrant_healthy: qdrantCheck.result ? true : false\n  },\n  status: 'completed'\n};\n\nreturn report;\n"
+      },
+      "id": "compile-report",
+      "name": "Compile Expansion Report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1450, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://memory-engine:3003/store",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ memory_type: 'auto_expansion', title: 'Auto-Expansion Cycle ' + new Date().toISOString(), content: JSON.stringify($json), tags: ['auto-expansion', 'infrastructure', 'growth'], source: 'n8n-auto-expansion-engine', confidence: 0.98 }) }}"
+      },
+      "id": "store-expansion-memory",
+      "name": "Store Expansion Memory",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1650, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://audit-service:3002/log",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "event", "value": "auto_expansion_cycle_complete" },
+            { "name": "service", "value": "n8n-auto-expansion-engine" },
+            { "name": "payload", "value": "={{ JSON.stringify($json) }}" },
+            { "name": "timestamp", "value": "={{ $now.toISOString() }}" }
+          ]
+        }
+      },
+      "id": "audit-expansion-log",
+      "name": "Audit Trail — Expansion",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1850, 400]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ═══ AUTO-EXPANSION NO-OP — Nothing to expand ═══\nreturn {\n  timestamp: new Date().toISOString(),\n  cycle: 'auto_expansion',\n  status: 'no_action_required',\n  message: 'All systems optimal — no expansion needed this cycle.'\n};\n"
+      },
+      "id": "no-op-report",
+      "name": "No Action Report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1050, 900]
+    }
+  ],
+  "connections": {
+    "Every 3 Hours — Auto-Expansion Scan": {
+      "main": [[
+        { "node": "Fetch Stale Regulatory Sources", "type": "main", "index": 0 },
+        { "node": "Count Pending Embeddings", "type": "main", "index": 0 },
+        { "node": "Fetch Stale Agents", "type": "main", "index": 0 },
+        { "node": "Check Qdrant Collections Health", "type": "main", "index": 0 }
+      ]]
+    },
+    "Fetch Stale Regulatory Sources": {
+      "main": [[{ "node": "Synthesize Expansion Decisions", "type": "main", "index": 0 }]]
+    },
+    "Count Pending Embeddings": {
+      "main": [[{ "node": "Synthesize Expansion Decisions", "type": "main", "index": 0 }]]
+    },
+    "Fetch Stale Agents": {
+      "main": [[{ "node": "Synthesize Expansion Decisions", "type": "main", "index": 0 }]]
+    },
+    "Check Qdrant Collections Health": {
+      "main": [[{ "node": "Synthesize Expansion Decisions", "type": "main", "index": 0 }]]
+    },
+    "Synthesize Expansion Decisions": {
+      "main": [[{ "node": "Action Required?", "type": "main", "index": 0 }]]
+    },
+    "Action Required?": {
+      "main": [
+        [
+          { "node": "Prepare Crawl Jobs", "type": "main", "index": 0 },
+          { "node": "Prepare Embedding Jobs", "type": "main", "index": 0 },
+          { "node": "Prepare Agent Reactivation", "type": "main", "index": 0 }
+        ],
+        [{ "node": "No Action Report", "type": "main", "index": 0 }]
+      ]
+    },
+    "Prepare Crawl Jobs": {
+      "main": [[{ "node": "Trigger Universal Crawler", "type": "main", "index": 0 }]]
+    },
+    "Trigger Universal Crawler": {
+      "main": [[{ "node": "Compile Expansion Report", "type": "main", "index": 0 }]]
+    },
+    "Prepare Embedding Jobs": {
+      "main": [[{ "node": "Trigger Embedding Pipeline", "type": "main", "index": 0 }]]
+    },
+    "Trigger Embedding Pipeline": {
+      "main": [[{ "node": "Compile Expansion Report", "type": "main", "index": 0 }]]
+    },
+    "Prepare Agent Reactivation": {
+      "main": [[{ "node": "Reactivate Stale Agents", "type": "main", "index": 0 }]]
+    },
+    "Reactivate Stale Agents": {
+      "main": [[{ "node": "Compile Expansion Report", "type": "main", "index": 0 }]]
+    },
+    "Check Qdrant Collections Health": {},
+    "Verify Qdrant Collection Health": {
+      "main": [[{ "node": "Compile Expansion Report", "type": "main", "index": 0 }]]
+    },
+    "Compile Expansion Report": {
+      "main": [[{ "node": "Store Expansion Memory", "type": "main", "index": 0 }]]
+    },
+    "Store Expansion Memory": {
+      "main": [[{ "node": "Audit Trail — Expansion", "type": "main", "index": 0 }]]
+    },
+    "No Action Report": {
+      "main": [[{ "node": "Store Expansion Memory", "type": "main", "index": 0 }]]
+    }
+  }
+}

@@ -1,0 +1,143 @@
+{
+  "template_name": "KHEPRA-KOS-360-Multilang",
+  "description": "Template vidéo vertical 1080x1920 — 60s multilingue BCEAO/COBAC pour PME Afrique",
+  "output_format": "mp4",
+  "width": 1080,
+  "height": 1920,
+  "duration": 60,
+  "elements": [
+    {
+      "id": "bg",
+      "type": "video",
+      "source": "https://khepraexperts.com/assets/bg-corporate.mp4",
+      "duration": 60,
+      "track": 1
+    },
+    {
+      "id": "logo",
+      "type": "image",
+      "source": "https://khepraexperts.com/logo-khepra-white.png",
+      "x": "90%",
+      "y": "5%",
+      "width": "8%",
+      "track": 2
+    },
+    {
+      "id": "hook_text",
+      "type": "text",
+      "text": "{{ Text_Hook_FR }}",
+      "x": "50%",
+      "y": "20%",
+      "width": "80%",
+      "font_family": "Montserrat",
+      "font_weight": "900",
+      "font_size": "72px",
+      "fill_color": "#FFFFFF",
+      "animations": [{ "type": "text-appear", "duration": 0.5 }],
+      "track": 3,
+      "time": 0,
+      "duration": 3
+    },
+    {
+      "id": "body_text",
+      "type": "text",
+      "text": "{{ Text_Body_FR }}",
+      "x": "50%",
+      "y": "50%",
+      "width": "85%",
+      "font_size": "42px",
+      "fill_color": "#F1F5F9",
+      "text_align": "center",
+      "track": 3,
+      "time": 3,
+      "duration": 50
+    },
+    {
+      "id": "cta_text",
+      "type": "text",
+      "text": "Diagnostic Gratuit → khepraexperts.com/diagnostic",
+      "x": "50%",
+      "y": "85%",
+      "font_size": "36px",
+      "fill_color": "#10B981",
+      "font_weight": "700",
+      "track": 3,
+      "time": 53,
+      "duration": 7
+    },
+    {
+      "id": "voice_fr",
+      "type": "audio",
+      "source": "{{ Voiceover_FR }}",
+      "track": 4,
+      "time": 0
+    },
+    {
+      "id": "subtitle_fr",
+      "type": "text",
+      "text": "{{ Subtitle_FR }}",
+      "x": "50%",
+      "y": "92%",
+      "width": "90%",
+      "font_size": "28px",
+      "fill_color": "#FFFFFF",
+      "background_color": "#00000080",
+      "track": 5
+    }
+  ],
+  "modifications_schema": {
+    "Text_Hook_FR": "string (Hook 3s en français)",
+    "Text_Body_FR": "string (Corps du script en français)",
+    "Voiceover_FR": "string (URL audio FR)",
+    "Subtitle_FR": "string (Sous-titres FR)",
+    "Text_Hook_WO": "string (Hook Wolof)",
+    "Voiceover_WO": "string (URL audio Wolof)",
+    "Text_Hook_EE": "string (Hook Ewe)",
+    "Voiceover_EE": "string (URL audio Ewe)",
+    "Text_Hook_LN": "string (Hook Lingala)",
+    "Voiceover_LN": "string (URL audio Lingala)",
+    "Text_Hook_HA": "string (Hook Hausa)",
+    "Voiceover_HA": "string (URL audio Hausa)",
+    "Text_Hook_EN": "string (Hook English)",
+    "Voiceover_EN": "string (URL audio English)",
+    "Text_Hook_AR": "string (Hook Arabic)",
+    "Voiceover_AR": "string (URL audio Arabic)",
+    "Text_Hook_PT": "string (Hook Portuguese)",
+    "Voiceover_PT": "string (URL audio Portuguese)"
+  },
+  "n8n_integration": {
+    "node_type": "n8n-nodes-base.httpRequest",
+    "url": "https://api.creatomate.com/v1/renders",
+    "method": "POST",
+    "headers": {
+      "Authorization": "Bearer {{ $env.CREATOMATE_KEY }}",
+      "Content-Type": "application/json"
+    },
+    "body_template": {
+      "template_id": "khepra-kos-360-multilang",
+      "modifications": {
+        "Text_Hook_FR": "{{$json.scripts.fr.hook}}",
+        "Text_Body_FR": "{{$json.scripts.fr.body}}",
+        "Voiceover_FR": "{{$json.audio.fr}}",
+        "Text_Hook_WO": "{{$json.scripts.wo.hook}}",
+        "Voiceover_WO": "{{$json.audio.wo}}",
+        "Text_Hook_EE": "{{$json.scripts.ee.hook}}",
+        "Voiceover_EE": "{{$json.audio.ee}}",
+        "Text_Hook_LN": "{{$json.scripts.ln.hook}}",
+        "Voiceover_LN": "{{$json.audio.ln}}",
+        "Text_Hook_HA": "{{$json.scripts.ha.hook}}",
+        "Voiceover_HA": "{{$json.audio.ha}}",
+        "Text_Hook_EN": "{{$json.scripts.en.hook}}",
+        "Voiceover_EN": "{{$json.audio.en}}",
+        "Text_Hook_AR": "{{$json.scripts.ar.hook}}",
+        "Voiceover_AR": "{{$json.audio.ar}}",
+        "Text_Hook_PT": "{{$json.scripts.pt.hook}}",
+        "Voiceover_PT": "{{$json.audio.pt}}"
+      },
+      "output_format": "mp4",
+      "width": 1080,
+      "height": 1920,
+      "duration": 60
+    }
+  }
+}

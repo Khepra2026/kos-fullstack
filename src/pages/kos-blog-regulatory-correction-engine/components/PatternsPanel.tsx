@@ -1,0 +1,119 @@
+import type { RegulatoryPattern } from '@/mocks/kosSelfLearningEngine';
+
+interface PatternsPanelProps {
+  patterns: RegulatoryPattern[];
+}
+
+const severityColors: Record<string, string> = {
+  critique: 'bg-red-100 text-red-800 border-red-200',
+  élevé: 'bg-amber-100 text-amber-800 border-amber-200',
+  moyen: 'bg-secondary-100 text-secondary-800 border-secondary-200',
+};
+
+const severityBorderColors: Record<string, string> = {
+  critique: 'border-l-red-500',
+  élevé: 'border-l-amber-500',
+  moyen: 'border-l-secondary-500',
+};
+
+const categoryLabels: Record<string, string> = {
+  formulation: 'Formulation',
+  source: 'Traçabilité',
+  governance: 'Gouvernance',
+  aml_cft: 'AML/CFT',
+  prudential: 'Prudentiel',
+  legal: 'Juridique',
+};
+
+export default function PatternsPanel({ patterns }: PatternsPanelProps) {
+  const grouped = patterns.reduce<Record<string, RegulatoryPattern[]>>((acc, p) => {
+    if (!acc[p.severity]) acc[p.severity] = [];
+    acc[p.severity].push(p);
+    return acc;
+  }, {});
+
+  const order = ['critique', 'élevé', 'moyen'];
+
+  return (
+    <div className="space-y-6">
+      {order.map(severity => {
+        const items = grouped[severity];
+        if (!items || items.length === 0) return null;
+
+        return (
+          <div key={severity}>
+            <h2 className="text-lg font-bold text-foreground-950 mb-4 font-heading flex items-center gap-3">
+              <span className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                severity === 'critique' ? 'bg-red-100 text-red-700' :
+                severity === 'élevé' ? 'bg-amber-100 text-amber-700' :
+                'bg-secondary-100 text-secondary-700'
+              }`}>
+                <i className={`${severity === 'critique' ? 'ri-error-warning-line' : severity === 'élevé' ? 'ri-alert-line' : 'ri-information-line'} text-lg`}></i>
+              </span>
+              <div>
+                Patterns {severity === 'critique' ? 'Critiques' : severity === 'élevé' ? 'Élevés' : 'Moyens'}
+                <span className="text-sm font-normal text-foreground-400 ml-2">({items.length})</span>
+              </div>
+            </h2>
+            <div className="space-y-3">
+              {items.map(pattern => (
+                <div
+                  key={pattern.id}
+                  className={`p-5 rounded-2xl bg-background-100 border border-background-200 border-l-4 ${severityBorderColors[severity]}`}
+                >
+                  <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3 mb-3">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${severityColors[severity]}`}>
+                          {pattern.id}
+                        </span>
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-background-200 text-foreground-600 font-semibold">
+                          {categoryLabels[pattern.category] || pattern.category}
+                        </span>
+                        <span className="text-[10px] text-foreground-400">
+                          {pattern.occurrencesFound} occurrences
+                        </span>
+                      </div>
+                      <p className="text-sm font-semibold text-foreground-900">{pattern.description}</p>
+                    </div>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-3 mt-3">
+                    <div className="p-3 rounded-lg bg-red-50 border border-red-200">
+                      <p className="text-[10px] font-bold text-red-600 uppercase mb-1">Pattern Détecté</p>
+                      <p className="text-xs text-red-800 font-mono">{pattern.pattern}</p>
+                    </div>
+                    <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200">
+                      <p className="text-[10px] font-bold text-emerald-600 uppercase mb-1">Correction Appliquée</p>
+                      <p className="text-xs text-emerald-800 font-semibold">{pattern.correction}</p>
+                    </div>
+                  </div>
+
+                  <div className="mt-3 p-3 rounded-lg bg-primary-50 border border-primary-200">
+                    <p className="text-[10px] font-bold text-primary-600 uppercase mb-1">
+                      <i className="ri-lightbulb-line mr-1"></i>Règle d&apos;Autoapprentissage
+                    </p>
+                    <p className="text-xs text-primary-800">{pattern.rule}</p>
+                  </div>
+
+                  {pattern.sourceArticles.length > 0 && (
+                    <div className="mt-3 flex items-center gap-2">
+                      <span className="text-[10px] text-foreground-400 flex-shrink-0">Articles concernés :</span>
+                      <div className="flex flex-wrap gap-1">
+                        {pattern.sourceArticles.map((slug, i) => (
+                          <span key={i} className="text-[10px] px-2 py-0.5 rounded-full bg-background-200 text-foreground-500">
+                            {slug}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}

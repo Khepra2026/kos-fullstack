@@ -1,0 +1,263 @@
+{
+  "name": "KOS Knowledge Auto-Expansion — RAG Enrichment Pipeline",
+  "active": true,
+  "settings": {
+    "saveExecutionProgress": true,
+    "saveManualExecutions": true,
+    "timezone": "Africa/Douala",
+    "executionOrder": "v1"
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "hours", "hoursInterval": 6 }]
+        }
+      },
+      "id": "trigger-knowledge",
+      "name": "Every 6 Hours — Knowledge Expansion",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/rag_documents?select=id,title,source,status,created_at&status=eq.pending_review&order=created_at.desc&limit=50",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_ANON_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_ANON_KEY }}" }
+          ]
+        }
+      },
+      "id": "fetch-pending-review",
+      "name": "Fetch Documents Pending Review",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [450, 200]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/rag_documents?select=id,title,source,status&status=eq.approved&embedded=eq.false&order=created_at.asc&limit=50",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_ANON_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_ANON_KEY }}" }
+          ]
+        }
+      },
+      "id": "fetch-pending-embedding",
+      "name": "Fetch Approved — Not Embedded",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [450, 400]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/kos_knowledge_kpis?select=*&order=created_at.desc&limit=1",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_ANON_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_ANON_KEY }}" }
+          ]
+        }
+      },
+      "id": "fetch-kpi-latest",
+      "name": "Fetch Latest Knowledge KPIs",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [450, 600]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ═══ KOS KNOWLEDGE AUTO-EXPANSION ANALYZER ═══\nconst pendingReview = $input.all()[0]?.json || [];\nconst pendingEmbedding = $input.all()[1]?.json || [];\nconst latestKpi = $input.all()[2]?.json || [];\n\nconst now = new Date().toISOString();\n\nconst analysis = {\n  timestamp: now,\n  pending_review_count: pendingReview.length,\n  pending_embedding_count: pendingEmbedding.length,\n  latest_kpi: latestKpi[0] || null,\n  action_required: pendingReview.length > 0 || pendingEmbedding.length > 0,\n  batch_plan: []\n};\n\n// Plan auto-review for pending documents\nif (pendingReview.length > 0) {\n  // Auto-approve documents from trusted sources\n  const trustedSources = ['BCEAO', 'COBAC', 'OHADA', 'GAFI', 'BANK_OF_GHANA'];\n  const autoApprove = pendingReview.filter(d => \n    trustedSources.some(s => (d.source || '').toUpperCase().includes(s))\n  );\n  \n  if (autoApprove.length > 0) {\n    analysis.batch_plan.push({\n      action: 'auto_approve',\n      count: autoApprove.length,\n      doc_ids: autoApprove.map(d => d.id),\n      priority: 'high',\n      reason: 'trusted_regulatory_source'\n    });\n  }\n  \n  // Queue remaining for human review\n  const needReview = pendingReview.filter(d => \n    !trustedSources.some(s => (d.source || '').toUpperCase().includes(s))\n  );\n  \n  if (needReview.length > 0) {\n    analysis.batch_plan.push({\n      action: 'queue_review',\n      count: needReview.length,\n      doc_ids: needReview.map(d => d.id),\n      priority: 'medium',\n      reason: 'requires_human_review'\n    });\n  }\n}\n\n// Plan embedding for approved documents\nif (pendingEmbedding.length > 0) {\n  // Determine target Qdrant collection based on source\n  const batches = {};\n  for (const doc of pendingEmbedding) {\n    const source = (doc.source || 'general').toUpperCase();\n    let collection = 'kos_business_knowledge';\n    \n    if (source.includes('BCEAO') || source.includes('COBAC') || source.includes('OHADA') || source.includes('GAFI')) {\n      collection = 'kos_regulatory_knowledge';\n    } else if (source.includes('AUDIT') || source.includes('KHEPRA')) {\n      collection = 'kos_audit_intelligence';\n    }\n    \n    if (!batches[collection]) batches[collection] = [];\n    batches[collection].push(doc.id);\n  }\n  \n  for (const [collection, docIds] of Object.entries(batches)) {\n    analysis.batch_plan.push({\n      action: 'embed_to_qdrant',\n      collection: collection,\n      count: docIds.length,\n      doc_ids: docIds,\n      priority: 'high'\n    });\n  }\n}\n\nreturn analysis;\n"
+      },
+      "id": "analyze-knowledge",
+      "name": "Analyze Knowledge Pipeline",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [650, 400]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            { "value1": "={{ $json.action_required }}", "value2": true }
+          ]
+        }
+      },
+      "id": "check-knowledge-action",
+      "name": "Knowledge Action Required?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [850, 400]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ═══ AUTO-APPROVE TRUSTED DOCUMENTS ═══\nconst analysis = $input.all()[0]?.json;\nconst autoApprove = (analysis.batch_plan || []).filter(p => p.action === 'auto_approve');\n\nif (autoApprove.length === 0) {\n  return { executed: false };\n}\n\nreturn {\n  executed: true,\n  total_docs: autoApprove.reduce((sum, p) => sum + p.count, 0),\n  batches: autoApprove\n};\n"
+      },
+      "id": "prepare-auto-approve",
+      "name": "Prepare Auto-Approve",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1050, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ═══ BUILD PATCH URL ═══\nconst batches = $input.all()[0]?.json?.batches || [];\nif (batches.length === 0) return { url: null };\nconst ids = batches[0].doc_ids.join(',');\nconst baseUrl = ($env.SUPABASE_URL || '').replace(/\\/$/, '');\nreturn { url: baseUrl + '/rest/v1/rag_documents?id=in.(' + ids + ')', ids: ids };\n"
+      },
+      "id": "build-patch-url",
+      "name": "Build Approval URL",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1250, 100]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $json.url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_ANON_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_ANON_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "Prefer", "value": "return=minimal" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ status: 'approved', auto_approved: true, approved_at: new Date().toISOString() }) }}"
+      },
+      "id": "auto-approve-docs",
+      "name": "Auto-Approve Trusted Docs",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1250, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ═══ TRIGGER EMBEDDING PIPELINE ═══\nconst analysis = $input.all()[0]?.json;\nconst embedBatches = (analysis.batch_plan || []).filter(p => p.action === 'embed_to_qdrant');\n\nif (embedBatches.length === 0) {\n  return { executed: false };\n}\n\nreturn {\n  executed: true,\n  batches: embedBatches.map(b => ({\n    collection: b.collection,\n    doc_ids: b.doc_ids,\n    count: b.count\n  }))\n};\n"
+      },
+      "id": "prepare-embedding",
+      "name": "Prepare Embedding Pipeline",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1050, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://kos-embedder:8001/embed/batch",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ mode: 'knowledge_expansion', batches: $json.batches, source: 'n8n-knowledge-expansion' }) }}"
+      },
+      "id": "trigger-embedding",
+      "name": "Trigger Embedding Pipeline",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1250, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://memory-engine:3003/store",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ memory_type: 'knowledge_expansion', title: 'Knowledge Expansion Cycle ' + new Date().toISOString(), content: JSON.stringify($json), tags: ['knowledge', 'rag', 'expansion'], source: 'n8n-knowledge-expansion-engine', confidence: 0.98 }) }}"
+      },
+      "id": "store-knowledge-memory",
+      "name": "Store Knowledge Memory",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1450, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://audit-service:3002/log",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "event", "value": "knowledge_expansion_cycle_complete" },
+            { "name": "service", "value": "n8n-knowledge-expansion-engine" },
+            { "name": "payload", "value": "={{ JSON.stringify($json) }}" }
+          ]
+        }
+      },
+      "id": "audit-knowledge-log",
+      "name": "Audit Trail — Knowledge",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1650, 400]
+    },
+    {
+      "parameters": {
+        "jsCode": "return {\n  timestamp: new Date().toISOString(),\n  status: 'no_action',\n  message: 'Knowledge pipeline up to date — no new documents to process.'\n};\n"
+      },
+      "id": "no-op-knowledge",
+      "name": "Pipeline Up-to-Date",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1050, 600]
+    }
+  ],
+  "connections": {
+    "Every 6 Hours — Knowledge Expansion": {
+      "main": [[
+        { "node": "Fetch Documents Pending Review", "type": "main", "index": 0 },
+        { "node": "Fetch Approved — Not Embedded", "type": "main", "index": 0 },
+        { "node": "Fetch Latest Knowledge KPIs", "type": "main", "index": 0 }
+      ]]
+    },
+    "Fetch Documents Pending Review": {
+      "main": [[{ "node": "Analyze Knowledge Pipeline", "type": "main", "index": 0 }]]
+    },
+    "Fetch Approved — Not Embedded": {
+      "main": [[{ "node": "Analyze Knowledge Pipeline", "type": "main", "index": 0 }]]
+    },
+    "Fetch Latest Knowledge KPIs": {
+      "main": [[{ "node": "Analyze Knowledge Pipeline", "type": "main", "index": 0 }]]
+    },
+    "Analyze Knowledge Pipeline": {
+      "main": [[{ "node": "Knowledge Action Required?", "type": "main", "index": 0 }]]
+    },
+    "Knowledge Action Required?": {
+      "main": [
+        [
+          { "node": "Prepare Auto-Approve", "type": "main", "index": 0 },
+          { "node": "Prepare Embedding Pipeline", "type": "main", "index": 0 }
+        ],
+        [{ "node": "Pipeline Up-to-Date", "type": "main", "index": 0 }]
+      ]
+    },
+    "Prepare Auto-Approve": {
+      "main": [[{ "node": "Build Approval URL", "type": "main", "index": 0 }]]
+    },
+    "Build Approval URL": {
+      "main": [[{ "node": "Auto-Approve Trusted Docs", "type": "main", "index": 0 }]]
+    },
+    "Auto-Approve Trusted Docs": {
+      "main": [[{ "node": "Store Knowledge Memory", "type": "main", "index": 0 }]]
+    },
+    "Prepare Embedding Pipeline": {
+      "main": [[{ "node": "Trigger Embedding Pipeline", "type": "main", "index": 0 }]]
+    },
+    "Trigger Embedding Pipeline": {
+      "main": [[{ "node": "Store Knowledge Memory", "type": "main", "index": 0 }]]
+    },
+    "Store Knowledge Memory": {
+      "main": [[{ "node": "Audit Trail — Knowledge", "type": "main", "index": 0 }]]
+    },
+    "Pipeline Up-to-Date": {
+      "main": [[{ "node": "Audit Trail — Knowledge", "type": "main", "index": 0 }]]
+    }
+  }
+}

@@ -1,0 +1,519 @@
+import { useState, useMemo } from 'react';
+import { edgeFunctionSecurityStatus, securityDashboardStats, auditTimeline, recommendations } from '@/mocks/kosSecurityDashboard';
+
+function StatusBadge({ status }: { status: string }) {
+  const config: Record<string, { bg: string; text: string; label: string; icon: string }> = {
+    secure: { bg: 'bg-emerald-100', text: 'text-emerald-700', label: 'Sécurisé', icon: 'ri-shield-check-line' },
+    audit_pending: { bg: 'bg-amber-100', text: 'text-amber-700', label: 'Audit en attente', icon: 'ri-shield-user-line' },
+    to_merge: { bg: 'bg-sky-100', text: 'text-sky-700', label: 'À fusionner', icon: 'ri-git-merge-line' },
+    blocked: { bg: 'bg-red-100', text: 'text-red-700', label: 'Bloqué', icon: 'ri-forbid-2-line' },
+    acceptable_risk: { bg: 'bg-slate-100', text: 'text-slate-600', label: 'Risque acceptable', icon: 'ri-check-double-line' },
+  };
+  const c = config[status] || config.acceptable_risk;
+  return (
+    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${c.bg} ${c.text}`}>
+      <i className={`${c.icon} text-xs`}></i>
+      {c.label}
+    </span>
+  );
+}
+
+function RiskBadge({ level }: { level: string }) {
+  const config: Record<string, string> = {
+    critical: 'bg-red-500 text-white',
+    high: 'bg-orange-500 text-white',
+    medium: 'bg-amber-500 text-white',
+    low: 'bg-slate-400 text-white',
+  };
+  return (
+    <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${config[level] || config.low}`}>
+      {level}
+    </span>
+  );
+}
+
+function JWTIndicator({ protected: isProtected, adminCheck }: { protected: boolean; adminCheck: boolean }) {
+  if (isProtected && adminCheck) {
+    return (
+      <span className="inline-flex items-center gap-1 text-xs text-emerald-600 font-semibold">
+        <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+        JWT + Admin
+      </span>
+    );
+  }
+  if (isProtected) {
+    return (
+      <span className="inline-flex items-center gap-1 text-xs text-sky-600 font-semibold">
+        <span className="w-2 h-2 rounded-full bg-sky-500"></span>
+        JWT
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1 text-xs text-red-500 font-semibold">
+      <span className="w-2 h-2 rounded-full bg-red-400"></span>
+      Aucune
+    </span>
+  );
+}
+
+function ComplianceGauge({ score, target }: { score: number; target: number }) {
+  const radius = 54;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (score / 100) * circumference;
+
+  return (
+    <div className="relative w-36 h-36 flex items-center justify-center flex-shrink-0">
+      <svg width="144" height="144" viewBox="0 0 144 144" className="-rotate-90">
+        <circle cx="72" cy="72" r={radius} fill="none" stroke="oklch(var(--background-200))" strokeWidth="8" />
+        <circle
+          cx="72" cy="72" r={radius} fill="none"
+          stroke={score >= 90 ? 'oklch(var(--primary-500))' : score >= 70 ? 'oklch(var(--accent-500))' : '#ef4444'}
+          strokeWidth="8" strokeLinecap="round"
+          strokeDasharray={circumference} strokeDashoffset={offset}
+          className="transition-all duration-1000 ease-out"
+        />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span className="text-3xl font-bold text-foreground-950 font-heading">{score}%</span>
+        <span className="text-[11px] text-foreground-500 font-body">Cible {target}%</span>
+      </div>
+    </div>
+  );
+}
+
+function FunctionRow({ fn }: { fn: typeof edgeFunctionSecurityStatus[0] }) {
+  return (
+    <tr className="border-b border-background-200/70 hover:bg-background-100/50 transition-colors">
+      <td className="py-3 px-4">
+        <div className="flex items-center gap-2">
+          <span className={`w-7 h-7 flex items-center justify-center rounded-md text-xs ${
+            fn.status === 'secure' ? 'bg-emerald-100 text-emerald-600' :
+            fn.status === 'blocked' ? 'bg-red-100 text-red-500' :
+            fn.status === 'audit_pending' ? 'bg-amber-100 text-amber-600' :
+            'bg-background-100 text-foreground-400'
+          }`}>
+            <i className={`${
+              fn.category === 'Sécurité' ? 'ri-shield-line' :
+              fn.category === 'Orchestration' ? 'ri-git-branch-line' :
+              fn.category === 'NLP' ? 'ri-brain-line' :
+              fn.category === 'SEO/GEO' ? 'ri-globe-line' :
+              fn.category === 'Studio Média' ? 'ri-film-line' :
+              fn.category === 'IA' ? 'ri-robot-2-line' :
+              fn.category === 'CRM' ? 'ri-user-heart-line' :
+              fn.category === 'Performance' ? 'ri-speed-up-line' :
+              fn.category === 'Social' ? 'ri-share-line' :
+              fn.category === 'Admin' ? 'ri-admin-line' :
+              fn.category === 'Knowledge' ? 'ri-book-open-line' :
+              'ri-function-line'
+            } text-xs`}></i>
+          </span>
+          <div>
+            <div className="text-sm font-semibold text-foreground-950 font-heading">{fn.name}</div>
+            <div className="text-[11px] text-foreground-400 font-mono">{fn.slug}</div>
+          </div>
+        </div>
+      </td>
+      <td className="py-3 px-3">
+        <span className="text-xs px-2 py-0.5 rounded-full bg-background-100 text-foreground-500 font-body">{fn.category}</span>
+      </td>
+      <td className="py-3 px-3 text-center">
+        <JWTIndicator protected={fn.jwtProtected} adminCheck={fn.adminCheck} />
+      </td>
+      <td className="py-3 px-3 text-center">
+        {fn.verifyJwt ? (
+          <span className="inline-flex items-center gap-1 text-xs text-emerald-600 font-semibold">
+            <i className="ri-check-line"></i> Oui
+          </span>
+        ) : (
+          <span className="text-xs text-foreground-400">—</span>
+        )}
+      </td>
+      <td className="py-3 px-3 text-center">
+        <RiskBadge level={fn.riskLevel} />
+      </td>
+      <td className="py-3 px-3 text-center">
+        <div className="flex items-center justify-center gap-1.5">
+          {fn.dbRead && <span className="text-[10px] px-1.5 py-0.5 rounded bg-sky-100 text-sky-600 font-semibold">R</span>}
+          {fn.dbWrite && <span className="text-[10px] px-1.5 py-0.5 rounded bg-orange-100 text-orange-600 font-semibold">W</span>}
+          {!fn.dbRead && !fn.dbWrite && <span className="text-xs text-foreground-400">—</span>}
+        </div>
+      </td>
+      <td className="py-3 px-3">
+        <StatusBadge status={fn.status} />
+      </td>
+      <td className="py-3 px-4 max-w-[200px]">
+        <p className="text-[11px] text-foreground-500 font-body line-clamp-1" title={fn.notes}>{fn.notes}</p>
+      </td>
+    </tr>
+  );
+}
+
+function TimelineEvent({ event, isLast }: { event: typeof auditTimeline[0]; isLast: boolean }) {
+  return (
+    <div className="flex gap-4">
+      <div className="flex flex-col items-center">
+        <div className="w-3 h-3 rounded-full bg-primary-500 flex-shrink-0"></div>
+        {!isLast && <div className="w-0.5 flex-1 bg-background-200"></div>}
+      </div>
+      <div className={`pb-6 ${isLast ? '' : ''}`}>
+        <div className="text-xs text-foreground-400 font-body mb-1">{event.date}</div>
+        <div className="text-sm font-semibold text-foreground-950 font-heading mb-1">{event.event}</div>
+        <div className="text-xs text-foreground-500 font-body">{event.findings}</div>
+      </div>
+    </div>
+  );
+}
+
+function RecommendationCard({ rec }: { rec: typeof recommendations[0] }) {
+  const priorityColors: Record<string, string> = {
+    P0: 'bg-red-500',
+    P1: 'bg-orange-500',
+    P2: 'bg-amber-500',
+  };
+  const statusIcons: Record<string, string> = {
+    pending: 'ri-time-line text-amber-500',
+    blocked: 'ri-forbid-2-line text-red-500',
+    planned: 'ri-calendar-line text-sky-500',
+    completed: 'ri-check-line text-emerald-500',
+  };
+
+  return (
+    <div className="p-4 bg-background-50 rounded-lg border border-background-200/70">
+      <div className="flex items-start justify-between mb-2">
+        <div className="flex items-center gap-2">
+          <span className={`px-2 py-0.5 rounded text-[10px] font-bold text-white ${priorityColors[rec.priority] || 'bg-slate-400'}`}>
+            {rec.priority}
+          </span>
+          <i className={`${statusIcons[rec.status] || 'ri-question-line'} text-sm`}></i>
+        </div>
+        <span className="text-[10px] text-foreground-400 font-mono">{rec.id}</span>
+      </div>
+      <p className="text-sm font-semibold text-foreground-950 mb-1.5 font-heading">{rec.action}</p>
+      <p className="text-xs text-foreground-500 mb-2 font-body">{rec.impact}</p>
+      <div className="flex items-center justify-between">
+        <span className="text-[10px] text-foreground-400 font-body">{rec.effort}</span>
+        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+          rec.status === 'blocked' ? 'bg-red-100 text-red-600' :
+          rec.status === 'pending' ? 'bg-amber-100 text-amber-600' :
+          'bg-sky-100 text-sky-600'
+        }`}>
+          {rec.status === 'blocked' ? 'BLOQUÉ' : rec.status === 'pending' ? 'En attente' : 'Planifié'}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+export default function KOSSecurityDashboardPage() {
+  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [filterCategory, setFilterCategory] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const categories = useMemo(() => {
+    const cats = new Set(edgeFunctionSecurityStatus.map(f => f.category));
+    return Array.from(cats).sort();
+  }, []);
+
+  const filteredFunctions = useMemo(() => {
+    return edgeFunctionSecurityStatus.filter(fn => {
+      const matchStatus = filterStatus === 'all' || fn.status === filterStatus;
+      const matchCategory = filterCategory === 'all' || fn.category === filterCategory;
+      const matchSearch = searchQuery === '' ||
+        fn.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        fn.slug.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        fn.notes.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchStatus && matchCategory && matchSearch;
+    });
+  }, [filterStatus, filterCategory, searchQuery]);
+
+  const counts = useMemo(() => {
+    const total = edgeFunctionSecurityStatus.length;
+    const secure = edgeFunctionSecurityStatus.filter(f => f.status === 'secure').length;
+    const auditPending = edgeFunctionSecurityStatus.filter(f => f.status === 'audit_pending').length;
+    const toMerge = edgeFunctionSecurityStatus.filter(f => f.status === 'to_merge').length;
+    const blocked = edgeFunctionSecurityStatus.filter(f => f.status === 'blocked').length;
+    const jwtFull = edgeFunctionSecurityStatus.filter(f => f.jwtProtected && f.adminCheck).length;
+    const jwtOnly = edgeFunctionSecurityStatus.filter(f => f.jwtProtected && !f.adminCheck).length;
+    const noAuth = edgeFunctionSecurityStatus.filter(f => !f.jwtProtected && !f.apiKeyProtected).length;
+    const apiKey = edgeFunctionSecurityStatus.filter(f => f.apiKeyProtected).length;
+    return { total, secure, auditPending, toMerge, blocked, jwtFull, jwtOnly, noAuth, apiKey };
+  }, []);
+
+  return (
+    <div className="min-h-screen bg-background-50">
+      {/* ═══════════ HERO — ISO 27001 HEADER ═══════════ */}
+      <section className="relative bg-background-100 border-b border-background-200/70 overflow-hidden">
+        <div className="absolute inset-0 opacity-5 pointer-events-none">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-primary-500 rounded-full blur-3xl translate-x-1/2 -translate-y-1/2"></div>
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-accent-500 rounded-full blur-3xl -translate-x-1/2 translate-y-1/2"></div>
+        </div>
+        <div className="relative max-w-7xl mx-auto px-4 md:px-6 py-10 md:py-14">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-3 flex-wrap">
+                <span className="px-3 py-1 rounded-full text-xs font-bold bg-red-500 text-white font-body tracking-wide">
+                  ISO 27001 §A.9.2
+                </span>
+                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-primary-100 text-primary-700 font-body">
+                  AUDIT CONTINU
+                </span>
+                <span className={`px-3 py-1 rounded-full text-xs font-bold font-body tracking-wide ${
+                  securityDashboardStats.complianceRate >= 90 ? 'bg-emerald-500 text-white' :
+                  securityDashboardStats.complianceRate >= 70 ? 'bg-amber-500 text-white' :
+                  'bg-red-500 text-white'
+                }`}>
+                  GRADE {securityDashboardStats.isoGrade} — {securityDashboardStats.complianceRate}%
+                </span>
+              </div>
+              <h1 className="text-3xl md:text-4xl font-bold text-foreground-950 mb-3 font-heading">
+                Monitoring Sécurité Edge Functions
+              </h1>
+              <p className="text-base text-foreground-600 max-w-3xl font-body">
+                Tableau de bord temps réel de la posture de sécurité des {securityDashboardStats.totalEdgeFunctions} Edge Functions KOS.
+                Audit conforme ISO 27001 §A.9.2 — Contrôle d&apos;accès. Dernier audit : {new Date(securityDashboardStats.lastAuditDate).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                par <strong className="text-foreground-950">{securityDashboardStats.auditorName}</strong>.
+              </p>
+            </div>
+            <div className="flex-shrink-0">
+              <ComplianceGauge score={securityDashboardStats.complianceRate} target={100} />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════ STATS OVERVIEW ═══════════ */}
+      <section className="border-b border-background-200/70 bg-background-50">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 py-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-3">
+            <div className="bg-background-100 rounded-lg p-3 text-center border border-background-200/70">
+              <div className="text-2xl font-bold text-foreground-950 font-heading">{counts.total}</div>
+              <div className="text-[10px] text-foreground-500 font-body">Total Functions</div>
+            </div>
+            <div className="bg-emerald-50 rounded-lg p-3 text-center border border-emerald-200">
+              <div className="text-2xl font-bold text-emerald-600 font-heading">{counts.jwtFull}</div>
+              <div className="text-[10px] text-emerald-600 font-body">JWT + Admin</div>
+            </div>
+            <div className="bg-sky-50 rounded-lg p-3 text-center border border-sky-200">
+              <div className="text-2xl font-bold text-sky-600 font-heading">{counts.jwtOnly}</div>
+              <div className="text-[10px] text-sky-600 font-body">JWT Seul</div>
+            </div>
+            <div className="bg-violet-50 rounded-lg p-3 text-center border border-violet-200">
+              <div className="text-2xl font-bold text-violet-600 font-heading">{counts.apiKey}</div>
+              <div className="text-[10px] text-violet-600 font-body">API Key</div>
+            </div>
+            <div className="bg-red-50 rounded-lg p-3 text-center border border-red-200">
+              <div className="text-2xl font-bold text-red-500 font-heading">{counts.noAuth}</div>
+              <div className="text-[10px] text-red-500 font-body">Sans Auth</div>
+            </div>
+            <div className="bg-amber-50 rounded-lg p-3 text-center border border-amber-200">
+              <div className="text-2xl font-bold text-amber-600 font-heading">{counts.auditPending}</div>
+              <div className="text-[10px] text-amber-600 font-body">Audit En Attente</div>
+            </div>
+            <div className="bg-red-50 rounded-lg p-3 text-center border border-red-200">
+              <div className="text-2xl font-bold text-red-500 font-heading">{counts.blocked}</div>
+              <div className="text-[10px] text-red-500 font-body">Bloqués</div>
+            </div>
+            <div className="bg-sky-50 rounded-lg p-3 text-center border border-sky-200">
+              <div className="text-2xl font-bold text-sky-600 font-heading">{counts.toMerge}</div>
+              <div className="text-[10px] text-sky-600 font-body">À Fusionner</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════ ALERT BANNER ═══════════ */}
+      {counts.noAuth > 0 && (
+        <section className="bg-red-500 text-white">
+          <div className="max-w-7xl mx-auto px-4 md:px-6 py-3">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 flex items-center justify-center rounded-full bg-white/20 flex-shrink-0">
+                <i className="ri-alert-line"></i>
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-semibold font-heading">
+                  {counts.noAuth} fonction{counts.noAuth > 1 ? 's' : ''} sans authentification — {counts.auditPending} en attente d&apos;audit, {counts.blocked} bloqué{counts.blocked > 1 ? 's' : ''} par limite Supabase
+                </p>
+              </div>
+              <span className="text-xs font-bold bg-white/20 px-3 py-1 rounded-full whitespace-nowrap">
+                ACTION REQUISE
+              </span>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ═══════════ FILTERS ═══════════ */}
+      <section className="sticky top-0 z-30 bg-background-50 border-b border-background-200/70 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 py-3">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <div className="relative flex-1 w-full max-w-md">
+              <i className="ri-search-line absolute left-3 top-1/2 -translate-y-1/2 text-foreground-400 text-sm"></i>
+              <input
+                type="text"
+                placeholder="Rechercher une fonction..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className="w-full pl-9 pr-4 py-2 text-sm bg-background-100 border border-background-200/70 rounded-lg text-foreground-950 placeholder:text-foreground-400 font-body focus:outline-none focus:border-primary-300"
+              />
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <select
+                value={filterStatus}
+                onChange={e => setFilterStatus(e.target.value)}
+                className="px-3 py-2 text-sm bg-background-100 border border-background-200/70 rounded-lg text-foreground-950 font-body focus:outline-none focus:border-primary-300 cursor-pointer"
+              >
+                <option value="all">Tous les statuts</option>
+                <option value="secure">Sécurisé</option>
+                <option value="audit_pending">Audit en attente</option>
+                <option value="to_merge">À fusionner</option>
+                <option value="blocked">Bloqué</option>
+                <option value="acceptable_risk">Risque acceptable</option>
+              </select>
+              <select
+                value={filterCategory}
+                onChange={e => setFilterCategory(e.target.value)}
+                className="px-3 py-2 text-sm bg-background-100 border border-background-200/70 rounded-lg text-foreground-950 font-body focus:outline-none focus:border-primary-300 cursor-pointer"
+              >
+                <option value="all">Toutes catégories</option>
+                {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+              </select>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════ FUNCTIONS TABLE ═══════════ */}
+      <section className="max-w-7xl mx-auto px-4 md:px-6 py-6">
+        <div className="bg-background-50 rounded-lg border border-background-200/70 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-background-200/70 bg-background-100">
+                  <th className="text-left py-3 px-4 text-xs font-semibold text-foreground-500 uppercase tracking-wider font-body">Fonction</th>
+                  <th className="text-left py-3 px-3 text-xs font-semibold text-foreground-500 uppercase tracking-wider font-body">Catégorie</th>
+                  <th className="text-center py-3 px-3 text-xs font-semibold text-foreground-500 uppercase tracking-wider font-body">Auth</th>
+                  <th className="text-center py-3 px-3 text-xs font-semibold text-foreground-500 uppercase tracking-wider font-body">verify_jwt</th>
+                  <th className="text-center py-3 px-3 text-xs font-semibold text-foreground-500 uppercase tracking-wider font-body">Risque</th>
+                  <th className="text-center py-3 px-3 text-xs font-semibold text-foreground-500 uppercase tracking-wider font-body">DB</th>
+                  <th className="text-center py-3 px-3 text-xs font-semibold text-foreground-500 uppercase tracking-wider font-body">Statut</th>
+                  <th className="text-left py-3 px-4 text-xs font-semibold text-foreground-500 uppercase tracking-wider font-body">Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredFunctions.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="py-12 text-center text-sm text-foreground-400 font-body">
+                      <i className="ri-search-line text-2xl block mb-2"></i>
+                      Aucune fonction ne correspond aux filtres.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredFunctions.map(fn => <FunctionRow key={fn.slug} fn={fn} />)
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div className="mt-3 text-xs text-foreground-400 font-body">
+          {filteredFunctions.length} fonction{filteredFunctions.length > 1 ? 's' : ''} affichée{filteredFunctions.length > 1 ? 's' : ''}
+          {filterStatus !== 'all' || filterCategory !== 'all' || searchQuery ? ' (filtrée)' : ` sur ${edgeFunctionSecurityStatus.length} au total`}
+        </div>
+      </section>
+
+      {/* ═══════════ TWO COLUMNS: TIMELINE + RECOMMENDATIONS ═══════════ */}
+      <section className="max-w-7xl mx-auto px-4 md:px-6 pb-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Audit Timeline */}
+          <div>
+            <h2 className="text-lg font-bold text-foreground-950 mb-4 font-heading flex items-center gap-2">
+              <i className="ri-history-line text-primary-500"></i>
+              Chronologie d&apos;Audit
+            </h2>
+            <div className="bg-background-50 rounded-lg border border-background-200/70 p-5">
+              {auditTimeline.map((event, idx) => (
+                <TimelineEvent key={idx} event={event} isLast={idx === auditTimeline.length - 1} />
+              ))}
+            </div>
+          </div>
+
+          {/* Recommendations */}
+          <div>
+            <h2 className="text-lg font-bold text-foreground-950 mb-4 font-heading flex items-center gap-2">
+              <i className="ri-lightbulb-line text-accent-500"></i>
+              Recommandations
+            </h2>
+            <div className="space-y-3">
+              {recommendations.map(rec => (
+                <RecommendationCard key={rec.id} rec={rec} />
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════ ISO 27001 CLAUSES ═══════════ */}
+      <section className="border-t border-background-200/70 bg-background-100">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 py-8">
+          <h2 className="text-lg font-bold text-foreground-950 mb-4 font-heading flex items-center gap-2">
+            <i className="ri-file-shield-line text-primary-500"></i>
+            Couverture ISO 27001
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            {Object.entries(securityDashboardStats.isoClauses).map(([clause, data]) => (
+              <div key={clause} className="bg-background-50 rounded-lg border border-background-200/70 p-4">
+                <div className="text-xs font-mono text-foreground-400 mb-1">{clause}</div>
+                <div className="text-sm font-semibold text-foreground-950 mb-2 font-heading">{data.name}</div>
+                <div className="flex items-center justify-between">
+                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                    data.status === 'conforme' ? 'bg-emerald-100 text-emerald-600' :
+                    data.status === 'en_cours' ? 'bg-amber-100 text-amber-600' :
+                    'bg-red-100 text-red-600'
+                  }`}>
+                    {data.status === 'conforme' ? 'Conforme' : data.status === 'en_cours' ? 'En cours' : 'Non conforme'}
+                  </span>
+                  <span className="text-xs font-bold text-foreground-950 font-heading">{data.score}/100</span>
+                </div>
+                <div className="mt-2 w-full bg-background-200 rounded-full h-1.5">
+                  <div className={`h-1.5 rounded-full ${
+                    data.score >= 90 ? 'bg-emerald-500' : data.score >= 70 ? 'bg-amber-500' : 'bg-red-500'
+                  }`} style={{ width: `${data.score}%` }}></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════ FOOTER ═══════════ */}
+      <footer className="border-t border-background-200/70 bg-background-50">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 py-6">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-foreground-400 font-body">
+            <div className="flex items-center gap-4">
+              <span>KOS Security Dashboard v1.0</span>
+              <span>·</span>
+              <span>ISO 27001:2022 §A.9.2</span>
+              <span>·</span>
+              <span>Dernier audit : {new Date(securityDashboardStats.lastAuditDate).toLocaleDateString('fr-FR')}</span>
+            </div>
+            <div className="flex items-center gap-4">
+              <span className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                Sécurisé : {counts.jwtFull + counts.apiKey}
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-red-400"></span>
+                Non protégé : {counts.noAuth}
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-amber-400"></span>
+                Bloqué/À merger : {counts.blocked + counts.toMerge}
+              </span>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}

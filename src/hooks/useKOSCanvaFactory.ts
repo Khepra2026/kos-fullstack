@@ -1,0 +1,128 @@
+import { useState, useMemo, useCallback, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
+import {
+  TEMPLATE_CATEGORIES,
+  INFOGRAPHICS,
+  SOCIAL_VISUALS,
+  YOUTUBE_THUMBNAILS,
+  VISUAL_REPORTS,
+  CANVA_FACTORY_KPIS,
+  CANVA_FACTORY_STATS,
+} from '@/mocks/kosCanvaFactory';
+import type { TemplateCategory, InfographicTemplate, SocialVisual, YoutubeThumbnail, VisualReport } from '@/mocks/kosCanvaFactory';
+
+export function useKOSCanvaFactory() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [typeFilter, setTypeFilter] = useState('all');
+  const [isLive, setIsLive] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function checkLive() {
+      try {
+        const { data, error } = await supabase
+          .from('media_assets')
+          .select('*')
+          .limit(1);
+        if (!cancelled && !error && data && data.length > 0) {
+          setIsLive(true);
+        }
+      } catch {
+        // fallback mock
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    checkLive();
+    return () => { cancelled = true; };
+  }, []);
+
+  const templates = useMemo(() => TEMPLATE_CATEGORIES, []);
+  const infographics = useMemo(() => INFOGRAPHICS, []);
+  const socialVisuals = useMemo(() => SOCIAL_VISUALS, []);
+  const thumbnails = useMemo(() => YOUTUBE_THUMBNAILS, []);
+  const reports = useMemo(() => VISUAL_REPORTS, []);
+
+  const getTemplateByCategory = useCallback((cat: string) => {
+    if (cat === 'all') return templates;
+    return templates.filter(t => t.id === cat);
+  }, [templates]);
+
+  const getInfographicsByCategory = useCallback((cat: string) => {
+    if (cat === 'all') return infographics;
+    return infographics.filter(i => i.category.toLowerCase() === cat.toLowerCase());
+  }, [infographics]);
+
+  const searchInfographics = useCallback((q: string) => {
+    const lower = q.toLowerCase();
+    return infographics.filter(i =>
+      i.title.toLowerCase().includes(lower) ||
+      i.useCase.toLowerCase().includes(lower) ||
+      i.category.toLowerCase().includes(lower) ||
+      i.elements.some(e => e.toLowerCase().includes(lower))
+    );
+  }, [infographics]);
+
+  const getSocialVisualsByType = useCallback((type: string) => {
+    if (type === 'all') return socialVisuals;
+    return socialVisuals.filter(v => v.type === type);
+  }, [socialVisuals]);
+
+  const getSocialVisualsByCategory = useCallback((cat: string) => {
+    if (cat === 'all') return socialVisuals;
+    return socialVisuals.filter(v => v.category.toLowerCase() === cat.toLowerCase());
+  }, [socialVisuals]);
+
+  const getThumbnailsByCategory = useCallback((cat: string) => {
+    if (cat === 'all') return thumbnails;
+    return thumbnails.filter(t => t.category.toLowerCase() === cat.toLowerCase());
+  }, [thumbnails]);
+
+  const getReportsByCategory = useCallback((cat: string) => {
+    if (cat === 'all') return reports;
+    return reports.filter(r => r.category.toLowerCase() === cat.toLowerCase());
+  }, [reports]);
+
+  const getKPIs = useCallback(() => CANVA_FACTORY_KPIS, []);
+  const getStats = useCallback(() => CANVA_FACTORY_STATS, []);
+
+  const availableCategories = useMemo(() => templates.map(t => ({ id: t.id, name: t.name, color: t.color })), [templates]);
+  const socialTypes = useMemo(() => [...new Set(socialVisuals.map(v => v.type))], [socialVisuals]);
+
+  const totalAssets = useMemo(() =>
+    templates.reduce((s, t) => s + t.count, 0) + infographics.length + socialVisuals.length + thumbnails.length + reports.length,
+    [templates, infographics, socialVisuals, thumbnails, reports]
+  );
+
+  return {
+    templates,
+    infographics,
+    socialVisuals,
+    thumbnails,
+    reports,
+    searchQuery,
+    setSearchQuery,
+    categoryFilter,
+    setCategoryFilter,
+    typeFilter,
+    setTypeFilter,
+    getTemplateByCategory,
+    getInfographicsByCategory,
+    searchInfographics,
+    getSocialVisualsByType,
+    getSocialVisualsByCategory,
+    getThumbnailsByCategory,
+    getReportsByCategory,
+    getKPIs,
+    getStats,
+    availableCategories,
+    socialTypes,
+    totalAssets,
+    stats: CANVA_FACTORY_STATS,
+    kpis: CANVA_FACTORY_KPIS,
+    isLive,
+    loading,
+  };
+}

@@ -1,0 +1,247 @@
+import { useState, useEffect, useCallback } from 'react';
+import type { AgentMission } from '@/hooks/usePerformance100Challenge';
+import { agentMissions as mockAgentMissions } from '@/mocks/kosPerformance100Challenge';
+
+interface ActivityLog {
+  id: number;
+  timestamp: string;
+  agent: string;
+  agentIcon: string;
+  gapId: string;
+  action: string;
+  type: 'task_start' | 'task_complete' | 'progress_update' | 'milestone';
+}
+
+const INITIAL_ACTIVITIES: ActivityLog[] = [
+  { id: 1, timestamp: '09:42', agent: 'SEO Technical Engine', agentIcon: 'ri-search-eye-line', gapId: 'GAP-06', action: 'Déploiement hreflang fr/en — 8/12 pages complétées', type: 'task_complete' },
+  { id: 2, timestamp: '09:38', agent: 'LCP Recovery Engine', agentIcon: 'ri-image-line', gapId: 'GAP-03', action: 'Conversion hero /services JPEG→AVIF terminée — 140 Ko gagnés', type: 'task_complete' },
+  { id: 3, timestamp: '09:35', agent: 'Performance Engine', agentIcon: 'ri-speed-up-line', gapId: 'GAP-01', action: 'Tree shaking icon-library.chunk.js — 78% unused éliminé', type: 'task_complete' },
+  { id: 4, timestamp: '09:30', agent: 'Cache Optimization Engine', agentIcon: 'ri-hard-drive-2-line', gapId: 'GAP-10', action: 'ETag + immutable déployé sur fonts woff2', type: 'task_complete' },
+  { id: 5, timestamp: '09:25', agent: 'JavaScript Governance Engine', agentIcon: 'ri-braces-line', gapId: 'GAP-04', action: 'Tree shaking vendor-react — react-dom/server retiré du bundle', type: 'task_complete' },
+];
+
+const LAUNCH_SEQUENCE: ActivityLog[] = [
+  { id: 100, timestamp: 'NOW', agent: 'ORCHESTRATOR', agentIcon: 'ri-rocket-2-line', gapId: 'ALL', action: 'SPRINT ACTIVÉ — 12 agents + KOS Automation Engine déployés', type: 'milestone' },
+  { id: 101, timestamp: 'NOW', agent: 'Performance Engine', agentIcon: 'ri-speed-up-line', gapId: 'GAP-01', action: 'Démarrage mission : purge CSS unused + conversion hero-bg.png → AVIF', type: 'task_start' },
+  { id: 102, timestamp: 'NOW', agent: 'SEO Technical Engine', agentIcon: 'ri-search-eye-line', gapId: 'GAP-06', action: 'Démarrage mission : finalisation hreflang + réécriture 15 meta descriptions', type: 'task_start' },
+  { id: 103, timestamp: 'NOW', agent: 'LCP Recovery Engine', agentIcon: 'ri-image-line', gapId: 'GAP-03', action: 'Démarrage mission : responsive srcset + preload hero /blog', type: 'task_start' },
+  { id: 104, timestamp: 'NOW', agent: 'JavaScript Governance Engine', agentIcon: 'ri-braces-line', gapId: 'GAP-04', action: 'Démarrage mission : remplacer chart-library 320 Ko → lightweight 45 Ko', type: 'task_start' },
+  { id: 105, timestamp: 'NOW', agent: 'Accessibility Engine', agentIcon: 'ri-wheelchair-line', gapId: 'GAP-07', action: 'Démarrage mission : alt sur 11 images + aria-label sur 5 éléments', type: 'task_start' },
+  { id: 106, timestamp: 'NOW', agent: 'Image Governance Engine', agentIcon: 'ri-gallery-line', gapId: 'GAP-09', action: 'Démarrage mission : conversion massive AVIF — hero-bg, team-photo, illustration', type: 'task_start' },
+  { id: 107, timestamp: 'NOW', agent: 'CSS Governance Engine', agentIcon: 'ri-palette-line', gapId: 'GAP-05', action: 'Démarrage mission : width/height explicites sur 28 images + font-size-adjust', type: 'task_start' },
+  { id: 108, timestamp: 'NOW', agent: 'Security Hardening Engine', agentIcon: 'ri-shield-check-line', gapId: 'GAP-08', action: 'Démarrage mission : audit Trusted Types avant passage enforced', type: 'task_start' },
+  { id: 109, timestamp: 'NOW', agent: 'Cache Optimization Engine', agentIcon: 'ri-hard-drive-2-line', gapId: 'GAP-10', action: 'Démarrage mission : CDN Edge Cache HTML stale-while-revalidate', type: 'task_start' },
+  { id: 110, timestamp: 'NOW', agent: 'SEO Technical Engine', agentIcon: 'ri-search-eye-line', gapId: 'GAP-11', action: 'Démarrage mission : LocalBusiness schema enrichi + BreadcrumbList 8 pages', type: 'task_start' },
+  { id: 111, timestamp: 'NOW', agent: 'Performance Engine', agentIcon: 'ri-speed-up-line', gapId: 'GAP-12', action: 'Démarrage mission : réduction TTFB sous 100ms + Brotli HTML niveau 11', type: 'task_start' },
+  { id: 112, timestamp: 'NOW', agent: 'LCP Recovery Engine', agentIcon: 'ri-image-line', gapId: 'GAP-02', action: 'Démarrage mission : font-display swap + CDN Edge pour TTFB -120ms', type: 'task_start' },
+];
+
+interface SprintActivationProps {
+  isActive: boolean;
+  onActivate: () => void;
+  agentMissions?: AgentMission[];
+}
+
+export default function SprintActivation({ isActive, onActivate, agentMissions: missions }: SprintActivationProps) {
+  const [activities, setActivities] = useState<ActivityLog[]>(INITIAL_ACTIVITIES);
+  const [showLaunchSequence, setShowLaunchSequence] = useState(false);
+  const [launchStep, setLaunchStep] = useState(0);
+  const [countdown, setCountdown] = useState<number | null>(null);
+
+  const missionList = missions || mockAgentMissions;
+
+  // Launch sequence animation
+  useEffect(() => {
+    if (!showLaunchSequence) return;
+
+    const interval = setInterval(() => {
+      setLaunchStep(prev => {
+        if (prev >= LAUNCH_SEQUENCE.length) {
+          clearInterval(interval);
+          setShowLaunchSequence(false);
+          return prev;
+        }
+        setActivities(prevActivities => [LAUNCH_SEQUENCE[prev], ...prevActivities]);
+        return prev + 1;
+      });
+    }, 180);
+
+    return () => clearInterval(interval);
+  }, [showLaunchSequence]);
+
+  const handleActivate = () => {
+    setCountdown(3);
+    const cd = setInterval(() => {
+      setCountdown(prev => {
+        if (prev === null || prev <= 1) {
+          clearInterval(cd);
+          setCountdown(null);
+          onActivate();
+          setShowLaunchSequence(true);
+          return null;
+        }
+        return prev - 1;
+      });
+    }, 800);
+  };
+
+  if (!isActive) {
+    return (
+      <div className="relative overflow-hidden bg-background-50 rounded-lg border-2 border-red-200 p-10 text-center">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-red-100/30 rounded-full -translate-y-1/2 translate-x-1/3" />
+        <div className="absolute bottom-0 left-1/4 w-64 h-64 bg-primary-100/20 rounded-full translate-y-1/2" />
+
+        <div className="relative">
+          {countdown !== null ? (
+            <div className="space-y-6">
+              <div className="w-24 h-24 mx-auto flex items-center justify-center rounded-full bg-red-100 animate-pulse">
+                <span className="text-5xl font-bold text-red-600 font-heading">{countdown}</span>
+              </div>
+              <p className="text-lg font-semibold text-red-700 font-heading">Activation du sprint en cours...</p>
+              <p className="text-sm text-foreground-500 font-body">Tous les agents reçoivent leurs ordres de mission. KOS Automation Engine en déploiement.</p>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              <div className="w-20 h-20 mx-auto flex items-center justify-center rounded-2xl bg-red-100">
+                <i className="ri-flashlight-line text-4xl text-red-600"></i>
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-foreground-950 font-heading mb-2">AUTO-PILOT — PRÊT À DÉCOLLER</h3>
+                <p className="text-sm text-foreground-500 max-w-lg mx-auto font-body">
+                  Les 12 agents KOS sont en attente d&apos;ordres. Activez l&apos;auto-pilot pour lancer l&apos;exécution
+                  automatique de toutes les sous-tâches. Le KOS Automation Engine prendra le contrôle et
+                  exécutera chaque mission en parallèle — sans aucune intervention manuelle.
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center justify-center gap-3 mb-4">
+                {missionList.slice(0, 6).map(a => (
+                  <div key={a.agent} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-background-100 border border-background-200/70 text-xs text-foreground-500 font-body">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+                    <i className={`${a.icon} text-foreground-400`}></i>
+                    {a.agent.split(' ').slice(0, 2).join(' ')}
+                  </div>
+                ))}
+                <span className="text-xs text-foreground-400 font-body">+{Math.max(0, missionList.length - 6)} autres</span>
+              </div>
+
+              <button
+                onClick={handleActivate}
+                className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-red-600 text-white font-bold text-sm hover:bg-red-700 transition-all duration-200 cursor-pointer whitespace-nowrap shadow-lg shadow-red-200 animate-pulse"
+                type="button"
+              >
+                <i className="ri-rocket-2-line text-lg"></i>
+                ACTIVER L&apos;AUTO-PILOT — 12 AGENTS
+              </button>
+
+              <p className="text-[10px] text-foreground-400 font-body">
+                Toutes les missions seront activées simultanément. L&apos;Automation Engine exécutera chaque sous-tâche automatiquement.
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // Active state — live activity feed
+  return (
+    <div className="bg-background-50 rounded-lg border border-emerald-200 overflow-hidden">
+      {/* Active Header */}
+      <div className="bg-emerald-50 border-b border-emerald-200 px-6 py-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 flex items-center justify-center rounded-lg bg-emerald-500 text-white">
+              <i className="ri-cpu-line text-lg"></i>
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-emerald-800 font-heading">AUTO-PILOT ACTIF — KOS AUTOMATION ENGINE</h3>
+              <p className="text-xs text-emerald-600 font-body">12 agents | 12 GAPs | Exécution automatique 24/7 | L&apos;Automation Engine gère les sous-tâches</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="flex items-center gap-1.5 text-xs text-emerald-700 font-body">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              Live
+            </span>
+            <span className="text-[10px] text-emerald-500 font-body bg-emerald-100 px-2 py-0.5 rounded-full">
+              {activities.length} événements
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Activity Feed */}
+      <div className="max-h-[500px] overflow-y-auto scrollbar-thin">
+        <div className="divide-y divide-background-200/50">
+          {activities.slice(0, 30).map((log) => (
+            <div
+              key={log.id}
+              className={`px-6 py-3 flex items-start gap-3 transition-colors hover:bg-background-100/50 ${
+                log.type === 'milestone' ? 'bg-amber-50/50' : ''
+              } ${log.type === 'task_start' ? 'bg-primary-50/30' : ''}`}
+            >
+              <span className="text-[10px] text-foreground-400 font-mono w-12 shrink-0 pt-0.5">{log.timestamp}</span>
+
+              {log.type === 'milestone' ? (
+                <i className="ri-star-fill text-amber-500 text-sm mt-0.5 shrink-0"></i>
+              ) : log.type === 'task_complete' ? (
+                <i className="ri-check-double-fill text-emerald-500 text-sm mt-0.5 shrink-0"></i>
+              ) : log.type === 'task_start' ? (
+                <i className="ri-play-circle-fill text-primary-500 text-sm mt-0.5 shrink-0"></i>
+              ) : (
+                <i className={`${log.agentIcon} text-foreground-400 text-sm mt-0.5 shrink-0`}></i>
+              )}
+
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span className={`text-xs font-semibold font-body ${
+                    log.type === 'milestone' ? 'text-amber-700' :
+                    log.type === 'task_complete' ? 'text-emerald-700' :
+                    log.type === 'task_start' ? 'text-primary-700' :
+                    'text-foreground-700'
+                  }`}>
+                    {log.agent}
+                  </span>
+                  {log.gapId !== 'ALL' && (
+                    <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-background-100 text-foreground-500 font-body">
+                      {log.gapId}
+                    </span>
+                  )}
+                  {log.type === 'milestone' && (
+                    <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-700 font-body animate-pulse">
+                      ORDRE
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-foreground-600 font-body">{log.action}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Live indicator bar */}
+      <div className="border-t border-background-200/70 bg-background-100 px-6 py-2.5 flex items-center justify-between">
+        <div className="flex items-center gap-4 text-[10px] text-foreground-400 font-body">
+          <span className="flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+            Agents actifs : 12/12
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary-500 animate-pulse"></span>
+            Sous-tâches gérées par Automation Engine
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+            Historique : {activities.filter(a => a.type === 'task_complete').length}
+          </span>
+        </div>
+        <span className="text-[10px] text-emerald-600 font-body flex items-center gap-1">
+          <i className="ri-refresh-line"></i>
+          Supervision active
+        </span>
+      </div>
+    </div>
+  );
+}

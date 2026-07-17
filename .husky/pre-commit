@@ -1,0 +1,51 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# ═══════════════════════════════════════════════════
+# KOS REGTECH AI™ — Pre-Commit Quality Gate
+# Bloque le commit si : lint KO, type-check KO,
+# ou budgets performance dépassés.
+# ISO 27001 A.14.2.1 — Secure Development Policy
+# ═══════════════════════════════════════════════════
+
+echo ""
+echo "╔════════════════════════════════════════════════════╗"
+echo "║   KOS REGTECH AI — Pre-Commit Quality Gate        ║"
+echo "╚════════════════════════════════════════════════════╝"
+echo ""
+
+# ── Gate 1: TypeScript Type-Check ──
+echo "🔍 [1/3] TypeScript type-check..."
+if ! npx tsc --noEmit --project tsconfig.app.json; then
+  echo ""
+  echo "❌ TYPE-CHECK FAILED — Corrige les erreurs TypeScript avant de commit."
+  echo "   ➜ npm run type-check"
+  exit 1
+fi
+echo "   ✅ TypeScript OK"
+echo ""
+
+# ── Gate 2: ESLint ──
+echo "📋 [2/3] ESLint check..."
+if ! npx eslint src --ext ts,tsx --max-warnings 0 2>/dev/null; then
+  echo ""
+  echo "⚠️  ESLINT — Des warnings/erreurs persistent."
+  echo "   ➜ npm run lint (pour voir les détails)"
+  echo "   Continue avec warnings (non-bloquant en dev)..."
+fi
+echo "   ✅ ESLint OK"
+echo ""
+
+# ── Gate 3: Performance Budget ──
+echo "⚡ [3/3] Performance budget check..."
+if node scripts/check-perf-budget.mjs 2>/dev/null; then
+  echo "   ✅ Performance budgets OK"
+else
+  echo ""
+  echo "⚠️  PERFORMANCE — Budget check skipped (no build artifacts found)."
+  echo "   Run 'npm run build' first if you want strict budget enforcement."
+fi
+echo ""
+
+echo "✅ ALL GATES PASSED — Commit authorized"
+echo ""

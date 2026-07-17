@@ -1,0 +1,532 @@
+import { useState } from 'react';
+import KOSHubLayout from '@/components/feature/KOSHubLayout';
+import { SeoHead } from '@/components/feature/SeoHead';
+import { Link } from 'react-router-dom';
+import {
+  ENGAGEMENT_KPIS, RECENT_COMMENTS, LEAD_OPPORTUNITIES,
+  RESPONSE_TEMPLATES, ACTIVE_CAMPAIGNS, DAILY_ACTIONS, PLATFORM_HEALTH,
+  type CommunityComment, type LeadOpportunity,
+} from '@/mocks/kosCommunityManager';
+
+const SENTIMENT_CONFIG: Record<string, { label: string; color: string; bg: string; icon: string }> = {
+  positive: { label: 'Positif', color: '#059669', bg: 'bg-emerald-50', icon: 'ri-emotion-happy-line' },
+  neutral: { label: 'Neutre', color: '#6B7280', bg: 'bg-gray-50', icon: 'ri-emotion-normal-line' },
+  negative: { label: 'Négatif', color: '#DC2626', bg: 'bg-red-50', icon: 'ri-emotion-sad-line' },
+  question: { label: 'Question', color: '#0A66C2', bg: 'bg-blue-50', icon: 'ri-question-line' },
+};
+
+const LEAD_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
+  high: { label: 'Chaud', color: '#DC2626', bg: 'bg-red-50' },
+  medium: { label: 'Tiède', color: '#CA8A04', bg: 'bg-amber-50' },
+  low: { label: 'Froid', color: '#6B7280', bg: 'bg-gray-50' },
+  none: { label: '-', color: '#9CA3AF', bg: 'bg-gray-50' },
+};
+
+const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
+  new: { label: 'Nouveau', color: '#0A66C2', bg: 'bg-blue-50' },
+  contacted: { label: 'Contacté', color: '#CA8A04', bg: 'bg-amber-50' },
+  qualified: { label: 'Qualifié', color: '#86BC25', bg: 'bg-emerald-50' },
+  converted: { label: 'Converti', color: '#059669', bg: 'bg-emerald-100' },
+  closed: { label: 'Fermé', color: '#6B7280', bg: 'bg-gray-100' },
+};
+
+function formatTimeAgo(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const hours = Math.floor(diff / 3600000);
+  if (hours < 1) return 'À l\'instant';
+  if (hours < 24) return `Il y a ${hours}h`;
+  const days = Math.floor(hours / 24);
+  return `Il y a ${days}j`;
+}
+
+export default function KOSCommunityManagerCommandPage() {
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'comments' | 'leads' | 'templates' | 'calendar'>('dashboard');
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [replyText, setReplyText] = useState('');
+  const [selectedLead, setSelectedLead] = useState<LeadOpportunity | null>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+
+  const handleReply = (commentId: string) => {
+    setReplyingTo(commentId);
+    const tmpl = RESPONSE_TEMPLATES[0];
+    setReplyText(tmpl.content);
+  };
+
+  const handleSendReply = (commentId: string) => {
+    setReplyingTo(null);
+    setReplyText('');
+  };
+
+  const handleUseTemplate = (tmplId: string) => {
+    setSelectedTemplate(tmplId === selectedTemplate ? null : tmplId);
+    const tmpl = RESPONSE_TEMPLATES.find((t) => t.id === tmplId);
+    if (tmpl) setReplyText(tmpl.content);
+  };
+
+  const tabs = [
+    { id: 'dashboard' as const, label: 'Dashboard', icon: 'ri-dashboard-line' },
+    { id: 'comments' as const, label: 'Commentaires', icon: 'ri-message-2-line', count: `${ENGAGEMENT_KPIS.totalComments}` },
+    { id: 'leads' as const, label: 'Leads', icon: 'ri-user-star-line', count: `${ENGAGEMENT_KPIS.leadsDetected}` },
+    { id: 'templates' as const, label: 'Templates', icon: 'ri-file-copy-line' },
+    { id: 'calendar' as const, label: 'Planning', icon: 'ri-calendar-line' },
+  ];
+
+  return (
+    <KOSHubLayout hubId={30}>
+      <SeoHead
+        title="KOS Community Manager™ — Agent 8 : Engagement & Lead Qualification | KHEPRA EXPERTS"
+        description="Community Manager IA niveau Big Four. Réponse automatique aux commentaires YouTube/LinkedIn/X. Qualification des prospects. 28 leads détectés, 94% taux de réponse. KHEPRA EXPERTS."
+        keywords="Community Manager IA, qualification leads, engagement social media, réponse automatique, KOS Agent 8, KHEPRA EXPERTS"
+        canonicalPath="/kos-community-manager-command"
+        ogType="website"
+        ogLocale="fr_FR"
+      />
+
+      {/* Hero */}
+      <section className="relative bg-foreground-950 overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full opacity-[0.06]" style={{ background: 'radial-gradient(circle, #0A66C2 0%, transparent 70%)' }} />
+          <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full opacity-[0.05]" style={{ background: 'radial-gradient(circle, #059669 0%, transparent 70%)' }} />
+        </div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-14">
+          <div className="max-w-3xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-white/80 text-xs font-semibold mb-4 backdrop-blur-sm">
+              <i className="ri-message-2-line" />KOS Community Manager™ — Agent 8
+            </div>
+            <h1 className="font-heading text-2xl md:text-4xl font-bold text-white tracking-tight">
+              Community Management & Lead Qualification
+            </h1>
+            <p className="text-sm md:text-base text-gray-400 mt-3 max-w-2xl">
+              4 plateformes · {ENGAGEMENT_KPIS.totalComments} commentaires · {ENGAGEMENT_KPIS.leadsDetected} leads détectés · {ENGAGEMENT_KPIS.responseRate}% taux de réponse · Qualification automatique des prospects
+            </p>
+            <div className="flex flex-wrap gap-2 mt-4">
+              {['YouTube', 'LinkedIn', 'X (Twitter)', 'Instagram'].map((p) => (
+                <span key={p} className="px-3 py-1.5 rounded-full text-xs font-semibold bg-white/10 text-white/70">{p}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Tab Navigation */}
+      <section className="sticky top-20 z-30 bg-background-50 border-b border-background-200/70">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex gap-1 overflow-x-auto py-3">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-bold cursor-pointer transition-all whitespace-nowrap ${
+                  activeTab === tab.id ? 'bg-foreground-950 text-background-50' : 'text-foreground-600 hover:bg-background-100 hover:text-foreground-900'
+                }`}
+              >
+                <i className={`${tab.icon} text-base`} />{tab.label}
+                {tab.count && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-background-200">{tab.count}</span>}
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════ DASHBOARD ═══════════════ */}
+      {activeTab === 'dashboard' && (
+        <section className="py-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            {/* Top KPIs */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 mb-8">
+              {[
+                { label: 'Commentaires', value: ENGAGEMENT_KPIS.totalComments, icon: 'ri-message-2-line', color: '#0A66C2' },
+                { label: 'Taux Réponse', value: `${ENGAGEMENT_KPIS.responseRate}%`, icon: 'ri-chat-check-line', color: '#059669' },
+                { label: 'Temps Moyen', value: ENGAGEMENT_KPIS.avgResponseTime, icon: 'ri-timer-line', color: '#CA8A04' },
+                { label: 'Leads Détectés', value: ENGAGEMENT_KPIS.leadsDetected, icon: 'ri-user-star-line', color: '#DC2626' },
+                { label: 'Leads Qualifiés', value: ENGAGEMENT_KPIS.leadsQualified, icon: 'ri-award-line', color: '#86BC25' },
+                { label: 'Convertis', value: ENGAGEMENT_KPIS.leadsConverted, icon: 'ri-funds-line', color: '#059669' },
+                { label: 'Positifs', value: `${ENGAGEMENT_KPIS.positiveSentiment}%`, icon: 'ri-emotion-happy-line', color: '#059669' },
+                { label: 'Plateformes', value: '4', icon: 'ri-global-line', color: '#D97757' },
+              ].map((s, i) => (
+                <div key={i} className="rounded-xl bg-background-50 border border-background-200/70 p-4 text-center">
+                  <div className="w-8 h-8 mx-auto mb-2 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${s.color}15` }}>
+                    <i className={`${s.icon} text-sm`} style={{ color: s.color }} />
+                  </div>
+                  <span className="block text-lg font-bold text-foreground-950">{s.value}</span>
+                  <span className="text-[10px] text-foreground-400">{s.label}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Platform Health */}
+            <div className="mb-8">
+              <h2 className="font-heading text-xl font-bold text-foreground-950 mb-4">Santé des Plateformes</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {Object.entries(PLATFORM_HEALTH).map(([key, data]) => (
+                  <div key={key} className="rounded-2xl bg-background-50 border border-background-200/70 p-5">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 rounded-xl bg-foreground-950 flex items-center justify-center">
+                        <i className={`ri-${key === 'x' ? 'twitter' : key}-fill text-white text-lg`} />
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-bold text-foreground-950 capitalize">{key}</h3>
+                        <span className={`text-[10px] font-bold ${data.status === 'strong' ? 'text-emerald-600' : data.status === 'growing' ? 'text-amber-600' : 'text-gray-500'}`}>
+                          {data.status === 'strong' ? 'Fort' : data.status === 'growing' ? 'Croissance' : 'Émergent'}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="p-2 rounded-lg bg-background-100 text-center">
+                        <span className="block text-base font-bold text-foreground-950">{data.followers.toLocaleString()}</span>
+                        <span className="text-[10px] text-foreground-400">Followers</span>
+                      </div>
+                      <div className="p-2 rounded-lg bg-background-100 text-center">
+                        <span className="block text-base font-bold text-emerald-600">{data.growth}</span>
+                        <span className="text-[10px] text-foreground-400">Croissance</span>
+                      </div>
+                      <div className="p-2 rounded-lg bg-background-100 text-center">
+                        <span className="block text-base font-bold text-foreground-950">{data.engagement}</span>
+                        <span className="text-[10px] text-foreground-400">Engagement</span>
+                      </div>
+                      <div className="p-2 rounded-lg bg-background-100 text-center">
+                        <span className="block text-base font-bold text-foreground-950">{data.postsThisMonth}</span>
+                        <span className="text-[10px] text-foreground-400">Posts/mois</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Active Campaigns */}
+            <div className="mb-8">
+              <h2 className="font-heading text-xl font-bold text-foreground-950 mb-4">Campagnes Actives</h2>
+              <div className="space-y-3">
+                {ACTIVE_CAMPAIGNS.map((camp) => (
+                  <div key={camp.id} className="rounded-xl bg-background-50 border border-background-200/70 p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div>
+                      <h3 className="text-sm font-bold text-foreground-950">{camp.name}</h3>
+                      <span className="text-xs text-foreground-500">{camp.platforms.join(' · ')} · {camp.startDate} → {camp.endDate}</span>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className="text-center">
+                        <span className="block text-lg font-bold text-foreground-950">{camp.publishedPosts}/{camp.totalPosts}</span>
+                        <span className="text-[10px] text-foreground-400">Posts</span>
+                      </div>
+                      <div className="w-24 h-2 rounded-full bg-background-100 overflow-hidden">
+                        <div className="h-full rounded-full bg-emerald-500" style={{ width: `${Math.round((camp.publishedPosts / camp.totalPosts) * 100)}%` }} />
+                      </div>
+                      <div className="text-center">
+                        <span className="block text-base font-bold text-foreground-950">{camp.totalEngagement.toLocaleString()}</span>
+                        <span className="text-[10px] text-foreground-400">Engagement</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Daily Actions */}
+            <div>
+              <h2 className="font-heading text-xl font-bold text-foreground-950 mb-4">Actions Quotidiennes</h2>
+              <div className="rounded-2xl bg-foreground-950 p-6">
+                <div className="space-y-2">
+                  {DAILY_ACTIONS.map((action, i) => (
+                    <div key={i} className="flex items-center gap-3 text-sm text-gray-300">
+                      <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0">
+                        <span className="text-[10px] font-bold text-white/60">{i + 1}</span>
+                      </div>
+                      <span>{action}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ═══════════════ COMMENTS ═══════════════ */}
+      {activeTab === 'comments' && (
+        <section className="py-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="font-heading text-2xl font-bold text-foreground-950 mb-6">Commentaires Récents — {RECENT_COMMENTS.length}</h2>
+            <div className="space-y-3">
+              {RECENT_COMMENTS.map((cmt) => {
+                const sent = SENTIMENT_CONFIG[cmt.sentiment];
+                const lead = LEAD_CONFIG[cmt.leadPotential];
+                const isReplying = replyingTo === cmt.id;
+                return (
+                  <div key={cmt.id} className="rounded-2xl bg-background-50 border border-background-200/70 overflow-hidden">
+                    <div className="p-4">
+                      <div className="flex items-start gap-3">
+                        <div className={`w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${sent.bg}`}>
+                          <i className={`${sent.icon} text-sm`} style={{ color: sent.color }} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap mb-1">
+                            <span className="text-sm font-bold text-foreground-950">{cmt.author}</span>
+                            <span className="text-[10px] px-2 py-0.5 rounded-full font-bold" style={{ backgroundColor: `${sent.color}15`, color: sent.color }}>{sent.label}</span>
+                            {cmt.leadPotential !== 'none' && (
+                              <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${lead.bg}`} style={{ color: lead.color }}>Lead {lead.label}</span>
+                            )}
+                            <span className="text-[10px] text-foreground-400">{formatTimeAgo(cmt.date)}</span>
+                          </div>
+                          <p className="text-sm text-foreground-700">{cmt.content}</p>
+                          {cmt.replied && cmt.replyContent && (
+                            <div className="mt-2 ml-4 p-3 rounded-lg bg-emerald-50 border border-emerald-200">
+                              <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">Notre réponse</span>
+                              <p className="text-xs text-emerald-800 mt-0.5">{cmt.replyContent}</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 mt-3 ml-12">
+                        {!cmt.replied ? (
+                          isReplying ? (
+                            <div className="flex-1 space-y-2">
+                              <textarea
+                                value={replyText}
+                                onChange={(e) => setReplyText(e.target.value)}
+                                rows={3}
+                                className="w-full rounded-lg border border-background-200 bg-white p-3 text-xs text-foreground-900 resize-none focus:outline-none focus:border-foreground-400"
+                              />
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => handleSendReply(cmt.id)}
+                                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold bg-foreground-950 text-white hover:bg-foreground-800 cursor-pointer whitespace-nowrap"
+                                >
+                                  <i className="ri-send-plane-line" />Envoyer
+                                </button>
+                                <button
+                                  onClick={() => setReplyingTo(null)}
+                                  className="px-4 py-2 rounded-lg text-xs font-bold text-foreground-500 hover:bg-background-100 cursor-pointer whitespace-nowrap"
+                                >
+                                  Annuler
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => handleReply(cmt.id)}
+                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-foreground-950 text-white hover:bg-foreground-800 cursor-pointer whitespace-nowrap"
+                            >
+                              <i className="ri-reply-line" />Répondre
+                            </button>
+                          )
+                        ) : (
+                          <span className="flex items-center gap-1 text-xs text-emerald-600 font-bold">
+                            <i className="ri-check-line" />Répondu
+                          </span>
+                        )}
+                        {cmt.leadPotential !== 'none' && (
+                          <button
+                            onClick={() => setSelectedLead(LEAD_OPPORTUNITIES.find((l) => l.author === cmt.author) || null)}
+                            className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold border border-red-200 text-red-600 hover:bg-red-50 cursor-pointer whitespace-nowrap"
+                          >
+                            <i className="ri-user-star-line" />Qualifier lead
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ═══════════════ LEADS ═══════════════ */}
+      {activeTab === 'leads' && (
+        <section className="py-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="font-heading text-2xl font-bold text-foreground-950">Opportunités de Lead — {LEAD_OPPORTUNITIES.length}</h2>
+                <p className="text-sm text-foreground-500">Détectés automatiquement depuis les commentaires et messages</p>
+              </div>
+            </div>
+            <div className="space-y-3">
+              {LEAD_OPPORTUNITIES.map((lead) => {
+                const st = STATUS_CONFIG[lead.status];
+                const potConfig = LEAD_CONFIG[lead.potential];
+                const isSelected = selectedLead?.id === lead.id;
+                return (
+                  <div key={lead.id} className={`rounded-2xl border transition-all ${isSelected ? 'border-foreground-300 bg-background-50 ring-2 ring-foreground-200' : 'border-background-200/70 bg-background-50 hover:border-foreground-200'}`}>
+                    <button
+                      onClick={() => setSelectedLead(isSelected ? null : lead)}
+                      className="w-full p-4 text-left flex items-start gap-4 cursor-pointer"
+                    >
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${potConfig.color}15` }}>
+                        <i className="ri-user-star-line text-lg" style={{ color: potConfig.color }} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap mb-1">
+                          <span className="text-sm font-bold text-foreground-950">{lead.author}</span>
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${potConfig.bg}`} style={{ color: potConfig.color }}>
+                            {potConfig.label}
+                          </span>
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${st.bg}`} style={{ color: st.color }}>
+                            {st.label}
+                          </span>
+                        </div>
+                        <p className="text-xs text-foreground-600 line-clamp-1">{lead.comment}</p>
+                        <div className="flex items-center gap-3 mt-1 text-[10px] text-foreground-400">
+                          <span><i className="ri-link mr-1" />{lead.source}</span>
+                          <span>{lead.sector}</span>
+                          <span>{new Date(lead.detectedAt).toLocaleDateString('fr-FR')}</span>
+                        </div>
+                      </div>
+                      <i className={`ri-${isSelected ? 'subtract' : 'add'}-line text-foreground-400 text-lg`} />
+                    </button>
+                    {isSelected && (
+                      <div className="px-5 pb-5 border-t border-background-200/70 pt-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-3">
+                            <div>
+                              <span className="text-[10px] font-bold text-foreground-500 uppercase tracking-wider">Commentaire Original</span>
+                              <p className="text-sm text-foreground-700 mt-1">{lead.comment}</p>
+                            </div>
+                            {lead.company && (
+                              <div>
+                                <span className="text-[10px] font-bold text-foreground-500 uppercase tracking-wider">Entreprise</span>
+                                <p className="text-sm text-foreground-700 mt-1">{lead.company}</p>
+                              </div>
+                            )}
+                            {lead.position && (
+                              <div>
+                                <span className="text-[10px] font-bold text-foreground-500 uppercase tracking-wider">Poste</span>
+                                <p className="text-sm text-foreground-700 mt-1">{lead.position}</p>
+                              </div>
+                            )}
+                          </div>
+                          <div className="space-y-3">
+                            <div>
+                              <span className="text-[10px] font-bold text-foreground-500 uppercase tracking-wider">Service Recommandé</span>
+                              <p className="text-sm font-bold text-foreground-800 mt-1">{lead.serviceRecommended}</p>
+                            </div>
+                            <div className="bg-accent-50 border border-accent-200 rounded-xl p-4">
+                              <span className="text-[10px] font-bold text-accent-700 uppercase tracking-wider">Plan d'Action</span>
+                              <ul className="mt-2 space-y-1.5 text-xs text-accent-800">
+                                <li className="flex items-start gap-1.5"><i className="ri-checkbox-circle-line text-accent-500 mt-0.5 flex-shrink-0" />Contacter dans les 24h via LinkedIn</li>
+                                <li className="flex items-start gap-1.5"><i className="ri-checkbox-circle-line text-accent-500 mt-0.5 flex-shrink-0" />Envoyer brochure {lead.serviceRecommended}</li>
+                                <li className="flex items-start gap-1.5"><i className="ri-checkbox-circle-line text-accent-500 mt-0.5 flex-shrink-0" />Proposer un appel découverte</li>
+                              </ul>
+                            </div>
+                            <Link
+                              to="/crm"
+                              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold bg-foreground-950 text-white hover:bg-foreground-800 cursor-pointer whitespace-nowrap"
+                            >
+                              <i className="ri-external-link-line" />Ouvrir dans le CRM
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ═══════════════ TEMPLATES ═══════════════ */}
+      {activeTab === 'templates' && (
+        <section className="py-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="font-heading text-2xl font-bold text-foreground-950 mb-2">Templates de Réponse — {RESPONSE_TEMPLATES.length}</h2>
+            <p className="text-sm text-foreground-500 mb-6">Cliquez sur un template pour l'utiliser dans la réponse.</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {RESPONSE_TEMPLATES.map((tmpl) => (
+                <button
+                  key={tmpl.id}
+                  onClick={() => handleUseTemplate(tmpl.id)}
+                  className={`text-left rounded-2xl border p-5 transition-all cursor-pointer ${
+                    selectedTemplate === tmpl.id ? 'border-foreground-300 bg-background-50 ring-2 ring-foreground-200' : 'border-background-200/70 bg-background-50 hover:border-foreground-200'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-[10px] font-bold text-foreground-400 uppercase tracking-wider">{tmpl.trigger.replace(/_/g, ' ')}</span>
+                    {selectedTemplate === tmpl.id && (
+                      <span className="text-[10px] font-bold text-emerald-600">✓ Sélectionné</span>
+                    )}
+                  </div>
+                  <h3 className="text-sm font-bold text-foreground-950 mb-2">{tmpl.name}</h3>
+                  <p className="text-xs text-foreground-600 leading-relaxed">{tmpl.content}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ═══════════════ CALENDAR ═══════════════ */}
+      {activeTab === 'calendar' && (
+        <section className="py-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="font-heading text-2xl font-bold text-foreground-950">Planning Hebdomadaire</h2>
+                <p className="text-sm text-foreground-500">Semaine du 16 au 22 Juin 2026</p>
+              </div>
+              <Link
+                to="/kos-multichannel-command"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-foreground-950 text-white text-sm font-bold hover:bg-foreground-800 cursor-pointer whitespace-nowrap"
+              >
+                <i className="ri-stack-line" />Multichannel Command
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {['Lun 16', 'Mar 17', 'Mer 18', 'Jeu 19', 'Ven 20', 'Sam 21', 'Dim 22'].map((day, di) => (
+                <div key={day} className={`rounded-2xl border p-4 ${di < 5 ? 'bg-background-50 border-background-200/70' : 'bg-background-100 border-background-200/70 opacity-60'}`}>
+                  <h3 className="font-heading text-base font-bold text-foreground-950 mb-3">{day}</h3>
+                  <div className="space-y-2">
+                    {di < 5 && (
+                      <>
+                        <div className="rounded-lg bg-[#0A66C2]/10 border border-[#0A66C2]/20 p-2">
+                          <span className="text-[10px] font-bold text-[#0A66C2]">09:00 LinkedIn</span>
+                          <p className="text-[10px] text-foreground-600 mt-0.5">Post Série Gouvernance UEMOA</p>
+                        </div>
+                        <div className="rounded-lg bg-[#FF0000]/10 border border-[#FF0000]/20 p-2">
+                          <span className="text-[10px] font-bold text-[#FF0000]">15:00 YouTube</span>
+                          <p className="text-[10px] text-foreground-600 mt-0.5">Rép. commentaires vidéo LCB/FT</p>
+                        </div>
+                        {di % 2 === 0 && (
+                          <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-2">
+                            <span className="text-[10px] font-bold text-emerald-600">17:00 Lead Review</span>
+                            <p className="text-[10px] text-foreground-600 mt-0.5">Qualification leads détectés</p>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Cross-Link */}
+      <section className="py-12 bg-foreground-950">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
+            <div>
+              <h2 className="font-heading text-2xl font-bold text-white mb-2">Écosystème KOS — Engage → Qualify → Convert</h2>
+              <p className="text-gray-400 text-sm">Le Community Manager nourrit le CRM et le pipeline commercial KHEPRA EXPERTS.</p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <Link to="/crm" className="flex items-center gap-2 px-5 py-3 rounded-xl bg-white text-foreground-950 font-bold text-sm hover:bg-gray-100 cursor-pointer whitespace-nowrap">
+                <i className="ri-user-line" />CRM
+              </Link>
+              <Link to="/kos-multichannel-command" className="flex items-center gap-2 px-5 py-3 rounded-xl text-white font-bold text-sm cursor-pointer whitespace-nowrap" style={{ backgroundColor: '#86BC25' }}>
+                <i className="ri-stack-line" />Multichannel
+              </Link>
+              <Link to="/kos-social-media-command" className="flex items-center gap-2 px-5 py-3 rounded-xl bg-[#0A66C2] text-white font-bold text-sm hover:bg-[#004182] cursor-pointer whitespace-nowrap">
+                <i className="ri-share-line" />Social Command
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+    </KOSHubLayout>
+  );
+}

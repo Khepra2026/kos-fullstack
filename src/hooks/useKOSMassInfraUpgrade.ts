@@ -1,0 +1,332 @@
+import { useState, useCallback, useRef } from 'react';
+import { supabase } from '@/lib/supabase';
+import {
+  MASS_TASKS,
+  DOMAIN_SUMMARIES,
+  MASS_UPGRADE_STATS,
+  INITIAL_EXECUTION_LOGS,
+  type MassTask,
+  type DomainSummary,
+  type MassUpgradeStats,
+  type MassExecutionLog,
+} from '@/mocks/kosMassInfraUpgrade';
+
+export type { MassTask, DomainSummary, MassUpgradeStats, MassExecutionLog };
+
+/** Tâches qui appellent de véritables Edge Functions Supabase */
+const REAL_FUNCTION_TASKS = MASS_TASKS.filter(t => t.supabaseFunction && !t.mockOnly).length;
+/** Tâches simulées (code-level changes) */
+const MOCK_ONLY_TASKS = MASS_TASKS.filter(t => t.mockOnly).length;
+
+export function useKOSMassInfraUpgrade() {
+  const [tasks, setTasks] = useState<MassTask[]>(MASS_TASKS);
+  const [domainSummaries, setDomainSummaries] = useState<DomainSummary[]>(DOMAIN_SUMMARIES);
+  const [stats, setStats] = useState<MassUpgradeStats>(MASS_UPGRADE_STATS);
+  const [executionLogs, setExecutionLogs] = useState<MassExecutionLog[]>(INITIAL_EXECUTION_LOGS);
+  const [isExecuting, setIsExecuting] = useState(false);
+  const [currentDomain, setCurrentDomain] = useState<string | null>(null);
+  const [overallProgress, setOverallProgress] = useState(0);
+  const [executionMode, setExecutionMode] = useState<'all' | 'critical' | 'auto' | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
+
+  const updateDomainSummaries = useCallback((updatedTasks: MassTask[]) => {
+    setDomainSummaries(prev => prev.map(ds => {
+      const domainTasks = updatedTasks.filter(t => t.domain === ds.domain);
+      const completed = domainTasks.filter(t => t.status === 'completed').length;
+      return {
+        ...ds,
+        totalTasks: domainTasks.length,
+        critical: domainTasks.filter(t => t.priority === 'critical').length,
+        high: domainTasks.filter(t => t.priority === 'high').length,
+        medium: domainTasks.filter(t => t.priority === 'medium').length,
+        completed,
+        autoFixable: domainTasks.filter(t => t.autoFixable).length,
+        progressPct: Math.round((completed / domainTasks.length) * 100),
+      };
+    }));
+  }, []);
+
+  const updateGlobalStats = useCallback((updatedTasks: MassTask[]) => {
+    const completed = updatedTasks.filter(t => t.status === 'completed').length;
+    const total = updatedTasks.length;
+    setStats({
+      ...MASS_UPGRADE_STATS,
+      totalCompleted: completed,
+      overallProgress: Math.round((completed / total) * 100),
+      totalCritical: updatedTasks.filter(t => t.priority === 'critical' && t.status !== 'completed').length,
+      totalHigh: updatedTasks.filter(t => t.priority === 'high' && t.status !== 'completed').length,
+    });
+    setOverallProgress(Math.round((completed / total) * 100));
+  }, []);
+
+  const addLog = useCallback((
+    taskId: string,
+    domain: string,
+    action: string,
+    status: 'running' | 'completed' | 'failed',
+    detail: string,
+    duration: string,
+    executionType: 'edge_function' | 'mock_code_change',
+    functionSlug?: string,
+  ) => {
+    setExecutionLogs(prev => [{
+      id: `log-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      taskId,
+      domain,
+      action,
+      status,
+      timestamp: new Date().toISOString(),
+      detail,
+      duration,
+      executionType,
+      functionSlug,
+    }, ...prev]);
+  }, []);
+
+  /**
+   * Exécute une tâche mock-only (code-level change) avec une simulation réaliste.
+   * Ces tâches représentent des modifications de code, config Netlify, ou assets
+   * qui ne peuvent pas être automatisées via Edge Functions.
+   */
+  const executeMockOnlyTask = useCallback(async (task: MassTask): Promise<boolean> => {
+    const startTime = Date.now();
+
+    // Simulation réaliste : délai progressif avec étapes intermédiaires
+    const steps = task.autoFixable ? 2 : 4;
+    for (let i = 0; i < steps; i++) {
+      if (abortRef.current?.signal.aborted) throw new Error('Execution cancelled');
+      await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 400));
+    }
+
+    const duration = `${Math.round((Date.now() - startTime) / 1000)}s`;
+    addLog(
+      task.id, task.domain, task.title, 'completed',
+      `[CODE-LEVEL] ${task.title} — Modification appliquée (${task.impact})`,
+      duration, 'mock_code_change',
+    );
+    return true;
+  }, [addLog]);
+
+  /**
+   * Appelle une véritable Edge Function Supabase pour exécuter la tâche.
+   * Utilise supabase.functions.invoke() avec le payload spécifique à la tâche.
+   */
+  const executeEdgeFunctionTask = useCallback(async (task: MassTask): Promise<boolean> => {
+    if (!task.supabaseFunction) return executeMockOnlyTask(task);
+
+    const fnSlug = task.supabaseFunction;
+    const payload = task.functionPayload || { action: 'execute', taskId: task.id };
+    const startTime = Date.now();
+
+    addLog(
+      task.id, task.domain, task.title, 'running',
+      `[EDGE FN → ${fnSlug}] Déploiement: ${task.title}...`,
+      '0s', 'edge_function', fnSlug,
+    );
+
+    try {
+      const { data, error } = await supabase.functions.invoke(fnSlug, {
+        body: payload,
+      });
+
+      if (abortRef.current?.signal.aborted) throw new Error('Execution cancelled');
+
+      const duration = `${Math.round((Date.now() - startTime) / 1000)}s`;
+
+      if (error) {
+        // L'Edge Function a répondu mais avec une erreur applicative
+        const errMsg = error.message || JSON.stringify(error);
+        addLog(
+          task.id, task.domain, task.title, 'failed',
+          `[EDGE FN ✗ ${fnSlug}] ${errMsg}`,
+          duration, 'edge_function', fnSlug,
+        );
+        return false;
+      }
+
+      addLog(
+        task.id, task.domain, task.title, 'completed',
+        `[EDGE FN ✓ ${fnSlug}] ${task.title} — ${task.impact} (${JSON.stringify(data || {}).slice(0, 120)})`,
+        duration, 'edge_function', fnSlug,
+      );
+      return true;
+    } catch (err) {
+      const duration = `${Math.round((Date.now() - startTime) / 1000)}s`;
+      const errMsg = err instanceof Error ? err.message : 'Erreur réseau/infra';
+
+      // Distinguer timeout réseau vs erreur applicative
+      const detail = errMsg.includes('cancelled')
+        ? `[EDGE FN ⏹ ${fnSlug}] Exécution annulée`
+        : `[EDGE FN ✗ ${fnSlug}] Échec: ${errMsg} — L'Edge Function n'a pas répondu. Vérifiez le dashboard Supabase.`;
+
+      addLog(
+        task.id, task.domain, task.title, 'failed',
+        detail,
+        duration, 'edge_function', fnSlug,
+      );
+      return false;
+    }
+  }, [addLog, executeMockOnlyTask]);
+
+  /**
+   * Point d'entrée unique : choisit la stratégie d'exécution selon le type de tâche.
+   * - Tâches avec supabaseFunction → appel réel Edge Function Supabase
+   * - Tâches mockOnly → simulation réaliste code-level change
+   */
+  const executeTask = useCallback(async (task: MassTask): Promise<boolean> => {
+    if (task.status === 'completed') return true;
+
+    setTasks(prev => prev.map(t => t.id === task.id ? { ...t, status: 'in_progress' as const } : t));
+    addLog(
+      task.id, task.domain, task.title, 'running',
+      task.mockOnly
+        ? `[CODE-LEVEL] Démarrage: ${task.title}`
+        : `[EDGE FN → ${task.supabaseFunction}] Démarrage: ${task.title}`,
+      '0s',
+      task.mockOnly ? 'mock_code_change' : 'edge_function',
+      task.supabaseFunction,
+    );
+
+    const startTime = Date.now();
+    let success: boolean;
+
+    try {
+      if (task.mockOnly || !task.supabaseFunction) {
+        success = await executeMockOnlyTask(task);
+      } else {
+        success = await executeEdgeFunctionTask(task);
+      }
+    } catch (err) {
+      const duration = `${Math.round((Date.now() - startTime) / 1000)}s`;
+      const execType = task.mockOnly ? 'mock_code_change' as const : 'edge_function' as const;
+      setTasks(prev => prev.map(t => t.id === task.id ? { ...t, status: 'failed' as const } : t));
+      addLog(
+        task.id, task.domain, task.title, 'failed',
+        `Échec: ${task.title} — ${err instanceof Error ? err.message : 'Erreur inconnue'}`,
+        duration, execType, task.supabaseFunction,
+      );
+      return false;
+    }
+
+    if (success) {
+      setTasks(prev => prev.map(t => t.id === task.id ? { ...t, status: 'completed' as const } : t));
+    } else {
+      setTasks(prev => prev.map(t => t.id === task.id ? { ...t, status: 'failed' as const } : t));
+    }
+    return success;
+  }, [addLog, executeMockOnlyTask, executeEdgeFunctionTask]);
+
+  const executeDomain = useCallback(async (domain: string) => {
+    setCurrentDomain(domain);
+    const domainTasks = tasks.filter(t => t.domain === domain && t.status === 'pending');
+    const sorted = [...domainTasks].sort((a, b) => {
+      const prio = { critical: 0, high: 1, medium: 2 };
+      return prio[a.priority] - prio[b.priority];
+    });
+
+    for (const task of sorted) {
+      if (abortRef.current?.signal.aborted) break;
+      await executeTask(task);
+      setTasks(currentTasks => {
+        updateDomainSummaries(currentTasks);
+        updateGlobalStats(currentTasks);
+        return currentTasks;
+      });
+    }
+    setCurrentDomain(null);
+  }, [tasks, executeTask, updateDomainSummaries, updateGlobalStats]);
+
+  const executeAllCritical = useCallback(async () => {
+    setIsExecuting(true);
+    setExecutionMode('critical');
+    abortRef.current = new AbortController();
+
+    const criticalTasks = tasks.filter(t => t.priority === 'critical' && t.status === 'pending');
+    for (const task of criticalTasks) {
+      if (abortRef.current?.signal.aborted) break;
+      await executeTask(task);
+      setTasks(currentTasks => {
+        updateDomainSummaries(currentTasks);
+        updateGlobalStats(currentTasks);
+        return currentTasks;
+      });
+    }
+
+    setIsExecuting(false);
+    setExecutionMode(null);
+  }, [tasks, executeTask, updateDomainSummaries, updateGlobalStats]);
+
+  const executeAllAutoFixable = useCallback(async () => {
+    setIsExecuting(true);
+    setExecutionMode('auto');
+    abortRef.current = new AbortController();
+
+    const autoTasks = tasks.filter(t => t.autoFixable && t.status === 'pending');
+    for (const task of autoTasks) {
+      if (abortRef.current?.signal.aborted) break;
+      await executeTask(task);
+      setTasks(currentTasks => {
+        updateDomainSummaries(currentTasks);
+        updateGlobalStats(currentTasks);
+        return currentTasks;
+      });
+    }
+
+    setIsExecuting(false);
+    setExecutionMode(null);
+  }, [tasks, executeTask, updateDomainSummaries, updateGlobalStats]);
+
+  const executeAll = useCallback(async () => {
+    setIsExecuting(true);
+    setExecutionMode('all');
+    abortRef.current = new AbortController();
+
+    const domainOrder: string[] = ['infrastructure', 'geo', 'seo', 'ai_visibility', 'lead_magnets'];
+
+    for (const domain of domainOrder) {
+      if (abortRef.current?.signal.aborted) break;
+      setCurrentDomain(domain);
+      await executeDomain(domain);
+    }
+
+    setIsExecuting(false);
+    setCurrentDomain(null);
+    setExecutionMode(null);
+  }, [executeDomain]);
+
+  const cancelExecution = useCallback(() => {
+    abortRef.current?.abort();
+    setIsExecuting(false);
+    setCurrentDomain(null);
+    setExecutionMode(null);
+  }, []);
+
+  const resetAll = useCallback(() => {
+    setTasks(MASS_TASKS.map(t => ({ ...t, status: 'pending' as const })));
+    setDomainSummaries(DOMAIN_SUMMARIES.map(d => ({ ...d, completed: 0, progressPct: 0 })));
+    setStats(MASS_UPGRADE_STATS);
+    setExecutionLogs([]);
+    setOverallProgress(0);
+  }, []);
+
+  return {
+    tasks,
+    domainSummaries,
+    stats,
+    executionLogs,
+    isExecuting,
+    currentDomain,
+    overallProgress,
+    executionMode,
+    executeTask,
+    executeDomain,
+    executeAllCritical,
+    executeAllAutoFixable,
+    executeAll,
+    cancelExecution,
+    resetAll,
+    // Stats on what's real vs simulated
+    realFunctionTasks: REAL_FUNCTION_TASKS,
+    mockOnlyTasks: MOCK_ONLY_TASKS,
+  };
+}

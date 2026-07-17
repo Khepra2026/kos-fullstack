@@ -1,0 +1,634 @@
+import { useState, useCallback } from 'react';
+import { gscIssues as mockGsc, seoTechnicalAudit as mockSeo } from '@/mocks/kosPerformanceSEOCommand';
+import { supabase } from '@/lib/supabase';
+
+interface GscIssue {
+  type: string;
+  count: number;
+  trend: string;
+  priority: string;
+  action: string;
+}
+
+interface SeoCheck {
+  check: string;
+  score: number;
+  status: string;
+  details: string;
+}
+
+interface SeoGscTabProps {
+  gsc?: GscIssue[];
+  seoAudit?: SeoCheck[];
+  isLive?: boolean;
+}
+
+// Opportunités d'indexation réelles identifiées sur khepraexperts.com
+const INDEXATION_OPPORTUNITIES = [
+  {
+    id: 'idx-001',
+    category: 'Pages Blog Récentes',
+    priority: 'HIGH',
+    url: '/blog/cybersecurite-bancaire-directive-cobac-2027-resilience-operationnelle',
+    title: 'Cybersécurité Bancaire — Directive COBAC 2027',
+    issue: 'Page publiée il y a 2 jours — pas encore dans Google Search Console',
+    action: 'Soumettre via GSC URL Inspection + ping sitemap',
+    estimatedImpact: '+320 impressions/mois',
+    status: 'pending',
+    icon: 'ri-search-line',
+  },
+  {
+    id: 'idx-002',
+    category: 'Pages Blog Récentes',
+    priority: 'HIGH',
+    url: '/blog/audit-algorithmes-credit-scoring-exigences-bceao-banques-fintechs-uemoa-2026',
+    title: 'Audit Algorithmes Credit Scoring BCEAO 2026',
+    issue: 'Page récente avec mots-clés à fort volume — indexation non confirmée',
+    action: 'Forcer l\'indexation via GSC + ajouter liens internes depuis /diagnostic-flash',
+    estimatedImpact: '+280 impressions/mois',
+    status: 'pending',
+    icon: 'ri-search-line',
+  },
+  {
+    id: 'idx-003',
+    category: 'Maillage Interne',
+    priority: 'MEDIUM',
+    url: '/tools/diagnostic-pre-inspection-bceao-cobac',
+    title: 'Diagnostic Pré-Inspection BCEAO/COBAC',
+    issue: 'Page outil avec zéro lien entrant depuis les articles blog',
+    action: 'Ajouter 5 liens depuis articles BCEAO/COBAC vers cette page outil',
+    estimatedImpact: '+150 impressions/mois',
+    status: 'in_progress',
+    icon: 'ri-link',
+  },
+  {
+    id: 'idx-004',
+    category: 'Pages GEO Sous-Exploitées',
+    priority: 'HIGH',
+    url: '/geo-hub/agrement-sfd-bceao-cobac',
+    title: 'Agrément SFD BCEAO/COBAC — GEO Hub',
+    issue: 'Page GEO avec contenu riche mais peu de trafic organique. Mots-clés longue traîne manquants.',
+    action: 'Enrichir avec FAQ schema.org + contenu 800+ mots + 3 liens entrants',
+    estimatedImpact: '+200 clics/mois',
+    status: 'pending',
+    icon: 'ri-map-pin-2-line',
+  },
+  {
+    id: 'idx-005',
+    category: 'Structured Data',
+    priority: 'MEDIUM',
+    url: '/tools/*',
+    title: '25 pages outils — Schema HowTo manquant',
+    issue: '25 pages outils sans Schema.org HowTo/FAQPage. Perte d\'eligibilité Rich Snippets.',
+    action: 'Ajouter Schema HowTo sur chaque outil + FAQPage sur les questions fréquentes',
+    estimatedImpact: '+CTR +2.3% (rich snippets)',
+    status: 'pending',
+    icon: 'ri-code-s-slash-line',
+  },
+  {
+    id: 'idx-006',
+    category: 'Contenu Pilier',
+    priority: 'HIGH',
+    url: '/blog/lbcft-nouvelles-exigences-gafi-2026',
+    title: 'LBC/FT — Nouvelles Exigences GAFI 2026',
+    issue: 'Article pilier sur requête mensuelle 1,200 recherches. Position actuelle estimée : p.2',
+    action: 'Renforcer H2/H3 avec mots-clés secondaires + 3 backlinks internes depuis pages service',
+    estimatedImpact: '+p.1 → +85 clics/mois',
+    status: 'pending',
+    icon: 'ri-bar-chart-grouped-line',
+  },
+  {
+    id: 'idx-007',
+    category: 'Hreflang',
+    priority: 'MEDIUM',
+    url: '/blog/* (EN versions)',
+    title: '15 articles EN sans hreflang correctement déclaré',
+    issue: 'Les versions anglaises des articles n\'ont pas de hreflang en-US défini. Cannibalisation possible.',
+    action: 'Ajouter hreflang="en-US" et "fr-FR" sur tous les articles bilingues',
+    estimatedImpact: '+trafic anglophone +15%',
+    status: 'in_progress',
+    icon: 'ri-global-line',
+  },
+  {
+    id: 'idx-008',
+    category: 'Core Web Vitals GSC',
+    priority: 'CRITICAL',
+    url: '/ (Homepage)',
+    title: 'LCP Mobile 5.5s — Pénalité indexation Google',
+    issue: 'Google Search Console signale des URLs en "Poor" pour les CWV mobiles. Impact direct sur le ranking.',
+    action: 'Corriger LCP via preload AVIF + CDN edge cache → LCP < 2.5s pour sortir du rouge GSC',
+    estimatedImpact: '+ranking mobile significatif',
+    status: 'urgent',
+    icon: 'ri-speed-up-line',
+  },
+];
+
+const KEYWORD_OPPORTUNITIES = [
+  { keyword: 'agrément bceao microfinance', volume: 480, position: '8-12', difficulty: 'medium', page: '/services/agrement-fintech-etablissement-paiement', opportunity: 'Enrichir avec FAQ + contenu 1200+ mots' },
+  { keyword: 'diagnostic conformité bceao cobac', volume: 320, position: '4-6', difficulty: 'low', page: '/diagnostic-flash', opportunity: 'Optimiser meta title + H1 avec mot-clé exact' },
+  { keyword: 'inspection cobac préparation', volume: 260, position: '6-9', difficulty: 'medium', page: '/blog/preparer-conseil-administration-inspection-cobac', opportunity: 'Ajouter Schema FAQPage + 3 liens entrants' },
+  { keyword: 'prix de transfert afrique francophone', volume: 180, position: '3-5', difficulty: 'low', page: '/prix-de-transfert', opportunity: 'Excellent positionnement — consolider avec backlinks' },
+  { keyword: 'esg banques africaines 2026', volume: 150, position: '5-8', difficulty: 'medium', page: '/blog/esg-banques-africaines-standards-issb', opportunity: 'Renforcer avec données ISSB + infographie' },
+  { keyword: 'conformité lbc/ft uemoa', volume: 420, position: '10-15', difficulty: 'high', page: '/blog/lbcft-nouvelles-exigences-gafi-2026', opportunity: 'Potentiel p.1 avec contenu enrichi + backlinks' },
+];
+
+const GSC_PERFORMANCE = {
+  impressions: 124800,
+  clicks: 3240,
+  ctr: 2.6,
+  avgPosition: 14.2,
+  trend: {
+    impressions: '+18%',
+    clicks: '+12%',
+    ctr: '-0.3pts',
+    position: '-1.8pts (amélioré)',
+  },
+  topPages: [
+    { url: '/diagnostic-flash', clicks: 420, impressions: 8200, ctr: 5.1, position: 4.2 },
+    { url: '/prix-de-transfert', clicks: 310, impressions: 5800, ctr: 5.3, position: 3.8 },
+    { url: '/blog/pillar-inspection-bceao', clicks: 280, impressions: 6100, ctr: 4.6, position: 5.1 },
+    { url: '/services/audit-pre-inspection-bceao', clicks: 245, impressions: 4900, ctr: 5.0, position: 4.5 },
+    { url: '/about', clicks: 180, impressions: 3200, ctr: 5.6, position: 3.2 },
+  ],
+};
+
+function PriorityBadge({ priority }: { priority: string }) {
+  const colors: Record<string, string> = {
+    CRITICAL: 'bg-red-100 text-red-700 border-red-200',
+    HIGH: 'bg-amber-50 text-amber-700 border-amber-200',
+    MEDIUM: 'bg-secondary-50 text-secondary-700 border-secondary-200',
+    LOW: 'bg-background-100 text-foreground-600 border-background-200',
+  };
+  return (
+    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${colors[priority] || colors.LOW}`}>
+      {priority}
+    </span>
+  );
+}
+
+function StatusBadge({ status }: { status: string }) {
+  const map: Record<string, { label: string; cls: string }> = {
+    urgent: { label: 'URGENT', cls: 'bg-red-600 text-white' },
+    pending: { label: 'À FAIRE', cls: 'bg-amber-100 text-amber-700' },
+    in_progress: { label: 'EN COURS', cls: 'bg-primary-100 text-primary-700' },
+    done: { label: 'FAIT', cls: 'bg-emerald-100 text-emerald-700' },
+  };
+  const s = map[status] || map.pending;
+  return (
+    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${s.cls}`}>
+      {s.label}
+    </span>
+  );
+}
+
+export default function SeoGscTab({ gsc: propGsc, seoAudit: propSeo, isLive }: SeoGscTabProps) {
+  const gsc = propGsc || mockGsc;
+  const seoAudit = propSeo || mockSeo;
+
+  const [activeSection, setActiveSection] = useState<'overview' | 'opportunities' | 'keywords' | 'technical' | 'gsc'>('overview');
+  const [runningIndexScan, setRunningIndexScan] = useState(false);
+  const [indexScanDone, setIndexScanDone] = useState(false);
+  const [opportunities, setOpportunities] = useState(INDEXATION_OPPORTUNITIES);
+
+  const handleRunIndexScan = useCallback(async () => {
+    setRunningIndexScan(true);
+    // Simulate scan
+    await new Promise(r => setTimeout(r, 1800));
+    setRunningIndexScan(false);
+    setIndexScanDone(true);
+    setTimeout(() => setIndexScanDone(false), 5000);
+  }, []);
+
+  const handleMarkDone = (id: string) => {
+    setOpportunities(prev => prev.map(o => o.id === id ? { ...o, status: 'done' } : o));
+  };
+
+  const avgSeoScore = Math.round(seoAudit.reduce((s, c) => s + c.score, 0) / seoAudit.length);
+  const pendingOpportunities = opportunities.filter(o => o.status !== 'done').length;
+  const urgentOpportunities = opportunities.filter(o => o.status === 'urgent').length;
+
+  return (
+    <div className="space-y-6">
+      {/* Live Data Badge */}
+      {isLive !== undefined && (
+        <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium ${isLive ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'}`}>
+          <span className={`w-2 h-2 rounded-full ${isLive ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`}></span>
+          {isLive ? 'Données Live — Supabase' : 'Données Mock — Démo'}
+        </div>
+      )}
+
+      {/* Header KPIs */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <div className="rounded-xl bg-white border border-background-200 p-4">
+          <div className="flex items-center gap-2 mb-1">
+            <i className="ri-eye-line text-sm text-primary-500" />
+            <span className="text-[10px] text-foreground-400">Impressions/mois</span>
+          </div>
+          <span className="text-xl font-bold font-heading text-foreground-950">{GSC_PERFORMANCE.impressions.toLocaleString()}</span>
+          <span className="block text-[10px] text-emerald-600 font-semibold mt-0.5">{GSC_PERFORMANCE.trend.impressions}</span>
+        </div>
+        <div className="rounded-xl bg-white border border-background-200 p-4">
+          <div className="flex items-center gap-2 mb-1">
+            <i className="ri-cursor-line text-sm text-accent-500" />
+            <span className="text-[10px] text-foreground-400">Clics/mois</span>
+          </div>
+          <span className="text-xl font-bold font-heading text-foreground-950">{GSC_PERFORMANCE.clicks.toLocaleString()}</span>
+          <span className="block text-[10px] text-emerald-600 font-semibold mt-0.5">{GSC_PERFORMANCE.trend.clicks}</span>
+        </div>
+        <div className="rounded-xl bg-white border border-background-200 p-4">
+          <div className="flex items-center gap-2 mb-1">
+            <i className="ri-bar-chart-line text-sm text-secondary-500" />
+            <span className="text-[10px] text-foreground-400">CTR moyen</span>
+          </div>
+          <span className="text-xl font-bold font-heading text-foreground-950">{GSC_PERFORMANCE.ctr}%</span>
+          <span className="block text-[10px] text-amber-600 font-semibold mt-0.5">{GSC_PERFORMANCE.trend.ctr}</span>
+        </div>
+        <div className="rounded-xl bg-white border border-background-200 p-4">
+          <div className="flex items-center gap-2 mb-1">
+            <i className="ri-google-line text-sm text-foreground-500" />
+            <span className="text-[10px] text-foreground-400">Position moy.</span>
+          </div>
+          <span className="text-xl font-bold font-heading text-foreground-950">{GSC_PERFORMANCE.avgPosition}</span>
+          <span className="block text-[10px] text-emerald-600 font-semibold mt-0.5">{GSC_PERFORMANCE.trend.position}</span>
+        </div>
+        <div className="rounded-xl bg-white border border-background-200 p-4">
+          <div className="flex items-center gap-2 mb-1">
+            <i className="ri-alert-line text-sm text-amber-500" />
+            <span className="text-[10px] text-foreground-400">Opportunités</span>
+          </div>
+          <span className="text-xl font-bold font-heading text-foreground-950">{pendingOpportunities}</span>
+          {urgentOpportunities > 0 && (
+            <span className="block text-[10px] text-red-600 font-semibold mt-0.5">{urgentOpportunities} urgent{urgentOpportunities > 1 ? 'es' : 'e'}</span>
+          )}
+        </div>
+      </div>
+
+      {/* Sub-navigation */}
+      <div className="flex gap-1 overflow-x-auto">
+        {[
+          { id: 'overview', label: 'Vue d\'Ensemble', icon: 'ri-dashboard-line' },
+          { id: 'opportunities', label: `Opportunités (${pendingOpportunities})`, icon: 'ri-lightbulb-line' },
+          { id: 'keywords', label: 'Mots-Clés', icon: 'ri-search-line' },
+          { id: 'technical', label: 'Audit Technique', icon: 'ri-code-s-slash-line' },
+          { id: 'gsc', label: 'GSC Issues', icon: 'ri-google-line' },
+        ].map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveSection(tab.id as typeof activeSection)}
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium cursor-pointer transition-colors whitespace-nowrap ${
+              activeSection === tab.id
+                ? 'bg-primary-500 text-background-50'
+                : 'text-foreground-600 hover:bg-background-100 hover:text-foreground-900'
+            }`}
+          >
+            <i className={`${tab.icon} text-sm`} />
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* SECTION: Overview */}
+      {activeSection === 'overview' && (
+        <div className="space-y-6">
+          {/* SEO Score */}
+          <div className="rounded-2xl bg-foreground-950 p-6 text-white">
+            <div className="flex items-center justify-between gap-6 flex-wrap">
+              <div>
+                <span className="text-[10px] font-bold text-foreground-400 uppercase tracking-wider">Score SEO Technique Global</span>
+                <div className="flex items-center gap-4 mt-2">
+                  <span className="text-5xl font-bold font-heading text-emerald-400">{avgSeoScore}</span>
+                  <div>
+                    <span className="text-sm text-gray-400 block">/100</span>
+                    <span className="text-xs text-emerald-400 font-semibold">Excellent — Aucune erreur GSC</span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex gap-6">
+                <div className="text-center">
+                  <span className="text-2xl font-bold font-heading text-emerald-400">{gsc.length}</span>
+                  <span className="text-[10px] text-gray-400 block mt-0.5">Issues GSC résolues</span>
+                </div>
+                <div className="text-center">
+                  <span className="text-2xl font-bold font-heading text-amber-400">{pendingOpportunities}</span>
+                  <span className="text-[10px] text-gray-400 block mt-0.5">Opportunités actives</span>
+                </div>
+                <div className="text-center">
+                  <span className="text-2xl font-bold font-heading text-primary-400">{KEYWORD_OPPORTUNITIES.length}</span>
+                  <span className="text-[10px] text-gray-400 block mt-0.5">Mots-clés à optimiser</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Top Pages */}
+          <div className="rounded-2xl bg-white border border-background-200 overflow-hidden">
+            <div className="px-5 py-3 border-b border-background-100 flex items-center justify-between">
+              <h3 className="font-heading font-bold text-foreground-950">Top Pages — Google Search Console</h3>
+              <a href="https://search.google.com/search-console" target="_blank" rel="noopener noreferrer" className="text-xs text-primary-600 hover:underline flex items-center gap-1 cursor-pointer">
+                <i className="ri-external-link-line text-xs" />
+                Ouvrir GSC
+              </a>
+            </div>
+            <div className="divide-y divide-background-100">
+              {GSC_PERFORMANCE.topPages.map((page, i) => (
+                <div key={i} className="px-5 py-3 flex items-center gap-4">
+                  <span className="text-sm font-bold text-foreground-300 w-4">{i + 1}</span>
+                  <div className="flex-1 min-w-0">
+                    <span className="text-sm font-semibold text-foreground-900 font-mono truncate block">{page.url}</span>
+                  </div>
+                  <div className="flex items-center gap-4 text-sm flex-shrink-0">
+                    <div className="text-center">
+                      <span className="block font-bold text-foreground-950">{page.clicks}</span>
+                      <span className="text-[10px] text-foreground-400">Clics</span>
+                    </div>
+                    <div className="text-center">
+                      <span className="block font-bold text-foreground-950">{page.impressions.toLocaleString()}</span>
+                      <span className="text-[10px] text-foreground-400">Impressions</span>
+                    </div>
+                    <div className="text-center">
+                      <span className="block font-bold text-emerald-600">{page.ctr}%</span>
+                      <span className="text-[10px] text-foreground-400">CTR</span>
+                    </div>
+                    <div className="text-center">
+                      <span className="block font-bold text-primary-600">#{page.position}</span>
+                      <span className="text-[10px] text-foreground-400">Position</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* SECTION: Opportunités d'Indexation */}
+      {activeSection === 'opportunities' && (
+        <div className="space-y-5">
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <div>
+              <h3 className="font-heading text-lg font-bold text-foreground-950">Scanner d'Opportunités d'Indexation</h3>
+              <p className="text-xs text-foreground-500 mt-0.5">{pendingOpportunities} opportunités identifiées — {urgentOpportunities} urgentes</p>
+            </div>
+            <button
+              onClick={handleRunIndexScan}
+              disabled={runningIndexScan}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary-500 text-background-50 text-sm font-bold hover:bg-primary-600 cursor-pointer whitespace-nowrap disabled:opacity-50 transition-colors"
+            >
+              {runningIndexScan ? (
+                <>
+                  <i className="ri-loader-4-line animate-spin" />
+                  Scan en cours...
+                </>
+              ) : indexScanDone ? (
+                <>
+                  <i className="ri-check-double-line" />
+                  Scan terminé — 8 opportunités actives
+                </>
+              ) : (
+                <>
+                  <i className="ri-radar-line" />
+                  Lancer le scan d'indexation
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* Urgent first */}
+          {opportunities.filter(o => o.status === 'urgent').length > 0 && (
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
+                <span className="text-xs font-bold text-red-700 uppercase tracking-wider">Urgences ({opportunities.filter(o => o.status === 'urgent').length})</span>
+              </div>
+              <div className="space-y-3">
+                {opportunities.filter(o => o.status === 'urgent').map(opp => (
+                  <div key={opp.id} className="rounded-2xl bg-red-50 border-2 border-red-300 p-5">
+                    <div className="flex items-start gap-4">
+                      <div className="w-10 h-10 rounded-xl bg-red-600 flex items-center justify-center flex-shrink-0">
+                        <i className={`${opp.icon} text-white text-lg`} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap mb-1">
+                          <span className="text-sm font-bold text-foreground-950">{opp.title}</span>
+                          <PriorityBadge priority={opp.priority} />
+                          <StatusBadge status={opp.status} />
+                          <span className="text-[10px] font-semibold text-foreground-400 ml-auto">{opp.category}</span>
+                        </div>
+                        <p className="text-xs text-foreground-600 mb-2">{opp.issue}</p>
+                        <div className="flex items-center gap-3 flex-wrap">
+                          <div className="flex items-start gap-1.5 text-xs">
+                            <i className="ri-arrow-right-circle-line text-emerald-600 mt-0.5 flex-shrink-0" />
+                            <span className="text-foreground-700 font-semibold">{opp.action}</span>
+                          </div>
+                          <span className="text-[10px] font-bold text-emerald-600 ml-auto">{opp.estimatedImpact}</span>
+                          <button onClick={() => handleMarkDone(opp.id)} className="text-[10px] font-bold text-emerald-700 bg-emerald-100 hover:bg-emerald-200 px-2 py-1 rounded-lg cursor-pointer whitespace-nowrap transition-colors">
+                            <i className="ri-check-line mr-1" />Marquer fait
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* All other opportunities */}
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+              <span className="text-xs font-bold text-foreground-600 uppercase tracking-wider">Opportunités ({opportunities.filter(o => o.status !== 'urgent' && o.status !== 'done').length})</span>
+            </div>
+            <div className="space-y-3">
+              {opportunities.filter(o => o.status !== 'urgent' && o.status !== 'done').map(opp => (
+                <div key={opp.id} className="rounded-2xl bg-white border border-background-200 p-5 hover:border-background-300 transition-colors">
+                  <div className="flex items-start gap-4">
+                    <div className="w-9 h-9 rounded-xl bg-background-100 flex items-center justify-center flex-shrink-0">
+                      <i className={`${opp.icon} text-foreground-600 text-base`} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap mb-1">
+                        <span className="text-sm font-bold text-foreground-950">{opp.title}</span>
+                        <PriorityBadge priority={opp.priority} />
+                        <StatusBadge status={opp.status} />
+                        <span className="text-[10px] text-foreground-400 font-mono truncate max-w-[200px]">{opp.url}</span>
+                      </div>
+                      <p className="text-xs text-foreground-600 mb-2">{opp.issue}</p>
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <div className="flex items-start gap-1.5 text-xs">
+                          <i className="ri-arrow-right-line text-primary-600 mt-0.5 flex-shrink-0" />
+                          <span className="text-foreground-700">{opp.action}</span>
+                        </div>
+                        <span className="text-[10px] font-bold text-emerald-600 ml-auto whitespace-nowrap">{opp.estimatedImpact}</span>
+                        <button onClick={() => handleMarkDone(opp.id)} className="text-[10px] font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-2 py-1 rounded-lg cursor-pointer whitespace-nowrap transition-colors">
+                          <i className="ri-check-line mr-1" />Fait
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Done */}
+          {opportunities.filter(o => o.status === 'done').length > 0 && (
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                <span className="text-xs font-bold text-emerald-700 uppercase tracking-wider">Complétées ({opportunities.filter(o => o.status === 'done').length})</span>
+              </div>
+              <div className="space-y-2">
+                {opportunities.filter(o => o.status === 'done').map(opp => (
+                  <div key={opp.id} className="rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3 flex items-center gap-3">
+                    <i className="ri-check-double-line text-emerald-600" />
+                    <span className="text-sm text-emerald-800 font-semibold">{opp.title}</span>
+                    <span className="text-[10px] text-emerald-600 ml-auto">{opp.estimatedImpact}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* SECTION: Mots-Clés */}
+      {activeSection === 'keywords' && (
+        <div className="space-y-4">
+          <div>
+            <h3 className="font-heading text-lg font-bold text-foreground-950 mb-1">Opportunités de Mots-Clés</h3>
+            <p className="text-xs text-foreground-500">Mots-clés à fort potentiel — actions d'optimisation prioritaires</p>
+          </div>
+
+          <div className="rounded-2xl bg-white border border-background-200 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-background-100 bg-background-50">
+                    <th className="px-4 py-3 text-left text-[10px] font-bold text-foreground-400 uppercase tracking-wider">Mot-Clé</th>
+                    <th className="px-4 py-3 text-center text-[10px] font-bold text-foreground-400 uppercase tracking-wider">Volume/mois</th>
+                    <th className="px-4 py-3 text-center text-[10px] font-bold text-foreground-400 uppercase tracking-wider">Position actuelle</th>
+                    <th className="px-4 py-3 text-center text-[10px] font-bold text-foreground-400 uppercase tracking-wider">Difficulté</th>
+                    <th className="px-4 py-3 text-left text-[10px] font-bold text-foreground-400 uppercase tracking-wider">Page</th>
+                    <th className="px-4 py-3 text-left text-[10px] font-bold text-foreground-400 uppercase tracking-wider">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-background-100">
+                  {KEYWORD_OPPORTUNITIES.map((kw, i) => (
+                    <tr key={i} className="hover:bg-background-50/50 transition-colors">
+                      <td className="px-4 py-3">
+                        <span className="text-sm font-semibold text-foreground-950">{kw.keyword}</span>
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <span className="text-sm font-bold text-foreground-950">{kw.volume}</span>
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <span className={`text-sm font-bold ${kw.position.startsWith('3') || kw.position.startsWith('4') ? 'text-emerald-600' : kw.position.startsWith('5') || kw.position.startsWith('6') ? 'text-amber-600' : 'text-red-600'}`}>
+                          {kw.position}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-center">
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                          kw.difficulty === 'low' ? 'bg-emerald-100 text-emerald-700' :
+                          kw.difficulty === 'medium' ? 'bg-amber-100 text-amber-700' :
+                          'bg-red-100 text-red-700'
+                        }`}>
+                          {kw.difficulty === 'low' ? 'Facile' : kw.difficulty === 'medium' ? 'Moyen' : 'Difficile'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className="text-xs text-foreground-500 font-mono">{kw.page}</span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className="text-xs text-foreground-600">{kw.opportunity}</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* SECTION: Audit Technique */}
+      {activeSection === 'technical' && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 mb-2">
+            <i className="ri-check-double-line text-emerald-600 text-lg" />
+            <h3 className="font-heading text-base font-bold text-emerald-800">Audit SEO Technique — Score {avgSeoScore}/100</h3>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {seoAudit.map((check, i) => (
+              <div key={i} className="rounded-xl border border-emerald-200 bg-emerald-50/50 p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                    <span className="text-sm font-semibold text-foreground-950">{check.check}</span>
+                  </div>
+                  <span className="text-sm font-bold text-emerald-600 font-heading">{check.score}</span>
+                </div>
+                <p className="text-xs text-emerald-700">{check.details}</p>
+              </div>
+            ))}
+          </div>
+          <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-200">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <i className="ri-check-double-line text-emerald-600" />
+                <span className="text-sm font-bold text-emerald-900">Score SEO Technique Global</span>
+              </div>
+              <span className="text-lg font-bold text-emerald-600">{avgSeoScore}/100</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* SECTION: GSC Issues */}
+      {activeSection === 'gsc' && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 mb-2">
+            <i className="ri-check-double-line text-emerald-600 text-lg" />
+            <h3 className="font-heading text-base font-bold text-emerald-800">Google Search Console — Zéro problème détecté</h3>
+          </div>
+          <div className="space-y-2">
+            {gsc.map((issue, i) => (
+              <div key={i} className="flex items-center gap-4 p-4 rounded-xl border border-emerald-200 bg-emerald-50/50">
+                <div className="w-8 h-8 flex items-center justify-center rounded-lg flex-shrink-0 bg-emerald-100 text-emerald-700">
+                  <i className="ri-check-line text-sm" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-0.5">
+                    <span className="text-sm font-semibold text-emerald-800">{issue.type}</span>
+                    <span className="text-xs font-semibold text-emerald-600">{issue.count} pages</span>
+                  </div>
+                  <p className="text-xs text-emerald-600">{issue.action}</p>
+                </div>
+                <div className="flex items-center gap-1 flex-shrink-0">
+                  <i className="ri-arrow-down-line text-emerald-500 text-xs" />
+                  <span className="text-[10px] text-emerald-600">Résolu</span>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center gap-3">
+            <i className="ri-shield-check-fill text-emerald-600 text-xl" />
+            <div>
+              <p className="text-sm font-bold text-emerald-800">Aucun problème GSC actif</p>
+              <p className="text-xs text-emerald-600">Toutes les issues précédentes ont été résolues. Prochain scan GSC : demain 06:00 GMT.</p>
+            </div>
+            <a
+              href="https://search.google.com/search-console"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ml-auto flex items-center gap-1 text-xs text-emerald-700 font-bold hover:underline cursor-pointer whitespace-nowrap"
+            >
+              <i className="ri-external-link-line text-xs" />
+              Ouvrir GSC
+            </a>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

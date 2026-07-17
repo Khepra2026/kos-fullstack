@@ -1,0 +1,57 @@
+import { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
+import {
+  ACADEMY_MODULES,
+  ACADEMY_LEARNERS,
+  ACADEMY_CERTIFICATIONS,
+  ACADEMY_PIPELINE,
+  ACADEMY_KPIS,
+  ACADEMY_GLOBAL_STATS,
+} from '@/mocks/kosAutoExpansionAcademy';
+import type {
+  AcademyModule,
+  AcademyLearner,
+  AcademyCertification,
+  AcademyProductionPipeline,
+  AcademyKPI,
+} from '@/mocks/kosAutoExpansionAcademy';
+
+interface UseAcademyResult {
+  modules: AcademyModule[];
+  learners: AcademyLearner[];
+  certifications: AcademyCertification[];
+  pipeline: AcademyProductionPipeline[];
+  kpis: AcademyKPI[];
+  globalStats: typeof ACADEMY_GLOBAL_STATS;
+  loading: boolean;
+  isLive: boolean;
+}
+
+export function useKOSAutoExpansionAcademy(): UseAcademyResult {
+  const [loading, setLoading] = useState(true);
+  const [isLive, setIsLive] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function init() {
+      try {
+        const { data } = await supabase.from('courses').select('id').limit(1);
+        if (!cancelled && data && data.length > 0) setIsLive(true);
+      } catch { /* fallback mock */ }
+      if (!cancelled) setLoading(false);
+    }
+    const timer = setTimeout(() => { init(); }, 300);
+    return () => { cancelled = true; clearTimeout(timer); };
+  }, []);
+
+  return {
+    modules: ACADEMY_MODULES,
+    learners: ACADEMY_LEARNERS,
+    certifications: ACADEMY_CERTIFICATIONS,
+    pipeline: ACADEMY_PIPELINE,
+    kpis: ACADEMY_KPIS,
+    globalStats: ACADEMY_GLOBAL_STATS,
+    loading,
+    isLive,
+  };
+}

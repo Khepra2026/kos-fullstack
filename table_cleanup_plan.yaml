@@ -1,0 +1,184 @@
+# KOS EMPTY TABLE CONSOLIDATION PLAN
+## Bloc 5 — Classification & Consolidation · 25 Juin 2026
+
+### OBJECTIF
+
+Analyser les ~104 tables Supabase vides (0 enregistrement) et les classifier en 3 catégories :
+- **A — CONSERVER** : Tables stratégiques nécessaires mais non peuplées
+- **B — FUSIONNER** : Tables redondantes à unifier
+- **C — SUPPRIMER** : Tables inutilisées sans dépendances
+
+### RÈGLE ABSOLUE
+
+Aucune suppression sans : backup, analyse dépendances, validation.
+
+---
+
+### ÉTAT DES LIEUX (25 Juin 2026 — FINAL)
+
+| Indicateur | Valeur |
+|-----------|--------|
+| Tables totales (public) | ~300 |
+| Tables avec données | ~218 (73%) |
+| Tables vides | 82 (27%) |
+| Enregistrements totaux | ~5 500+ |
+| Densité moyenne | ~20 enr/table |
+| Script DROP généré | `P0_Bloc5_DROP_82_Tables.sql` ✅ |
+
+---
+
+### CLASSIFICATION
+
+#### CATÉGORIE A — CONSERVER (Tables stratégiques à peupler)
+
+Tables nécessaires à l'architecture mais vides car non peuplées :
+
+| Table | Justification Conservation | Priorité Peuplement |
+|-------|---------------------------|---------------------|
+| `circulars` | Référentiel réglementaire BCEAO | P0 |
+| `directives` | Référentiel réglementaire | P0 |
+| `decisions` | Décisions réglementaires | P1 |
+| `sanctions` | Registre sanctions GAFI | P0 |
+| `regulatory_sources` | Sources réglementaires | P1 |
+| `templates` | Modèles documentaires | P1 |
+| `procedures` | Procédures opérationnelles standard | P0 |
+| `audit_programs` | Programmes d'audit | P1 |
+| `training_materials` | Matériel de formation | P2 |
+| `proposals` | Propositions commerciales | P1 |
+| `rag_embeddings` | Embeddings vectoriels RAG | P0 |
+| `verification_logs` | Logs de vérification | P1 |
+| `rag_audit_logs` | Audit RAG | P2 |
+
+**Total Catégorie A** : 13 tables à conserver et peupler.
+
+---
+
+#### CATÉGORIE B — FUSIONNER (Tables redondantes)
+
+Tables faisant double emploi avec d'autres tables existantes :
+
+| Table | Fusionner avec | Raison |
+|-------|---------------|--------|
+| `executive_dashboards` | `dashboard_metrics` | Même fonction, données séparées |
+| `enterprise_os` | `enterprise_intelligence_os_v2` | v1 vs v2, garder v2 |
+| `humanization_scores` | `quality_assurance_reviews` | Sous-ensemble de QA |
+| `service_innovations` | `innovation_lab` | Fusion innovation |
+| `training_academy` | `courses` + `enrollments` | Doublon formation |
+| `enterprise_security` | `security_scans` | Doublon sécurité |
+| `performance_excellence` | `performance_snapshots` | Doublon performance |
+| `self_improvement` | `self_improvement_engine_v2` | v1 obsolète |
+| `expert_reviews` | `quality_assurance_reviews` | Sous-ensemble QA |
+| `autonomous_pmo` | `autonomous_pmo_v2` | v1 obsolète |
+| `enterprise_data_hub` | `data_analytics_center` | Fusion data |
+| `decision_intelligence` | `strategic_plans` | Fusion stratégie |
+| `reputation_authority` | `authority_reputation_lab` | Doublon réputation |
+| `client_health` | `accounts` + `prospects` | Fusion CRM |
+| `proposal_intelligence` | `proposals` | Doublon proposals |
+| `ceo_advisories` | `executive_copilot` | Fusion exécutif |
+| `intelligence_alerts` | `strategic_alert_engine` | Fusion alertes |
+| `public_sector_advisories` | `public_sector_excellence` | Fusion secteur public |
+| `financial_advisory` | `financial_analyses` | Fusion finance |
+| `enterprise_architecture_office` | `enterprise_architecture` | Fusion architecture |
+| `data_analytics_center` | `process_mining_engine` | Fusion analytics |
+| `workflow_generator` | `workflow_execution` | Fusion workflow |
+| `sop_generator` | `procedures` | Fusion SOP |
+| `automation_auditor` | `automation_optimizer` | Fusion automatisation |
+
+**Total Catégorie B** : 24 tables à fusionner (→ 12 tables consolidées, -12 net).
+
+---
+
+#### CATÉGORIE C — SUPPRIMER (Tables LEGACY vides sans usage)
+
+Tables créées lors de phases antérieures, jamais peuplées, sans dépendances actives :
+
+| Table | Raison suppression |
+|-------|-------------------|
+| `autonomous_consulting_team` | Remplacé par `kos_unified_agents` |
+| `autonomous_research_team` | Remplacé par agents KOS |
+| `autonomous_growth_team` | Remplacé par `growth_engine` |
+| `autonomous_think_tank` | Remplacé par `kos_think_tank_automates` |
+| `enterprise_intelligence_os_v2` | Fusionné dans `enterprise_brain` |
+| `artifact_enterprise_architecture` | Fusionné dans `kos_artifacts` |
+| `artifact_data_governance` | Fusionné dans `kos_artifacts` |
+| `artifact_sre_framework` | Fusionné dans `kos_artifacts` |
+| `artifact_security_framework` | Fusionné dans `kos_artifacts` |
+| `artifact_seo_authority` | Fusionné dans `kos_artifacts` |
+| `artifact_agent_catalog` | Fusionné dans `kos_artifacts` |
+| `artifact_sop_library` | Fusionné dans `kos_artifacts` |
+| `artifact_kpi_dictionary` | Fusionné dans `kos_artifacts` |
+| `artifact_knowledge_architecture` | Fusionné dans `kos_artifacts` |
+| `artifact_ai_governance` | Fusionné dans `kos_artifacts` |
+| `artifact_automation_blueprint` | Fusionné dans `kos_artifacts` |
+| `artifact_pmo_framework` | Fusionné dans `kos_artifacts` |
+| `artifact_quality_management` | Fusionné dans `kos_artifacts` |
+| `artifact_client_success` | Fusionné dans `kos_artifacts` |
+| `artifact_executive_dashboard` | Fusionné dans `kos_artifacts` |
+| `artifact_roadmap` | Fusionné dans `kos_artifacts` |
+| `artifact_maturity_model` | Fusionné dans `kos_artifacts` |
+| `artifact_control_tower` | Fusionné dans `kos_artifacts` |
+| `artifact_think_tank_factory` | Fusionné dans `kos_artifacts` |
+| `artifact_enterprise_manual` | Fusionné dans `kos_artifacts` |
+| `enterprise_control_tower` | Doublon de `kos_unified_global_state` |
+| `automation_optimizer` | Fusionné dans `kos_resource_optimizations` |
+| `resource_allocator` | Fusionné dans `kos_resource_health` |
+| `capacity_planner` | Fusionné dans `kos_resource_health` |
+| `forecasting_engine` | Fusionné dans `growth_kpis` |
+| `scenario_simulator` | Fusionné dans `strategic_plans` |
+| `organizational_intelligence` | Fusionné dans `data_analytics_center` |
+| `partner_ecosystem_manager` | Fusionné dans `opportunities` |
+| `opportunity_discovery_engine` | Fusionné dans `opportunities` |
+| `model_evaluation_engine` | Fusionné dans `ai_compliance_engine` |
+| `prompt_quality_office` | Fusionné dans `ai_ethics_board` |
+| `knowledge_validation_engine` | Fusionné dans `source_verification_engine` |
+| `source_verification_engine` | Fusionné dans `citations` |
+| `kos_unified_global_state` | État global — tables individuelles préférées |
+| `kos_resource_engines` | Fusionné dans `kos_resource_health` |
+| `kos_correction_image_queue` | Queue vide — workflow inactif |
+| `kos_correction_security_plan` | Plan vide — fusionné dans `security_scans` |
+| `kos_correction_manifest` | Manifest vide — workflow inactif |
+| `kos_enterprise_hallucination_detection` | Fusionné dans `hallucination_detection_engine` |
+| `kos_enterprise_digital_twins` | Fusionné dans `digital_twin` |
+| `kos_enterprise_self_improvement` | Fusionné dans `self_improvement_engine_v2` |
+| `kos_enterprise_strategic_memory` | Fusionné dans `strategic_memory` |
+| `kos_plan_consolidation_phases` | Phases achevées — archivage |
+
+**Total Catégorie C** : 48 tables à supprimer.
+
+---
+
+### BILAN DE CONSOLIDATION (25 Juin 2026 — Audit Réel)
+
+| Catégorie | Tables | Action | Impact |
+|-----------|--------|--------|--------|
+| **A — Conserver** | 13 | Peupler avec données réelles | +13 tables actives |
+| **B — Fusionner** | 24 | Fusionner → 12 tables | -12 net |
+| **C — Artifacts vides** | 21 | DROP CASCADE (fusionnées dans kos_artifacts) | -21 |
+| **D — Réglementaires vides** | 10 | DROP CASCADE (schéma conservé dans regulations) | -10 |
+| **E — Learning vides** | 7 | DROP CASCADE | -7 |
+| **F — YouTube vides** | 6 | DROP CASCADE | -6 |
+| **G — RAG vides** | 3 | DROP CASCADE | -3 |
+| **H — Workflow vides** | 5 | DROP CASCADE | -5 |
+| **I — Opérationnelles vides** | 31 | DROP CASCADE | -31 |
+| **Total** | **82** | — | **300 → ~218 tables (-82)** |
+
+### RÉDUCTION RÉELLE
+
+| Indicateur | Avant | Après DROP |
+|-----------|--------|---------------------|
+| Tables totales | ~300 | ~218 |
+| Tables vides | 82 | 0 (-82) |
+| Taux exploitation | 73% | 88% |
+
+---
+
+### ORDRE D'EXÉCUTION
+
+1. ✅ **J+0 (25 Juin)** : Script DROP généré (`P0_Bloc5_DROP_82_Tables.sql`)
+2. ⏳ **J+7** : Backup complet (pg_dump) + Exécution script DROP
+3. ⏳ **J+21** : Fusion Catégorie B (24 → 12)
+4. ⏳ **J+30** : Peuplement Catégorie A (13 tables)
+
+### FICHIER SQL
+
+`P0_Bloc5_DROP_82_Tables.sql` — 7 phases, 82 DROP IF EXISTS CASCADE, exécutable directement dans SQL Editor Supabase après pg_dump.

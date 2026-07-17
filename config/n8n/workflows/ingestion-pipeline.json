@@ -1,0 +1,165 @@
+{
+  "name": "KOS Ingestion Pipeline",
+  "active": true,
+  "settings": {
+    "saveExecutionProgress": true,
+    "saveManualExecutions": true,
+    "timezone": "Africa/Douala",
+    "executionOrder": "v1"
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ingest",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "trigger-webhook",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.regulator }}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        }
+      },
+      "id": "validate-input",
+      "name": "Validate Input",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalize regulatory data\nconst item = $input.first().json;\n\nreturn {\n  regulator: item.regulator.toLowerCase().trim(),\n  reference: item.reference || '',\n  title: item.title || '',\n  content: item.content || '',\n  source_url: item.source_url || '',\n  publication_date: item.publication_date || new Date().toISOString(),\n  document_type: item.document_type || 'unknown',\n  language: item.language || 'fr',\n  raw_size: (item.content || '').length\n};\n"
+      },
+      "id": "normalize-data",
+      "name": "Normalize Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "collection": "legal_vectors",
+        "operation": "upsert",
+        "qdrantUrl": "http://qdrant:6333"
+      },
+      "id": "index-qdrant",
+      "name": "Index to Qdrant",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [850, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://ingestion-service:3000/store",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "regulator", "value": "={{ $json.regulator }}" },
+            { "name": "reference", "value": "={{ $json.reference }}" },
+            { "name": "title", "value": "={{ $json.title }}" },
+            { "name": "content", "value": "={{ $json.content }}" },
+            { "name": "source_url", "value": "={{ $json.source_url }}" }
+          ]
+        }
+      },
+      "id": "store-datalake",
+      "name": "Store to Data Lake (RAW)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [850, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://transform-service:3001/validate",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "document_id", "value": "={{ $json.id }}" },
+            { "name": "regulator", "value": "={{ $json.regulator }}" }
+          ]
+        }
+      },
+      "id": "trigger-validation",
+      "name": "Trigger Validation",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1050, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://audit-service:3002/log",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "event", "value": "ingestion_complete" },
+            { "name": "regulator", "value": "={{ $json.regulator }}" },
+            { "name": "reference", "value": "={{ $json.reference }}" },
+            { "name": "timestamp", "value": "={{ $now.toISOString() }}" }
+          ]
+        }
+      },
+      "id": "audit-log",
+      "name": "Audit Log",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1250, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"status\": \"ingested\",\n  \"regulator\": $json.regulator,\n  \"reference\": $json.reference,\n  \"timestamp\": $now.toISOString()\n}"
+      },
+      "id": "respond-success",
+      "name": "Respond Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1450, 300]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [[ { "node": "Validate Input", "type": "main", "index": 0 } ]]
+    },
+    "Validate Input": {
+      "main": [
+        [{ "node": "Normalize Data", "type": "main", "index": 0 }],
+        [{ "node": "Respond Success", "type": "main", "index": 0 }]
+      ]
+    },
+    "Normalize Data": {
+      "main": [
+        [
+          { "node": "Index to Qdrant", "type": "main", "index": 0 },
+          { "node": "Store to Data Lake (RAW)", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Store to Data Lake (RAW)": {
+      "main": [[ { "node": "Trigger Validation", "type": "main", "index": 0 } ]]
+    },
+    "Index to Qdrant": {
+      "main": [[ { "node": "Trigger Validation", "type": "main", "index": 0 } ]]
+    },
+    "Trigger Validation": {
+      "main": [[ { "node": "Audit Log", "type": "main", "index": 0 } ]]
+    },
+    "Audit Log": {
+      "main": [[ { "node": "Respond Success", "type": "main", "index": 0 } ]]
+    }
+  }
+}

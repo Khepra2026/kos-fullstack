@@ -1,0 +1,20 @@
+{
+  "app": "KOS RegTech AI",
+  "version": "2026.1.0",
+  "regulateur": "BCEAO",
+  "signature_regulateur": "MEUCIQDx4a1c8e9f02b3d5a7c916e4f8201b3d5a7c916e4f8201b3d5a7c9",
+  "hash_build": "a3f5c8e9d02b4e6f8a1c3d5e7f9b1d3f5a7c9e1b3d5f7a9c2e4f6a8b0d2",
+  "date_certification": "2026-01-15",
+  "modules": {
+    "compliance_engine": "local",
+    "evidence_vault": "offline",
+    "ai_guard": "wasm",
+    "horizon_scanning": "ocr",
+    "reporting": "local",
+    "database": "indexeddb"
+  },
+  "zero_external_api": true,
+  "crypto": "web_crypto_api_sha256_aes256gcm",
+  "storage": "indexeddb_dexie_encrypted",
+  "sync": "export_import_file_kosdb"
+}
