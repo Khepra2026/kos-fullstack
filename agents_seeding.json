@@ -1,0 +1,104 @@
+[
+  {
+    "hub": "kos-scraper-hub",
+    "role": "Veille réglementaire BCEAO/BEAC/COBAC",
+    "agent": "COBAC_Scout",
+    "model": "mistral-large"
+  },
+  {
+    "hub": "kos-regulatory-hub",
+    "role": "Audit conformité COBAC 100%",
+    "agent": "Compliance_Auditor",
+    "model": "claude-3.5"
+  },
+  {
+    "hub": "kos-audit-hub",
+    "role": "Analyse risques opérationnels",
+    "agent": "Risk_Analyzer",
+    "model": "gpt-4o"
+  },
+  {
+    "hub": "kos-kpi-hub",
+    "role": "Pilotage KPIs bancaires CEMAC",
+    "agent": "CFO_Agent",
+    "model": "claude-3.5"
+  },
+  {
+    "hub": "kos-content-hub",
+    "role": "Rapports COBAC automatisés",
+    "agent": "Report_Generator",
+    "model": "mistral-large"
+  },
+  {
+    "hub": "kos-seo-hub",
+    "role": "E-réputation + conformité pub",
+    "agent": "Reputation_Guard",
+    "model": "gpt-4o-mini"
+  },
+  {
+    "hub": "kos-security-hub",
+    "role": "Cybersécurité bancaire temps réel",
+    "agent": "SOC_Agent",
+    "model": "claude-3.5"
+  },
+  {
+    "hub": "kos-admin-hub",
+    "role": "Conformité RH banque CEMAC",
+    "agent": "HR_Compliance",
+    "model": "gpt-4o"
+  },
+  {
+    "hub": "kos-knowledge-hub",
+    "role": "Base légale OHADA/CEMAC",
+    "agent": "Legal_Expert",
+    "model": "claude-3.5"
+  },
+  {
+    "hub": "kos-publication-hub",
+    "role": "Publications réglementaires",
+    "agent": "Disclosure_Manager",
+    "model": "mistral-large"
+  },
+  {
+    "hub": "kos-auth-hub",
+    "role": "Gestion accès LCB-FT",
+    "agent": "Access_Controller",
+    "model": "gpt-4o"
+  },
+  {
+    "hub": "kos-router-hub",
+    "role": "Processus métier bancaire",
+    "agent": "Workflow_Orchestrator",
+    "model": "claude-3.5"
+  },
+  {
+    "hub": "kos-social-hub",
+    "role": "Veille concurrentielle",
+    "agent": "Market_Intelligence",
+    "model": "gpt-4o-mini"
+  },
+  {
+    "hub": "kos-rls-hub",
+    "role": "Protection données clients",
+    "agent": "Data_Governance",
+    "model": "claude-3.5"
+  },
+  {
+    "hub": "kos-indexnow-hub",
+    "role": "Transparence réglementaire",
+    "agent": "Transparency_Agent",
+    "model": "mistral-large"
+  },
+  {
+    "hub": "kos-devops-hub",
+    "role": "Résilience IT bancaire",
+    "agent": "Infra_Guardian",
+    "model": "gpt-4o"
+  },
+  {
+    "hub": "kos-ai-agents-hub",
+    "role": "Chef d'orchestre 16 agents",
+    "agent": "Meta_Orchestrator",
+    "model": "claude-3.5"
+  }
+]
