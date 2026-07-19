@@ -1,38 +1,180 @@
--- KOS MRR/ARR Dashboard View Big Four
-CREATE OR REPLACE VIEW public.kos_mrr_dashboard AS
-WITH mrr_current AS (
-  SELECT COALESCE(SUM(amount), 0) as mrr
-  FROM payments
-  WHERE status = 'paid'
-    AND created_at >= date_trunc('month', now())
-),
-subs_active AS (
-  SELECT COUNT(*) as active_subs
-  FROM subscriptions
-  WHERE status = 'active'
-),
-churn_30d AS (
-  SELECT COUNT(*) as churned
-  FROM subscriptions
-  WHERE status = 'cancelled'
-    AND updated_at >= now() - interval '30 days'
-),
-payments_24h AS (
-  SELECT
-    COUNT(*) as total,
-    COUNT(*) FILTER (WHERE status = 'failed') as failed
-  FROM payments
-  WHERE created_at >= now() - interval '24 hours'
-)
-SELECT
-  now() as timestamp,
-  mrr_current.mrr,
-  mrr_current.mrr * 12 as arr,
-  subs_active.active_subs,
-  ROUND(churn_30d.churned::numeric / NULLIF(subs_active.active_subs, 0) * 100, 2) || '%' as churn_rate_30d,
-  ROUND((payments_24h.total - payments_24h.failed)::numeric / NULLIF(payments_24h.total, 0) * 100, 2) || '%' as payment_success_24h,
-  '99.9%' as sla_status,
-  'BCEAO_COBAC_BIG_FOUR' as compliance
-FROM mrr_current, subs_active, churn_30d, payments_24h;
+-- ============================================================================
+-- KOS PAYMENTS TABLE
+-- Migration : Billing Engine Production
+-- Objectif : PayDunya + MRR/ARR Dashboard + Audit Big Four
+-- Rétention : 10 ans
+-- ============================================================================
 
-GRANT SELECT ON public.kos_mrr_dashboard TO anon, authenticated;
+
+CREATE TABLE IF NOT EXISTS public.payments (
+
+    id BIGSERIAL PRIMARY KEY,
+
+
+    -- Organisation cliente SaaS
+    org_id TEXT NOT NULL,
+
+
+    -- Abonnement associé
+    subscription_id UUID,
+
+
+    -- Montant facturé
+    amount INTEGER NOT NULL DEFAULT 0,
+
+
+    -- Devise UEMOA/CEMAC
+    currency TEXT NOT NULL DEFAULT 'XAF',
+
+
+    -- Fournisseur paiement
+    provider TEXT NOT NULL DEFAULT 'paydunya',
+
+
+    -- Statut transaction
+    status TEXT NOT NULL DEFAULT 'pending'
+    CHECK (
+        status IN (
+            'pending',
+            'processing',
+            'completed',
+            'success',
+            'paid',
+            'failed',
+            'cancelled',
+            'refunded'
+        )
+    ),
+
+
+    -- Identifiants paiement externes
+    transaction_id TEXT,
+
+    payment_token TEXT,
+
+    invoice_reference TEXT,
+
+
+    -- Métadonnées audit
+    event_type TEXT DEFAULT 'subscription_payment',
+
+    metadata JSONB DEFAULT '{}'::jsonb,
+
+
+    -- Dates
+    paid_at TIMESTAMPTZ,
+
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+
+);
+
+
+
+-- ============================================================================
+-- INDEX PERFORMANCE
+-- ============================================================================
+
+
+CREATE INDEX IF NOT EXISTS idx_payments_org
+
+ON public.payments(org_id);
+
+
+
+CREATE INDEX IF NOT EXISTS idx_payments_created
+
+ON public.payments(created_at);
+
+
+
+CREATE INDEX IF NOT EXISTS idx_payments_status
+
+ON public.payments(status);
+
+
+
+CREATE INDEX IF NOT EXISTS idx_payments_transaction
+
+ON public.payments(transaction_id);
+
+
+
+CREATE INDEX IF NOT EXISTS idx_payments_paid_at
+
+ON public.payments(paid_at);
+
+
+
+-- ============================================================================
+-- TRIGGER UPDATED_AT
+-- ============================================================================
+
+
+CREATE OR REPLACE FUNCTION update_payments_timestamp()
+
+RETURNS TRIGGER
+
+LANGUAGE plpgsql
+
+AS $$
+
+BEGIN
+
+    NEW.updated_at = NOW();
+
+    RETURN NEW;
+
+END;
+
+$$;
+
+
+
+DROP TRIGGER IF EXISTS trg_payments_updated
+
+ON public.payments;
+
+
+
+CREATE TRIGGER trg_payments_updated
+
+BEFORE UPDATE ON public.payments
+
+FOR EACH ROW
+
+EXECUTE FUNCTION update_payments_timestamp();
+
+
+
+-- ============================================================================
+-- RLS SUPABASE
+-- ============================================================================
+
+
+ALTER TABLE public.payments ENABLE ROW LEVEL SECURITY;
+
+
+
+DROP POLICY IF EXISTS payments_authenticated_read
+
+ON public.payments;
+
+
+
+CREATE POLICY payments_authenticated_read
+
+ON public.payments
+
+FOR SELECT
+
+TO authenticated
+
+USING (true);
+
+
+
+-- ============================================================================
+-- FIN KOS PAYMENTS TABLE
+-- ============================================================================

@@ -1,64 +1,198 @@
--- Enable pgvector pour embeddings
+-- ============================================================================
+-- KOS KNOWLEDGE RAG DATABASE
+-- Migration : 20260717000001_knowledge_rag.sql
+-- Version : Production Idempotent Supabase
+-- Objectif : Base documentaire réglementaire IA / RAG
+-- Rétention : 10 ans COBAC
+-- ============================================================================
+
 CREATE EXTENSION IF NOT EXISTS vector;
 
--- Table knowledge_base - 10 ans rétention COBAC
-CREATE TABLE knowledge_base (
-  id BIGSERIAL PRIMARY KEY,
-  title TEXT NOT NULL,
-  content TEXT NOT NULL,
-  article_ref TEXT, -- Ex: "COBAC R-2016/04 Art. 12"
-  authority TEXT NOT NULL CHECK (authority IN ('COBAC','OHADA','BEAC','BCEAO','CEMAC')),
-  agent_name TEXT NOT NULL, -- Compliance_Auditor, Legal_Expert, etc.
-  embedding VECTOR(1024), -- Jina embeddings v3
-  data_residency TEXT DEFAULT 'CEMAC' NOT NULL,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  CONSTRAINT sovereignty_check CHECK (data_residency = 'CEMAC')
+
+-- ============================================================================
+-- TABLE KNOWLEDGE BASE
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS knowledge_base (
+
+    id BIGSERIAL PRIMARY KEY,
+
+    title TEXT NOT NULL,
+
+    content TEXT NOT NULL,
+
+    article_ref TEXT,
+
+    authority TEXT NOT NULL
+    CHECK (
+        authority IN (
+            'COBAC',
+            'OHADA',
+            'BEAC',
+            'BCEAO',
+            'CEMAC',
+            'GIABA',
+            'UMOA'
+        )
+    ),
+
+    agent_name TEXT NOT NULL,
+
+    embedding VECTOR(1024),
+
+    data_residency TEXT
+        DEFAULT 'CEMAC'
+        NOT NULL,
+
+    document_type TEXT DEFAULT 'REGULATION',
+
+    language TEXT DEFAULT 'FR',
+
+    version TEXT DEFAULT '1.0',
+
+    source_url TEXT,
+
+    document_hash TEXT,
+
+    effective_date DATE,
+
+    expiry_date DATE,
+
+    retention_years INTEGER DEFAULT 10,
+
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+
+    CONSTRAINT sovereignty_check
+    CHECK (data_residency = 'CEMAC')
 );
 
--- Index HNSW pour recherche rapide
-CREATE INDEX ON knowledge_base USING hnsw (embedding vector_cosine_ops);
 
--- Fonction RAG match
-CREATE OR REPLACE FUNCTION match_documents(
-  query_embedding VECTOR(1024),
-  match_count INT DEFAULT 5,
-  filter JSONB DEFAULT '{}'::jsonb
-)
-RETURNS TABLE (
-  id BIGINT,
-  title TEXT,
-  content TEXT,
-  article_ref TEXT,
-  authority TEXT,
-  similarity FLOAT
-)
+-- ============================================================================
+-- COMPATIBILITE TABLE EXISTANTE
+-- ============================================================================
+
+ALTER TABLE knowledge_base
+ADD COLUMN IF NOT EXISTS article_ref TEXT;
+
+ALTER TABLE knowledge_base
+ADD COLUMN IF NOT EXISTS agent_name TEXT;
+
+ALTER TABLE knowledge_base
+ADD COLUMN IF NOT EXISTS embedding VECTOR(1024);
+
+ALTER TABLE knowledge_base
+ADD COLUMN IF NOT EXISTS data_residency TEXT DEFAULT 'CEMAC';
+
+ALTER TABLE knowledge_base
+ADD COLUMN IF NOT EXISTS document_type TEXT DEFAULT 'REGULATION';
+
+ALTER TABLE knowledge_base
+ADD COLUMN IF NOT EXISTS language TEXT DEFAULT 'FR';
+
+ALTER TABLE knowledge_base
+ADD COLUMN IF NOT EXISTS version TEXT DEFAULT '1.0';
+
+ALTER TABLE knowledge_base
+ADD COLUMN IF NOT EXISTS source_url TEXT;
+
+ALTER TABLE knowledge_base
+ADD COLUMN IF NOT EXISTS document_hash TEXT;
+
+ALTER TABLE knowledge_base
+ADD COLUMN IF NOT EXISTS effective_date DATE;
+
+ALTER TABLE knowledge_base
+ADD COLUMN IF NOT EXISTS expiry_date DATE;
+
+ALTER TABLE knowledge_base
+ADD COLUMN IF NOT EXISTS retention_years INTEGER DEFAULT 10;
+
+ALTER TABLE knowledge_base
+ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
+
+
+-- ============================================================================
+-- INDEX DOCUMENTAIRE
+-- ============================================================================
+
+CREATE INDEX IF NOT EXISTS idx_knowledge_authority
+ON knowledge_base(authority);
+
+CREATE INDEX IF NOT EXISTS idx_knowledge_agent
+ON knowledge_base(agent_name);
+
+CREATE INDEX IF NOT EXISTS idx_knowledge_hash
+ON knowledge_base(document_hash);
+
+CREATE INDEX IF NOT EXISTS idx_knowledge_created
+ON knowledge_base(created_at);
+
+
+-- ============================================================================
+-- INDEX VECTORIEL RAG
+-- Correction Supabase :
+-- maintenance_work_mem 32MB incompatible avec lists=100
+-- ============================================================================
+
+DROP INDEX IF EXISTS idx_knowledge_embedding;
+
+
+SET maintenance_work_mem = '64MB';
+
+
+CREATE INDEX idx_knowledge_embedding
+ON knowledge_base
+USING ivfflat (embedding vector_cosine_ops)
+WITH (
+    lists = 50
+);
+
+
+-- ============================================================================
+-- UPDATED TIMESTAMP
+-- ============================================================================
+
+CREATE OR REPLACE FUNCTION update_knowledge_base_timestamp()
+RETURNS TRIGGER
 LANGUAGE plpgsql
 AS $$
 BEGIN
-  RETURN QUERY
-  SELECT
-    kb.id,
-    kb.title,
-    kb.content,
-    kb.article_ref,
-    kb.authority,
-    1 - (kb.embedding <=> query_embedding) AS similarity
-  FROM knowledge_base kb
-  WHERE kb.data_residency = 'CEMAC'
-    AND (filter->>'agent_name' IS NULL OR kb.agent_name = filter->>'agent_name')
-  ORDER BY kb.embedding <=> query_embedding
-  LIMIT match_count;
+    NEW.updated_at = NOW();
+    RETURN NEW;
 END;
 $$;
 
--- RLS Souverain
-ALTER TABLE knowledge_base ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "sovereign_read" ON knowledge_base FOR SELECT USING (data_residency = 'CEMAC');
 
--- Audit trail 10 ans
-CREATE TABLE knowledge_audit (
-  id BIGSERIAL PRIMARY KEY,
-  document_id BIGINT REFERENCES knowledge_base(id),
-  accessed_by TEXT, -- agent_name
-  accessed_at TIMESTAMPTZ DEFAULT NOW()
-) WITH (timescale.retention = '10 years');
+DROP TRIGGER IF EXISTS trg_knowledge_base_updated
+ON knowledge_base;
+
+
+CREATE TRIGGER trg_knowledge_base_updated
+BEFORE UPDATE ON knowledge_base
+FOR EACH ROW
+EXECUTE FUNCTION update_knowledge_base_timestamp();
+
+
+-- ============================================================================
+-- RLS SUPABASE
+-- ============================================================================
+
+ALTER TABLE knowledge_base ENABLE ROW LEVEL SECURITY;
+
+
+DROP POLICY IF EXISTS knowledge_base_read_authenticated
+ON knowledge_base;
+
+
+CREATE POLICY knowledge_base_read_authenticated
+ON knowledge_base
+FOR SELECT
+TO authenticated
+USING (true);
+
+
+-- ============================================================================
+-- FIN MIGRATION
+-- ============================================================================

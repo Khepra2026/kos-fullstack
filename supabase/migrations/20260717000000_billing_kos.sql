@@ -1,7 +1,11 @@
+-- ============================================================================
 -- Migration billing KOS - Conforme COBAC 10 ans - IDEMPOTENT
+-- Correction production : ajout org_id sur tables existantes
+-- ============================================================================
+
 CREATE TABLE IF NOT EXISTS subscriptions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  org_id TEXT NOT NULL,
+  org_id TEXT,
   plan TEXT NOT NULL CHECK (plan IN ('STARTER','BUSINESS','ENTERPRISE')),
   status TEXT DEFAULT 'pending',
   quota INTEGER,
@@ -11,6 +15,10 @@ CREATE TABLE IF NOT EXISTS subscriptions (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+ALTER TABLE subscriptions
+ADD COLUMN IF NOT EXISTS org_id TEXT;
+
+
 CREATE TABLE IF NOT EXISTS usage_meter (
   id BIGSERIAL PRIMARY KEY,
   org_id TEXT NOT NULL,
@@ -18,6 +26,10 @@ CREATE TABLE IF NOT EXISTS usage_meter (
   amount_xaf INTEGER NOT NULL,
   billed_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+ALTER TABLE usage_meter
+ADD COLUMN IF NOT EXISTS org_id TEXT;
+
 
 CREATE TABLE IF NOT EXISTS billing_audit (
   id BIGSERIAL PRIMARY KEY,
@@ -30,5 +42,8 @@ CREATE TABLE IF NOT EXISTS billing_audit (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE INDEX IF NOT EXISTS idx_subscriptions_org ON subscriptions(org_id);
-CREATE INDEX IF NOT EXISTS idx_usage_org ON usage_meter(org_id, billed_at);
+CREATE INDEX IF NOT EXISTS idx_subscriptions_org
+ON subscriptions(org_id);
+
+CREATE INDEX IF NOT EXISTS idx_usage_org
+ON usage_meter(org_id, billed_at);
