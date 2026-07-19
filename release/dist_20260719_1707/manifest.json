@@ -1,0 +1,27 @@
+{
+  "name": "KHEPRA EXPERTS — Régulation Financière, Prix de Transfert & Gouvernance Afrique",
+  "short_name": "KHEPRA",
+  "description": "Cabinet boutique premium. 3 Business Units : Régulation financière (BCEAO/COBAC), Prix de transfert (BEPS) et Gouvernance & Risques (ERM, audit interne). 22 ans, 15 pays UEMOA/CEMAC.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#86BC25",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "https://pgfwhahiwqvqeahpirjx.supabase.co/functions/v1/og-image-proxy?url=https%3A%2F%2Freaddy.ai%2Fapi%2Fsearch-image%3Fquery%3Dpremium%20dark%20black%20background%20with%20deloitte%20green%20geometric%20spiral%20pattern%20elegant%20minimalist%20corporate%20branding%20KHEPRA%20EXPERTS%20strategic%20consulting%20africa%20professional%20typography%20clean%20design%20high%20contrast%20dark%20green%20and%20white%20accents%20sophisticated%20modern%20aesthetic%20corporate%20identity%26width%3D192%26height%3D192%26seq%3Dog-khepra-master-gold-v1%26orientation%3Dsquarish",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://pgfwhahiwqvqeahpirjx.supabase.co/functions/v1/og-image-proxy?url=https%3A%2F%2Freaddy.ai%2Fapi%2Fsearch-image%3Fquery%3Dpremium%20dark%20black%20background%20with%20deloitte%20green%20geometric%20spiral%20pattern%20elegant%20minimalist%20corporate%20branding%20KHEPRA%20EXPERTS%20strategic%20consulting%20africa%20professional%20typography%20clean%20design%20high%20contrast%20dark%20green%20and%20white%20accents%20sophisticated%20modern%20aesthetic%20corporate%20identity%26width%3D512%26height%3D512%26seq%3Dog-khepra-master-gold-v1%26orientation%3Dsquarish",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "finance", "consulting"],
+  "lang": "fr",
+  "dir": "ltr"
+}

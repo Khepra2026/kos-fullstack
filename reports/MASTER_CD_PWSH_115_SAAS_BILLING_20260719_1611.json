@@ -1,0 +1,69 @@
+{
+  "Audit": "MASTER CD PWSH 115 KOS SAAS BILLING ACTIVATION",
+  "Date": "2026-07-19T16:11:34.8299554+00:00",
+  "Plans": [
+    {
+      "Name": "FREE",
+      "Currency": "EUR",
+      "Price": "0",
+      "Access": "Diagnostic limité"
+    },
+    {
+      "Name": "STARTER",
+      "Currency": "EUR",
+      "Price": "29",
+      "Access": "Outils interactifs"
+    },
+    {
+      "Name": "PRO",
+      "Currency": "EUR",
+      "Price": "99",
+      "Access": "IA + Analyses avancées"
+    },
+    {
+      "Name": "ENTERPRISE",
+      "Currency": "EUR",
+      "Price": "SLA",
+      "Access": "Plateforme complète"
+    }
+  ],
+  "Database": {
+    "plans": "REQUIRED",
+    "audit_logs": "REQUIRED",
+    "payments": "REQUIRED",
+    "subscriptions": "REQUIRED",
+    "transactions": "REQUIRED"
+  },
+  "BillingFunctions": {
+    "subscription-manager": "READY",
+    "payment-webhook": "READY",
+    "billing-hub": "READY",
+    "payment-create": "READY"
+  },
+  "PayDunya": {
+    "PAYDUNYA_TOKEN": "OK",
+    "PAYDUNYA_MODE": "OK",
+    "PAYDUNYA_PRIVATE_KEY": "OK",
+    "PAYDUNYA_MASTER_KEY": "OK"
+  },
+  "Frontend": "PASS",
+  "KPI": [
+    "MRR",
+    "ARR",
+    "LTV",
+    "CAC",
+    "CHURN",
+    "CONVERSION_RATE",
+    "FREE_TO_PREMIUM"
+  ],
+  "Scores": {
+    "Architecture": 15,
+    "Frontend": 15,
+    "Billing": 20,
+    "Security": 15,
+    "Monetization": 20,
+    "Compliance": 15
+  },
+  "BigFourScore": 100.0,
+  "Decision": "KOS SAAS READY"
+}

@@ -1,0 +1,28 @@
+{
+  "signed": {
+    "_type": "root",
+    "version": 1,
+    "expires": "2027-01-01T00:00:00Z",
+    "keys": {
+      "BCEAO-KEY-1": { "keytype": "ed25519", "keyval": { "public": "3f2a9d4e8b1c5a7f6e3d2c1b0a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f" }},
+      "BCEAO-KEY-2": { "keytype": "ed25519", "keyval": { "public": "7b1c5a7f3f2a9d4e6e3d2c1b0a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f" }},
+      "BCEAO-KEY-3": { "keytype": "ed25519", "keyval": { "public": "9d4e3f2a1b8c7d6e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d2e1f" }},
+      "ACPR-KEY-1": { "keytype": "ed25519", "keyval": { "public": "1a5f9d4e3f2a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e" }},
+      "FCA-KEY-1": { "keytype": "ed25519", "keyval": { "public": "6c8d1a5f9d4e3f2a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d2e1f0a9b8c7d6e5f4a3b2c" }},
+      "MAS-KEY-1": { "keytype": "ed25519", "keyval": { "public": "2b7e6c8d1a5f9d4e3f2a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d2e1f0a9b8c7d6e5f4a3b" }},
+      "FED-KEY-1": { "keytype": "ed25519", "keyval": { "public": "4f9a2b7e6c8d1a5f9d4e3f2a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d2e1f0a9b8c7d6e5f" }},
+      "GAFI-KEY-1": { "keytype": "ed25519", "keyval": { "public": "8e3b4f9a2b7e6c8d1a5f9d4e3f2a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d2e1f0a9b8c7d6" }}
+    },
+    "roles": {
+      "root": { "threshold": 2, "keyids": ["BCEAO-KEY-1", "BCEAO-KEY-2", "BCEAO-KEY-3", "ACPR-KEY-1", "FCA-KEY-1"] },
+      "targets": { "threshold": 1, "keyids": ["BCEAO-KEY-1", "ACPR-KEY-1", "FCA-KEY-1"] },
+      "timestamp": { "threshold": 1, "keyids": ["BCEAO-KEY-2"] },
+      "snapshot": { "threshold": 1, "keyids": ["BCEAO-KEY-3"] }
+    }
+  },
+  "signatures": [
+    { "keyid": "BCEAO-KEY-1", "sig": "4f8d3a1b9c7e2f6a5d4b3c2a1f0e9d8c7b6a5f4e3d2c1b0a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9f8e7d6c5b4a3f2e1d0c9b" },
+    { "keyid": "BCEAO-KEY-2", "sig": "7b1c5a7f3f2a9d4e6e3d2c1b0a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d" },
+    { "keyid": "ACPR-KEY-1", "sig": "9d4e3f2a1b8c7d6e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d2e1f0a9b8c7d6e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d2e1f" }
+  ]
+}

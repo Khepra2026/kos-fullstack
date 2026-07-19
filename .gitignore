@@ -1,6 +1,6 @@
 node_modules/
-.env.local
-.vite/
+.env
+.env.*
 dist/
-exports/
-*.zip
+.vscode/
+.DS_Store

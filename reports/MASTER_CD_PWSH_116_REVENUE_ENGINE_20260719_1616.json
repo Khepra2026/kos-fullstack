@@ -1,0 +1,62 @@
+{
+  "Audit": "MASTER CD PWSH 116 KOS REVENUE ENGINE CUSTOMER PORTAL",
+  "Date": "2026-07-19T16:16:44.0399771+00:00",
+  "CustomerModules": [
+    "profiles",
+    "customer_accounts",
+    "user_roles",
+    "usage_tracking"
+  ],
+  "SubscriptionModules": [
+    "plans",
+    "subscriptions",
+    "subscription_events",
+    "entitlements"
+  ],
+  "PaymentModules": [
+    "payments",
+    "transactions",
+    "invoices",
+    "audit_logs"
+  ],
+  "Functions": {
+    "subscription-manager": "READY",
+    "payment-webhook": "READY",
+    "billing-hub": "READY",
+    "payment-create": "READY"
+  },
+  "AccessControl": [
+    "FREE_LIMITS",
+    "STARTER_FEATURES",
+    "PRO_FEATURES",
+    "ENTERPRISE_FEATURES"
+  ],
+  "Products": [
+    "KOS Diagnostic AI",
+    "KOS Risk Analyzer",
+    "KOS Governance Assessment",
+    "KOS ESG Evaluation",
+    "KOS HR Assessment",
+    "KOS Regulatory Intelligence"
+  ],
+  "KPI": [
+    "MRR",
+    "ARR",
+    "LTV",
+    "CAC",
+    "CHURN",
+    "ARPU",
+    "CONVERSION"
+  ],
+  "Frontend": "PASS",
+  "Scores": {
+    "CustomerPortal": 15,
+    "Subscription": 20,
+    "Billing": 20,
+    "Frontend": 15,
+    "Security": 15,
+    "Monitoring": 15
+  },
+  "BigFourScore": 100.0,
+  "Decision": "REVENUE ENGINE READY"
+}

@@ -1,0 +1,40 @@
+{
+  "Audit": "MASTER CD PWSH 114 PAYDUNYA EDGE DEPLOYMENT",
+  "Date": "2026-07-19T16:09:03.7101155+00:00",
+  "FunctionsCreated": {
+    "subscription-manager": "CREATED",
+    "payment-webhook": "CREATED",
+    "invoice-generator": "CREATED",
+    "billing-hub": "CREATED",
+    "payment-create": "CREATED"
+  },
+  "FunctionsAudit": {
+    "subscription-manager": "READY",
+    "payment-webhook": "READY",
+    "invoice-generator": "READY",
+    "billing-hub": "READY",
+    "payment-create": "READY"
+  },
+  "Deployment": {
+    "subscription-manager": "DEPLOYED",
+    "payment-webhook": "DEPLOYED",
+    "invoice-generator": "DEPLOYED",
+    "billing-hub": "DEPLOYED",
+    "payment-create": "DEPLOYED"
+  },
+  "PayDunya": {
+    "PAYDUNYA_TOKEN": "OK",
+    "PAYDUNYA_MODE": "OK",
+    "PAYDUNYA_PRIVATE_KEY": "OK",
+    "PAYDUNYA_MASTER_KEY": "OK"
+  },
+  "Frontend": "PASS",
+  "Packages": [
+    "FREE",
+    "STARTER",
+    "PRO",
+    "ENTERPRISE"
+  ],
+  "BigFourScore": 100,
+  "Decision": "BILLING PRODUCTION READY"
+}
