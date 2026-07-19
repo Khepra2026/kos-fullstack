@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
-import { ArticleVisualBox } from './ArticleVisualBox';
-import { ArticleDataTable } from './ArticleDataTable';
-import { ArticleFAQBlock } from './ArticleFAQBlock';
-import { LeadMagnetCTA } from './LeadMagnetCTA';
-import { ArticleNewsletterInline } from './ArticleNewsletterInline';
+import { ArticleVisualBox } from '';
+import { ArticleDataTable } from '';
+import { ArticleFAQBlock } from '';
+import { LeadMagnetCTA } from '';
+import { ArticleNewsletterInline } from '';
 
 interface ArticleContentRendererProps {
   paragraphs: string[];
@@ -626,7 +626,7 @@ export function ArticleContentRenderer({ paragraphs, articleId, isEn, leadMagnet
       return { faq: faqResult, displayNodes: nodes };
     } catch (err) {
       if (import.meta.env.DEV) {
-        // eslint-disable-next-line no-console
+         
         console.error('[ArticleContentRenderer] crash for article', articleId, err);
       }
       return { faq: null, displayNodes: [] };
@@ -642,3 +642,6 @@ export function ArticleContentRenderer({ paragraphs, articleId, isEn, leadMagnet
     </article>
   );
 }
+
+
+

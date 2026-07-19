@@ -87,7 +87,7 @@ function generateCSV(data: ReportData): string {
 async function generatePDF(data: ReportData): Promise<Blob> {
   const { jsPDF } = await import('jspdf');
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const doc = new (jsPDF as any)() as {
     setFontSize: (size: number) => void;
     text: (text: string, x: number, y: number) => void;
@@ -273,3 +273,6 @@ export async function generateRegulatorPack(
 
   return { blob, hash };
 }
+
+
+

@@ -5,7 +5,7 @@ import {
   CONTENT_FACTORY_OVERVIEW,
   type ContentBlock,
   type ContentFactoryOverview,
-} from '@/mocks/kosContentFactoryCommand';
+} from '@/mocks/contentFactoryCommand';
 
 // ─── Types ───
 interface ContentFactoryState {
@@ -854,7 +854,7 @@ export function useContentFactoryCommand() {
       }, { onConflict: 'component' });
     } catch (_) { /* silencieux */ }
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, [state.blocks]);
 
   useEffect(() => {
@@ -863,3 +863,6 @@ export function useContentFactoryCommand() {
 
   return { ...state, pipelineState, refresh: refreshAll, refreshBlock, refreshMultipleBlocks, refreshSequential, refreshAll };
 }
+
+
+

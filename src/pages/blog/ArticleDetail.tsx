@@ -6,30 +6,30 @@ import { Footer } from '@/pages/home/components/Footer';
 import { ArticleErrorBoundary } from '@/components/feature/ArticleErrorBoundary';
 import { SeoHead } from '@/components/feature/SeoHead';
 import { Breadcrumb } from '@/components/feature/Breadcrumb';
-import { ArticleTableOfContents } from './components/ArticleTableOfContents';
-import { ArticleNewsletterInline } from './components/ArticleNewsletterInline';
-import { ArticleServiceBanner } from './components/ArticleServiceBanner';
-import { ArticleTags } from './components/ArticleTags';
-import { ShareButtons } from './components/ShareButtons';
+import { ArticleTableOfContents } from '';
+import { ArticleNewsletterInline } from '';
+import { ArticleServiceBanner } from '';
+import { ArticleTags } from '';
+import { ShareButtons } from '';
 import SocialSharePremium from '@/components/feature/SocialSharePremium';
-import ArticleAISummary from './components/ArticleAISummary';
-import AIArticleRecommendations from './components/AIArticleRecommendations';
-import { RelatedArticles } from './components/RelatedArticles';
-import { ArticleGlossary } from './components/ArticleGlossary';
-import { DiagnosticScannerCTA } from './components/DiagnosticScannerCTA';
-import { LeadMagnetCTA } from './components/LeadMagnetCTA';
-import { PremiumFinalCTA } from './components/PremiumFinalCTA';
-import { ArticleContentRenderer } from './components/ArticleContentRenderer';
-import { ArticleExecutiveSummary } from './components/ArticleExecutiveSummary';
-import { ArticleCadreReglementaire } from './components/ArticleCadreReglementaire';
-import { ArticlePointsFriction } from './components/ArticlePointsFriction';
-import { ArticleArchitectureSolution } from './components/ArticleArchitectureSolution';
-import { ArticleOutilPremium } from './components/ArticleOutilPremium';
-import { ArticleReferencesOfficielles } from './components/ArticleReferencesOfficielles';
-import { ArticleFAQBlock } from './components/ArticleFAQBlock';
-import { ArticleGeoAnswers } from './components/ArticleGeoAnswers';
-import { MiniGuideCTA } from './components/MiniGuideCTA';
-import { ArticleMethodology } from './components/ArticleMethodology';
+import ArticleAISummary from '';
+import AIArticleRecommendations from '';
+import { RelatedArticles } from '';
+import { ArticleGlossary } from '';
+import { DiagnosticScannerCTA } from '';
+import { LeadMagnetCTA } from '';
+import { PremiumFinalCTA } from '';
+import { ArticleContentRenderer } from '';
+import { ArticleExecutiveSummary } from '';
+import { ArticleCadreReglementaire } from '';
+import { ArticlePointsFriction } from '';
+import { ArticleArchitectureSolution } from '';
+import { ArticleOutilPremium } from '';
+import { ArticleReferencesOfficielles } from '';
+import { ArticleFAQBlock } from '';
+import { ArticleGeoAnswers } from '';
+import { MiniGuideCTA } from '';
+import { ArticleMethodology } from '';
 import { blogArticles } from '@/mocks/blogArticles';
 import { blogArticlesEn } from '@/mocks/blogArticlesEn';
 import { optimizeImageUrl, optimizeHeroImageUrl, generateLqipUrl } from '@/utils/imageWebP';
@@ -38,9 +38,9 @@ import LazySection from '@/components/base/LazySection';
 import { buildArticleHreflang } from '@/utils/hreflang';
 import { resolveOgImageUrl } from '@/components/feature/OgDefaultImage';
 import { LOGO_IMAGE_URL } from '@/utils/schemaMarkup';
-import { InternalLinks } from './components/InternalLinks';
-import { ArticleNav } from './components/ArticleNav';
-import BigFourSections from './components/BigFourSections';
+import { InternalLinks } from '';
+import { ArticleNav } from '';
+import BigFourSections from '';
 
 const SITE_URL = import.meta.env.VITE_SITE_URL || 'https://khepraexperts.com';
 
@@ -417,7 +417,7 @@ export default function ArticleDetail() {
     };
   } catch (e) { 
     if (import.meta.env.DEV) {
-      // eslint-disable-next-line no-console
+       
     console.error('[ArticleDetail] articleSchema crash:', e);
     }
   }
@@ -1021,3 +1021,6 @@ export default function ArticleDetail() {
     </ArticleErrorBoundary>
   );
 }
+
+
+

@@ -1,6 +1,6 @@
-/* eslint-disable max-len */
-import { blogArticlesLegacyEn } from './blogArticlesLegacyEn';
-import { blogArticlesPremiumEn } from './blogArticlesPremiumEn';
+ 
+import { blogArticlesLegacyEn } from '';
+import { blogArticlesPremiumEn } from '';
 
 export const blogArticlesEn = [
   // ── 5 PREMIUM ARTICLES Q2 2026 ──
@@ -371,3 +371,6 @@ export const blogArticlesEn = [
   },
   ...blogArticlesLegacyEn,
 ];
+
+
+

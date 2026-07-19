@@ -1,0 +1,48 @@
+import { useState, useCallback, useMemo } from 'react';
+
+export function useKOSBig4KhepraArchitect() {
+  const [kosData.data] = useState(kosBig4KhepraExecutiveSummary);
+  const [activeAxe, setActiveAxe] = useState<string>('plateforme');
+  const [expandedProduit, setExpandedProduit] = useState<string | null>(null);
+  const [expandedNiveau, setExpandedNiveau] = useState<number | null>(null);
+  const [showMermaid, setShowMermaid] = useState(false);
+
+  const axeActif = useMemo(() => kosData.data.axes.find(a => a.id === activeAxe) || kosData.data.axes[0], [kosData.data.axes, activeAxe]);
+
+  const progressGlobal = useMemo(() => {
+    const total = kosData.data.axes.reduce((sum, a) => sum + a.progress, 0);
+    return Math.round(total / kosData.data.axes.length);
+  }, [kosData.data.axes]);
+
+  const toggleProduit = useCallback((id: string) => {
+    setExpandedProduit(prev => prev === id ? null : id);
+  }, []);
+
+  const toggleNiveau = useCallback((niveau: number) => {
+    setExpandedNiveau(prev => prev === niveau ? null : niveau);
+  }, []);
+
+  const toggleMermaid = useCallback(() => {
+    setShowMermaid(prev => !prev);
+  }, []);
+
+  const bigFourScore = useMemo(() => {
+    const passed = kosData.data.checklistBigFour.filter(c => c.statut).length;
+    return Math.round((passed / kosData.data.checklistBigFour.length) * 100);
+  }, [kosData.data.checklistBigFour]);
+
+  return {
+    kosData.data,
+    activeAxe,
+    setActiveAxe,
+    axeActif,
+    progressGlobal,
+    expandedProduit,
+    toggleProduit,
+    expandedNiveau,
+    toggleNiveau,
+    showMermaid,
+    toggleMermaid,
+    bigFourScore,
+  };
+}

@@ -1,4 +1,4 @@
-/* eslint-disable max-len */
+ 
 // BU3 — GOUVERNANCE, RISQUES & CONFORMITÉ (6 articles SEO piliers)
 
 export const blogArticlesPillarBU3 = [
@@ -140,3 +140,6 @@ export const blogArticlesPillarBU3 = [
     ]
   },
 ];
+
+
+

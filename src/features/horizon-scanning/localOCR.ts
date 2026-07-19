@@ -52,7 +52,7 @@ async function extractText(file: File): Promise<string> {
 
   if (tesseract) {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const TesseractModule = tesseract as any;
       const { data } = await TesseractModule.recognize(file, 'fra', {
         logger: (info: { progress: number }) => {
@@ -299,3 +299,6 @@ export function notifyClients(updates: ExtractedObligation[]): void {
     });
   }
 }
+
+
+

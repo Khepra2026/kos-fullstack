@@ -1,0 +1,67 @@
+import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '@/lib/supabase';
+
+export function useAfricaObservatories() {
+  const [kosData.data, setData] = useState(structuredClone(africaObservatoriesData));
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data: liveRows, error: dbError } = await supabase
+        .from('sector_observatories')
+        .select('*')
+        .order('name');
+
+      if (dbError) throw dbError;
+
+      if (liveRows && liveRows.length > 0) {
+        // Map Supabase rows to the rich mock structure
+        const mapped = liveRows.map((row: any) => {
+          const keyIndicators = typeof row.key_indicators === 'string'
+            ? JSON.parse(row.key_indicators)
+            : (row.key_indicators || []);
+          const metadata = typeof row.metadata === 'string'
+            ? JSON.parse(row.metadata)
+            : (row.metadata || {});
+
+          return {
+            id: row.id,
+            name: row.name,
+            icon: metadata.icon || 'ri-bar-chart-line',
+            description: row.description || '',
+            stats: {
+              publications: metadata.publications || 0,
+              alertsThisMonth: row.active_alerts_count || 0,
+              indicators: Array.isArray(keyIndicators) ? keyIndicators.length : (metadata.indicators || 0),
+              subscribers: metadata.subscribers || 0,
+            },
+            recentUpdates: metadata.recent_updates || [],
+            indicators: Array.isArray(keyIndicators) ? keyIndicators : [],
+            schedule: metadata.schedule || { frequency: 'Hebdomadaire', nextPublication: '', format: '' },
+          };
+        });
+
+        setData({
+          observatories: mapped,
+          observatoryKPIs: africaObservatoriesData.observatoryKPIs,
+          weeklySchedule: africaObservatoriesData.weeklySchedule,
+        });
+      } else {
+        setData(structuredClone(africaObservatoriesData));
+      }
+    } catch {
+      setData(structuredClone(africaObservatoriesData));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  return { kosData.data, loading, error };
+}

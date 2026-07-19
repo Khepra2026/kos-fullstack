@@ -1,0 +1,68 @@
+[
+  {
+    "Module": "AML Engine v2",
+    "Status": "Todo",
+    "Due": "2026-11-15",
+    "Checks": [
+      {
+        "Name": "Transaction Monitoring",
+        "Detail": "Rules engine v2 non déployé",
+        "Pass": false
+      },
+      {
+        "Name": "SAR Filing",
+        "Detail": "Auto-report TRACFIN manquant",
+        "Pass": false
+      },
+      {
+        "Name": "Sanctions Screening",
+        "Detail": "OFAC/UE lists OK",
+        "Pass": true
+      }
+    ]
+  },
+  {
+    "Module": "KYC OCR Pipeline",
+    "Status": "Todo",
+    "Due": "2026-12-01",
+    "Checks": [
+      {
+        "Name": "Document OCR",
+        "Detail": "Pipeline CNI/Passport Todo",
+        "Pass": false
+      },
+      {
+        "Name": "Liveness Detection",
+        "Detail": "Anti-spoof non implémenté",
+        "Pass": false
+      },
+      {
+        "Name": "Risk Scoring",
+        "Detail": "Score PEP/PPE actif",
+        "Pass": true
+      }
+    ]
+  },
+  {
+    "Module": "MiCA Compliance Pack",
+    "Status": "Todo",
+    "Due": "2026-12-15",
+    "Checks": [
+      {
+        "Name": "Whitepaper CASP",
+        "Detail": "Template AMF manquant",
+        "Pass": false
+      },
+      {
+        "Name": "Reserve Attestation",
+        "Detail": "Audit Big Four requis",
+        "Pass": false
+      },
+      {
+        "Name": "Travel Rule",
+        "Detail": "VASP messaging Todo",
+        "Pass": false
+      }
+    ]
+  }
+]

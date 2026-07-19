@@ -1,4 +1,4 @@
-/* eslint-disable max-len */
+ 
 // 20 Articles SEO Piliers — Sprint 1 KHEPRA EXPERTS 2026
 // BU1: Régulation Financière (7) + BU2: Prix de Transfert (7)
 
@@ -327,3 +327,6 @@ export const blogArticlesPillar = [
     ]
   },
 ];
+
+
+

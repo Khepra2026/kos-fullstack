@@ -1,4 +1,4 @@
-/* eslint-disable max-len */
+ 
 export const blogArticlesPremiumEn = [
   {
     id: 'premium-due-diligence-acquisition-afrique',
@@ -211,3 +211,6 @@ export const blogArticlesPremiumEn = [
     ]
   },
 ];
+
+
+

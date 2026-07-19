@@ -1,4 +1,4 @@
-/* eslint-disable max-len */
+ 
 export const blogArticlesPremium = [
   {
     id: 'premium-25-constats-sanctions-bceao-cobac',
@@ -189,3 +189,6 @@ export const blogArticlesPremium = [
     ]
   },
 ];
+
+
+

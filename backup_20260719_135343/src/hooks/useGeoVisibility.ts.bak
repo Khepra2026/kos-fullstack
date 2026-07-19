@@ -1,0 +1,213 @@
+import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '@/lib/supabase';
+
+interface GeoScanRecord {
+  id: string;
+  log_type: string;
+  target_url: string;
+  score: number | null;
+  status: string;
+  details: Record<string, unknown> | null;
+  content: string | null;
+  recommendations: string[] | null;
+  errors: string[] | null;
+  duration_ms: number | null;
+  triggered_by: string;
+  created_at: string;
+}
+
+interface GeoVisibilityData {
+  overallScore: number;
+  lastScan: string;
+  geoReadiness: string;
+  llmsStatus: {
+    llms_txt_exists: boolean;
+    llms_txt_size_kb: number;
+    llms_txt_sections: number;
+    llms_full_txt_exists: boolean;
+    llms_full_txt_size_kb: number;
+    llms_full_txt_sections: number;
+    lastGenerated: string;
+    autoRegeneration: boolean;
+    regenerationSchedule: string;
+    contentFreshness: number;
+    issues: string[];
+  };
+  geoOptimizations: Array<{
+    name: string;
+    status: string;
+    impact: string;
+    description: string;
+  }>;
+  scanHistory: Array<{
+    date: string;
+    score: number;
+    issues: number;
+    trend: string;
+  }>;
+  crawlerStatus: Array<{
+    bot: string;
+    userAgent: string;
+    status: string;
+    allowed: boolean;
+    lastSeen: string | null;
+    pagesCrawled: number;
+  }>;
+  schemaCoverage: Array<{
+    pageUrl: string;
+    schemas: string[];
+    total: number;
+    richEligible: boolean;
+  }>;
+  recentOperations: Array<{
+    id: string;
+    timestamp: string;
+    type: string;
+    target: string;
+    result: string;
+    score: number | null;
+  }>;
+  isLive: boolean;
+}
+
+export function useGeoVisibility() {
+  const [kosData.data, setData] = useState<GeoVisibilityData>(() => ({
+    overallScore: kosAIVisibilityCommand.overallScore,
+    lastScan: kosAIVisibilityCommand.lastScan,
+    geoReadiness: kosAIVisibilityCommand.geoReadiness,
+    llmsStatus: kosAIVisibilityCommand.llmsStatus,
+    geoOptimizations: kosAIVisibilityCommand.geoOptimizations,
+    scanHistory: kosAIVisibilityCommand.scanHistory,
+    crawlerStatus: kosAIVisibilityCommand.crawlerStatus,
+    schemaCoverage: kosAIVisibilityCommand.schemaCoverage,
+    recentOperations: kosAIVisibilityCommand.recentOperations.map(op => ({
+      id: op.id,
+      timestamp: op.timestamp,
+      type: op.type,
+      target: op.target,
+      result: op.result,
+      score: op.score,
+    })),
+    isLive: false,
+  }));
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Fetch latest GEO scan
+      const { data: geoScans, error: geoErr } = await supabase
+        .from('geo_visibility_logs')
+        .select('*')
+        .eq('log_type', 'geo_scan')
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (geoErr) throw geoErr;
+
+      // Fetch latest crawler activity
+      const { data: crawlerLogs, error: crawlerErr } = await supabase
+        .from('geo_visibility_logs')
+        .select('*')
+        .eq('log_type', 'crawler_activity')
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+      if (crawlerErr) throw crawlerErr;
+
+      // Fetch latest schema audit
+      const { data: schemaLogs, error: schemaErr } = await supabase
+        .from('geo_visibility_logs')
+        .select('*')
+        .eq('log_type', 'schema_audit')
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (schemaErr) throw schemaErr;
+
+      // Fetch recent operations
+      const { data: recentLogs, error: recentErr } = await supabase
+        .from('geo_visibility_logs')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(30);
+
+      if (recentErr) throw recentErr;
+
+      if (geoScans && geoScans.length > 0) {
+        const latestScan = geoScans[0] as GeoScanRecord;
+        const scanDetails = latestScan.details as Record<string, unknown> | null;
+
+        // Build crawler status from the latest scan
+        const crawlersFromScan = (scanDetails?.crawlers_checks as Array<Record<string, unknown>>) || [];
+        const crawlerStatus = crawlersFromScan.map((c: Record<string, unknown>) => ({
+          bot: (c.bot_name as string) || 'Unknown',
+          userAgent: (c.user_agent as string) || '',
+          status: (c.status as string) === 'ok' ? 'active' : 'warning',
+          allowed: (c.allowed as boolean) || false,
+          lastSeen: latestScan.created_at,
+          pagesCrawled: 0,
+        }));
+
+        // Build schema coverage from the latest scan
+        const schemasFromScan = (scanDetails?.schema_checks as Array<Record<string, unknown>>) || [];
+        const schemaCoverage = schemasFromScan.map((s: Record<string, unknown>) => ({
+          pageUrl: (s.page_url as string)?.replace('https://khepraexperts.com', '') || '/',
+          schemas: (s.schema_types_found as string[]) || [],
+          total: (s.total_schemas as number) || 0,
+          richEligible: (s.rich_results_eligible as boolean) || false,
+        }));
+
+        // Build recent operations
+        const recentOperations = (recentLogs || []).map((log: GeoScanRecord) => ({
+          id: log.id,
+          timestamp: log.created_at,
+          type: log.log_type,
+          target: log.target_url || 'https://khepraexperts.com',
+          result: log.status === 'pass' || log.status === 'success' ? 'success' : 'fail',
+          score: log.score,
+        }));
+
+        const readiness = latestScan.score && latestScan.score >= 90 ? 'excellent'
+          : latestScan.score && latestScan.score >= 70 ? 'good'
+          : latestScan.score && latestScan.score >= 40 ? 'needs_work'
+          : 'critical';
+
+        setData({
+          overallScore: latestScan.score || kosAIVisibilityCommand.overallScore,
+          lastScan: latestScan.created_at,
+          geoReadiness: readiness,
+          llmsStatus: kosAIVisibilityCommand.llmsStatus,
+          geoOptimizations: kosAIVisibilityCommand.geoOptimizations,
+          scanHistory: kosAIVisibilityCommand.scanHistory,
+          crawlerStatus: crawlerStatus.length > 0 ? crawlerStatus : kosAIVisibilityCommand.crawlerStatus,
+          schemaCoverage: schemaCoverage.length > 0 ? schemaCoverage : kosAIVisibilityCommand.schemaCoverage,
+          recentOperations: recentOperations.length > 0 ? recentOperations : kosAIVisibilityCommand.recentOperations.map(op => ({
+            id: op.id,
+            timestamp: op.timestamp,
+            type: op.type,
+            target: op.target,
+            result: op.result,
+            score: op.score,
+          })),
+          isLive: true,
+        });
+      }
+    } catch (err) {
+      console.error('[useGeoVisibility] Failed to fetch live data:', err);
+      setError(err instanceof Error ? err.message : 'Erreur de connexion');
+      // Keep mock kosData.data as fallback
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  return { kosData.data, loading, error, refetch: fetchData };
+}

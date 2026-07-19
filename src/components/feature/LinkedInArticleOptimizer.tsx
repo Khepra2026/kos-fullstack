@@ -24,7 +24,7 @@ interface LinkedInArticleOptimizerProps {
  */
 export const LinkedInArticleOptimizer = (_props: LinkedInArticleOptimizerProps) => {
   const { i18n } = useTranslation();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+   
   const _isEn = i18n.language === 'en';
 
   // Aucune injection de meta tags — SeoHead est le maître unique
@@ -32,3 +32,6 @@ export const LinkedInArticleOptimizer = (_props: LinkedInArticleOptimizerProps) 
 };
 
 export default LinkedInArticleOptimizer;
+
+
+

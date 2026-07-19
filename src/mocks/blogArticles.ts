@@ -1,10 +1,10 @@
-/* eslint-disable max-len */
-import { blogArticlesLegacy } from './blogArticlesLegacy';
-import { blogArticlesPolicy } from './blogArticlesPolicy';
-import { blogArticlesPremium } from './blogArticlesPremium';
-import { blogArticlesPillar } from './blogArticlesPillar';
-import { blogArticlesPillarBU3 } from './blogArticlesPillarBU3';
-import { blogArticlesSprint2 } from './blogArticlesSprint2';
+ 
+import { blogArticlesLegacy } from '';
+import { blogArticlesPolicy } from '';
+import { blogArticlesPremium } from '';
+import { blogArticlesPillar } from '';
+import { blogArticlesPillarBU3 } from '';
+import { blogArticlesSprint2 } from '';
 import { ARTICLE_COMITES_CONTENT, ARTICLE_COMITES_DATA } from '@/pages/blog/comites-specialises-circulaire-01-2017/data';
 import { COBAC_ARTICLE_CONTENT, COBAC_ARTICLE_DATA } from '@/pages/blog/conformite-cobac-cemac/data';
 import { ARTICLE_INDEPENDANCE_CONTENT, ARTICLE_INDEPENDANCE_DATA } from '@/pages/blog/independance-administrateurs-circulaire-01-2017/data';
@@ -13,7 +13,7 @@ import { ARTICLE_LANCEURS_CONTENT, ARTICLE_LANCEURS_DATA } from '@/pages/blog/pr
 import { ARTICLE_VERROU_CONTENT, ARTICLE_VERROU_DATA } from '@/pages/blog/verrou-nationalite-competences-executives-circulaire-02-2017/data';
 import { DAF_DATA } from '@/pages/blog/daf/data';
 import { ESG_ARTICLE_CONTENT, ESG_ARTICLE_DATA } from '@/pages/blog/esg-afrique-entreprises/data';
-import { blogArticlesSprint3 } from './blogArticlesSprint3';
+import { blogArticlesSprint3 } from '';
 
 export const blogArticles = [
   // ── 10 ARTICLES SEO SPRINT 2 ──
@@ -794,3 +794,6 @@ export const blogArticles = [
   // ── 5 NOUVEAUX ARTICLES SPRINT 3 ──
   ...blogArticlesSprint3,
 ];
+
+
+

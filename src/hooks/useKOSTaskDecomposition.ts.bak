@@ -1,0 +1,257 @@
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { supabase } from '@/lib/supabase';
+import {
+  decompositionBlueprints as mockBlueprints,
+  agentCapabilities as mockCapabilities,
+  activeDecompositions as mockActive,
+  decompositionStats as mockStats,
+  orchestratorHealth as mockHealth,
+} from '@/mocks/kosAgenticDecomposition';
+import type {
+  DecompositionBlueprint,
+  AgentCapability,
+  ActiveDecomposition,
+} from '@/mocks/kosAgenticDecomposition';
+
+interface TaskDecompositionRequest {
+  missionDescription: string;
+  domain: string;
+  urgency: 'low' | 'medium' | 'high' | 'critical';
+}
+
+interface DecompositionResult {
+  blueprint: DecompositionBlueprint | null;
+  matchedBlueprint: boolean;
+  customDecomposition: boolean;
+  estimatedAgents: number;
+  estimatedDurationMin: number;
+  criticalPathTasks: string[];
+  parallelizableTasks: string[];
+}
+
+export function useKOSTaskDecomposition() {
+  const [blueprints, setBlueprints] = useState<DecompositionBlueprint[]>(mockBlueprints);
+  const [agents, setAgents] = useState<AgentCapability[]>(mockCapabilities);
+  const [activeDecompositions, setActiveDecompositions] = useState<ActiveDecomposition[]>(mockActive);
+  const [stats, setStats] = useState(mockStats);
+  const [health, setHealth] = useState(mockHealth);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isLive, setIsLive] = useState(false);
+  const [decomposing, setDecomposing] = useState(false);
+  const [lastResult, setLastResult] = useState<DecompositionResult | null>(null);
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      // Check unified agents table for real agent catalog
+      const { data: liveAgents, error: agentsErr } = await supabase
+        .from('kos_unified_agents')
+        .select('*')
+        .limit(50);
+
+      if (!agentsErr && liveAgents && liveAgents.length > 0) {
+        setIsLive(true);
+        // Map real agents to capabilities
+        const mappedCaps: AgentCapability[] = (liveAgents as Record<string, unknown>[]).map((a: Record<string, unknown>) => ({
+          agentId: (a.id as string) || '',
+          agentName: (a.name as string) || '',
+          domain: (a.layer as string) || 'General',
+          skills: Array.isArray(a.kpis) ? (a.kpis as Record<string, unknown>[]).map((k: Record<string, unknown>) => k.label as string).filter(Boolean) : [],
+          maxParallelTasks: 2,
+          avgLatencyMs: 3000,
+          reliabilityScore: typeof a.score === 'number' ? a.score : 85,
+          subTaskTypes: [],
+        }));
+        setAgents(mappedCaps);
+      }
+
+      // Check orchestrator health via pipeline state
+      const { error: pipelineErr } = await supabase
+        .from('pipeline_state')
+        .select('id')
+        .limit(1);
+
+      if (!pipelineErr) {
+        setHealth(prev => ({ ...prev, status: 'healthy' as const, lastHealthCheck: new Date().toISOString() }));
+      }
+    } catch (err: unknown) {
+      setError((err as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  // Decompose a complex mission into sub-tasks and assign agents
+  const decompose = useCallback(async (request: TaskDecompositionRequest): Promise<DecompositionResult> => {
+    setDecomposing(true);
+    setLastResult(null);
+
+    // Simulate decomposition analysis
+    await new Promise(r => setTimeout(r, 800));
+
+    // Match against existing blueprints by keyword similarity
+    const desc = request.missionDescription.toLowerCase();
+    let bestMatch: DecompositionBlueprint | null = null;
+    let bestScore = 0;
+
+    for (const bp of blueprints) {
+      const keywords = bp.missionType.toLowerCase().split(/[\s\-]+/);
+      const matchCount = keywords.filter(kw => desc.includes(kw)).length;
+      const score = matchCount / keywords.length;
+      if (score > bestScore && score > 0.3) {
+        bestScore = score;
+        bestMatch = bp;
+      }
+    }
+
+    await new Promise(r => setTimeout(r, 400));
+
+    // Extract critical path and parallelizable tasks
+    const criticalPathTasks: string[] = [];
+    const parallelizableTasks: string[] = [];
+    let totalAgents = 0;
+    let totalDuration = 0;
+
+    if (bestMatch) {
+      for (const phase of bestMatch.phases) {
+        for (const st of phase.subTasks) {
+          if (st.criticalPath) {
+            criticalPathTasks.push(`${st.title} (${st.assignedAgentName})`);
+          } else {
+            parallelizableTasks.push(`${st.title} (${st.assignedAgentName})`);
+          }
+        }
+      }
+      totalAgents = new Set(bestMatch.phases.flatMap(p => p.subTasks.map(st => st.assignedAgentId))).size;
+      totalDuration = bestMatch.estimatedDurationMin;
+    } else {
+      // Custom decomposition for unmatched missions
+      const complexity = request.urgency === 'critical' ? 'high' : request.urgency === 'high' ? 'medium' : 'low';
+      totalAgents = complexity === 'high' ? 6 : complexity === 'medium' ? 4 : 2;
+      totalDuration = complexity === 'high' ? 240 : complexity === 'medium' ? 120 : 60;
+
+      const relevantAgents = agents.slice(0, totalAgents);
+      relevantAgents.forEach((a, i) => {
+        if (i < 2) criticalPathTasks.push(`[AUTO] Tâche ${i + 1} → ${a.agentName}`);
+        else parallelizableTasks.push(`[AUTO] Tâche ${i + 1} → ${a.agentName}`);
+      });
+    }
+
+    const result: DecompositionResult = {
+      blueprint: bestMatch,
+      matchedBlueprint: bestMatch !== null,
+      customDecomposition: bestMatch === null,
+      estimatedAgents: totalAgents,
+      estimatedDurationMin: totalDuration,
+      criticalPathTasks,
+      parallelizableTasks,
+    };
+
+    setLastResult(result);
+    setDecomposing(false);
+    return result;
+  }, [blueprints, agents]);
+
+  // Launch a decomposition as an active pipeline via Orchestrator Engine
+  const launchDecomposition = useCallback(async (request: TaskDecompositionRequest): Promise<ActiveDecomposition | null> => {
+    const result = await decompose(request);
+    if (!result) return null;
+
+    const newDecomp: ActiveDecomposition = {
+      id: `ad-${Date.now()}`,
+      blueprintId: result.blueprint?.id || 'custom',
+      missionDescription: request.missionDescription,
+      startedAt: new Date().toISOString(),
+      estimatedCompletion: new Date(Date.now() + result.estimatedDurationMin * 60000).toISOString(),
+      progress: 0,
+      phasesCompleted: 0,
+      totalPhases: result.blueprint?.phases.length || 1,
+      subTasksCompleted: 0,
+      totalSubTasks: result.criticalPathTasks.length + result.parallelizableTasks.length,
+      agentsActive: result.blueprint
+        ? Array.from(new Set(result.blueprint.phases.flatMap(p => p.subTasks.map(st => st.assignedAgentName))))
+        : [],
+      orchestratorExecutionId: `EXEC-decomp-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`,
+      status: 'running',
+      currentBottleneck: null,
+    };
+
+    setActiveDecompositions(prev => [newDecomp, ...prev]);
+
+    // Log the execution in kos_execution_logs
+    if (isLive) {
+      await supabase.from('kos_execution_logs').insert({
+        block_id: newDecomp.id,
+        block_name: 'Agentic Decomposition',
+        agent_id: 'KOS-TaskDecomposer',
+        agent_name: 'KOS Task Decomposer',
+        action: `TASK_DECOMPOSED: ${request.missionDescription.slice(0, 80)}`,
+        detections_fixed: result.estimatedAgents,
+        timestamp: new Date().toISOString(),
+        status: 'completed',
+        details: `${result.estimatedAgents} agents assignés, ${result.estimatedDurationMin}min estimées, chemin critique: ${result.criticalPathTasks.length} tâches`,
+      }).then(() => {}).catch(() => {});
+    }
+
+    return newDecomp;
+  }, [decompose, isLive]);
+
+  // Build agent dependency graph (for visualization)
+  const agentDependencyGraph = useMemo(() => {
+    const nodes: { id: string; name: string; domain: string; weight: number }[] = [];
+    const edges: { source: string; target: string; label: string }[] = [];
+    const nodeSet = new Set<string>();
+
+    for (const bp of blueprints) {
+      for (const phase of bp.phases) {
+        for (const st of phase.subTasks) {
+          if (!nodeSet.has(st.assignedAgentId)) {
+            nodeSet.add(st.assignedAgentId);
+            const cap = agents.find(a => a.agentId === st.assignedAgentId);
+            nodes.push({
+              id: st.assignedAgentId,
+              name: st.assignedAgentName,
+              domain: st.agentDomain,
+              weight: cap?.reliabilityScore || 85,
+            });
+          }
+          for (const inputId of st.inputFrom) {
+            const sourceTask = bp.phases.flatMap(p => p.subTasks).find(t => t.id === inputId);
+            if (sourceTask) {
+              edges.push({
+                source: sourceTask.assignedAgentId,
+                target: st.assignedAgentId,
+                label: `${sourceTask.title.slice(0, 20)} → ${st.title.slice(0, 20)}`,
+              });
+            }
+          }
+        }
+      }
+    }
+
+    return { nodes, edges };
+  }, [blueprints, agents]);
+
+  return {
+    blueprints,
+    agents,
+    activeDecompositions,
+    stats,
+    health,
+    loading,
+    error,
+    isLive,
+    decomposing,
+    lastResult,
+    decompose,
+    launchDecomposition,
+    agentDependencyGraph,
+    refetch: fetchData,
+  };
+}

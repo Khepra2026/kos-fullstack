@@ -142,7 +142,7 @@ export function initLinkedInInsight(): void {
  */
 export function initAllAnalytics(): void {
   if (!ENABLE_ANALYTICS) {
-    // eslint-disable-next-line no-console
+     
     if (!isProd) console.log('[Analytics] Tracking désactivé (VITE_ENABLE_ANALYTICS=false)');
     return;
   }
@@ -151,7 +151,7 @@ export function initAllAnalytics(): void {
   initMetaPixel();
   initLinkedInInsight();
 
-  // eslint-disable-next-line no-console
+   
   if (!isProd) {
     console.log('[Analytics] Initialisé — GA4:', hasGa4, 'Meta:', hasMeta, 'LinkedIn:', hasLinkedin);
   }
@@ -193,7 +193,7 @@ export function trackPageView(pathname: string, title?: string): void {
   }
 
   // ── Console en dev ──
-  // eslint-disable-next-line no-console
+   
   if (!isProd) {
     console.log(`[Analytics] PageView → ${pagePath} — "${pageTitle}"`);
   }
@@ -328,3 +328,6 @@ export default {
   trackCTAClick,
   trackServiceView,
 };
+
+
+

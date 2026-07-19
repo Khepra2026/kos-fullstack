@@ -1,0 +1,65 @@
+import { useState, useCallback, useMemo } from 'react';
+import {
+  PUBLISHING_PACKS, BIG_FOUR_VIDEO_STRUCTURE, PUBLISHING_KPIS,
+  type PublishingPack, type VideoSection,
+} from '@/mocks/kosVideoPodcastPublishingPack';
+
+export interface VideoPodcastPublishingPackData {
+  packs: PublishingPack[];
+  approvedPacks: PublishingPack[];
+  blockedPacks: PublishingPack[];
+  videoStructure: VideoSection[];
+  kpis: typeof PUBLISHING_KPIS;
+  selectedPack: PublishingPack | null;
+  selectPack: (packId: string) => void;
+  clearSelection: () => void;
+  downloadableCount: number;
+  blockedCount: number;
+  approvedCount: number;
+  loading: boolean;
+  error: string | null;
+}
+
+export function useKOSVideoPodcastPublishingPack(): VideoPodcastPublishingPackData {
+  const [loading] = useState(false);
+  const [error] = useState<string | null>(null);
+  const [selectedPackId, setSelectedPackId] = useState<string | null>(null);
+
+  const packs = useMemo(() => PUBLISHING_PACKS, []);
+  const approvedPacks = useMemo(() => packs.filter((p) => p.status === 'APPROVED'), [packs]);
+  const blockedPacks = useMemo(() => packs.filter((p) => p.status === 'BLOCKED'), [packs]);
+
+  const selectedPack = useMemo(
+    () => packs.find((p) => p.packId === selectedPackId) || null,
+    [packs, selectedPackId],
+  );
+
+  const selectPack = useCallback((packId: string) => {
+    setSelectedPackId(packId);
+  }, []);
+
+  const clearSelection = useCallback(() => {
+    setSelectedPackId(null);
+  }, []);
+
+  const downloadableCount = useMemo(
+    () => packs.reduce((sum, p) => sum + p.deliverablesReady, 0),
+    [packs],
+  );
+
+  return {
+    packs,
+    approvedPacks,
+    blockedPacks,
+    videoStructure: BIG_FOUR_VIDEO_STRUCTURE,
+    kpis: PUBLISHING_KPIS,
+    selectedPack,
+    selectPack,
+    clearSelection,
+    downloadableCount,
+    blockedCount: blockedPacks.length,
+    approvedCount: approvedPacks.length,
+    loading,
+    error,
+  };
+}

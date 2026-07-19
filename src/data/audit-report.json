@@ -1,0 +1,79 @@
+[
+  {
+    "Module": "kos120BigFourUpgrade.ts",
+    "NonConformites": 2,
+    "RisquesCritiques": 0,
+    "Timestamp": "2026-07-19 12:20:20",
+    "NiveauPriorite": "STANDARD"
+  },
+  {
+    "Module": "kosBigFourAudit.ts",
+    "NonConformites": 1,
+    "RisquesCritiques": 0,
+    "Timestamp": "2026-07-19 12:20:20",
+    "NiveauPriorite": "STANDARD"
+  },
+  {
+    "Module": "kosBigFourAuditExecution.ts",
+    "NonConformites": 1,
+    "RisquesCritiques": 0,
+    "Timestamp": "2026-07-19 12:20:20",
+    "NiveauPriorite": "STANDARD"
+  },
+  {
+    "Module": "kosBigFourMasterPrompts.ts",
+    "NonConformites": 4,
+    "RisquesCritiques": 0,
+    "Timestamp": "2026-07-19 12:20:20",
+    "NiveauPriorite": "STANDARD"
+  },
+  {
+    "Module": "kosBigFourMaturityAssessment.ts",
+    "NonConformites": 0,
+    "RisquesCritiques": 5,
+    "Timestamp": "2026-07-19 12:20:20",
+    "NiveauPriorite": "URGENT"
+  },
+  {
+    "Module": "kosBigFourQualityGovernance.ts",
+    "NonConformites": 0,
+    "RisquesCritiques": 2,
+    "Timestamp": "2026-07-19 12:20:20",
+    "NiveauPriorite": "STANDARD"
+  },
+  {
+    "Module": "kosBigFourRemediation.ts",
+    "NonConformites": 1,
+    "RisquesCritiques": 1,
+    "Timestamp": "2026-07-19 12:20:20",
+    "NiveauPriorite": "STANDARD"
+  },
+  {
+    "Module": "kosBigFourWebResourcesAudit.ts",
+    "NonConformites": 8,
+    "RisquesCritiques": 3,
+    "Timestamp": "2026-07-19 12:20:20",
+    "NiveauPriorite": "URGENT"
+  },
+  {
+    "Module": "kosBigFourWebResourcesItems.ts",
+    "NonConformites": 77,
+    "RisquesCritiques": 1,
+    "Timestamp": "2026-07-19 12:20:20",
+    "NiveauPriorite": "STANDARD"
+  },
+  {
+    "Module": "kosBloc04SEOBigFour.ts",
+    "NonConformites": 1,
+    "RisquesCritiques": 0,
+    "Timestamp": "2026-07-19 12:20:20",
+    "NiveauPriorite": "STANDARD"
+  },
+  {
+    "Module": "kosSSEToBigFourFactory.ts",
+    "NonConformites": 6,
+    "RisquesCritiques": 1,
+    "Timestamp": "2026-07-19 12:20:20",
+    "NiveauPriorite": "STANDARD"
+  }
+]
