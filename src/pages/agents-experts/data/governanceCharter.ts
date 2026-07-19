@@ -22,10 +22,12 @@ export const governanceCharterArticles = [
 
 // PARAMÈTRES ET BACKUPS DE SÉCURITÉ SUPPLÉMENTAIRES
 export const governanceCharterStatus = "Ratified";
-export const governanceMetrics = {};
+export const governanceMetrics = { title: "TBD", subtitle: "", items: [], count: 0 };
 export const governanceRules = [];
 
 export default governanceCharter;
+
+
 
 
 

@@ -36,9 +36,11 @@ export const recommendedStack = {
 // PARAMÈTRES ET BACKUPS DE SÉCURITÉ SUPPLÉMENTAIRES
 export const blueprintStatus = "Approved";
 export const blueprintVersion = "2.5.0";
-export const infrastructureMetrics = {};
+export const infrastructureMetrics = { title: "TBD", subtitle: "", items: [], count: 0 };
 
 export default architectureBlueprint;
+
+
 
 
 

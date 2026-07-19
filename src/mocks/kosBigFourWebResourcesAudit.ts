@@ -198,3 +198,5 @@ export function getLearningsByPattern(patternId: string): AuditAutoapprentissage
 
 
 
+
+

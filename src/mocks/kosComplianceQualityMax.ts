@@ -240,3 +240,5 @@ export const COMPLIANCE_QUALITY_MAX_MOCK_KPIS: ComplianceQualityMaxKPIs = {
 
 
 
+
+
