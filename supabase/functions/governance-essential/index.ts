@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,7 +11,6 @@ serve(async (req) => {
   try {
     const { query, org_id } = await req.json()
 
-    // 1. Appel RAG kos-knowledge-hub
     const ragRes = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/kos-knowledge-hub/search`, {
       method: 'POST',
       headers: {
@@ -21,17 +19,16 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         query: query,
-        agent_name: 'Customer_Success',
+        agent_name: 'Governance_Essential',
         top_k: 3
       })
     })
 
     const ragData = await ragRes.json()
 
-    // 2. Refus Big Four si pas de source
     if (!ragData.data || ragData.data.length === 0) {
       return new Response(JSON.stringify({
-        agent: "Customer_Success",
+        agent: "Governance_Essential",
         error: "Aucune source CEMAC trouvée. Refus de répondre pour éviter hallucination.",
         compliance: "BIG FOUR - Sources obligatoires",
         data_residency: "CEMAC",
@@ -43,17 +40,13 @@ serve(async (req) => {
       })
     }
 
-    // 3. Construire réponse avec sources
-    const sources = ragData.sources || []
-    const docs = ragData.data || []
-    const mainDoc = docs[0]
-
+    const mainDoc = ragData.data[0]
     const answer = `Selon ${mainDoc.title}: ${mainDoc.content.substring(0, 400)}...`
 
     return new Response(JSON.stringify({
-      agent: "Customer_Success",
+      agent: "Governance_Essential",
       answer: answer,
-      sources: sources,
+      sources: ragData.sources,
       data_residency: "CEMAC",
       cobac_compliant: true,
       bigfour_standard: true,
@@ -64,7 +57,7 @@ serve(async (req) => {
 
   } catch (e) {
     return new Response(JSON.stringify({
-      agent: "Customer_Success",
+      agent: "Governance_Essential",
       error: e.message,
       request_id: crypto.randomUUID(),
       cobac_compliant: false
