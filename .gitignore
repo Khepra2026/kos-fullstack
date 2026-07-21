@@ -4,3 +4,9 @@ node_modules/
 dist/
 .vscode/
 .DS_Store
+
+# KOS Secrets
+.env.local
+.env.production
+*.pem
+*.key

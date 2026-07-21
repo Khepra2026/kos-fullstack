@@ -1,0 +1,621 @@
+import { useState, useRef, useEffect } from 'react';
+import hubLayout from '@/components/feature/hubLayout';
+import { SeoHead } from '@/components/feature/SeoHead';
+import { Link } from 'react-router-dom';
+import { VOICE_PROFILES, GENERATED_VOICES, STUDIO_STATS, PENDING_SCRIPTS, type VoiceProfile, type GeneratedVoice } from '@/mocks/voiceAIStudio';
+import { useKOSVoiceAIStudio } from '@/hooks/useKOSVoiceAIStudio';
+
+const TONE_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
+  expert: { label: 'Expert', color: '#86BC25', bg: 'rgba(134,188,37,0.10)' },
+  analyste: { label: 'Analyste', color: '#C2410C', bg: 'rgba(194,65,12,0.10)' },
+  institutionnel: { label: 'Institutionnel', color: '#D97757', bg: 'rgba(217,119,87,0.10)' },
+  interview: { label: 'Interview', color: '#0A66C2', bg: 'rgba(10,102,194,0.10)' },
+  pédagogique: { label: 'Pédagogique', color: '#059669', bg: 'rgba(5,150,105,0.10)' },
+};
+
+export default function voiceAIStudioPage() {
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'generate' | 'library' | 'profiles'>('dashboard');
+  const [selectedProfile, setSelectedProfile] = useState<string>(VOICE_PROFILES[0].id);
+  const [scriptText, setScriptText] = useState('');
+  const [selectedVoice, setSelectedVoice] = useState<GeneratedVoice | null>(null);
+  const [apiKeyMissing, setApiKeyMissing] = useState(false);
+
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  const voiceHook = useKOSVoiceAIStudio();
+
+  const profile = VOICE_PROFILES.find((p) => p.id === selectedProfile)!;
+  const toneCfg = TONE_CONFIG[profile.tone];
+
+  // Auto-select KHEPRA profile when on KHEPRA voices
+  const isKhepraProfile = ['vp-celestin-koffi', 'vp-fatoumata-diallo', 'vp-aminata-sow'].includes(selectedProfile);
+
+  const handleGenerate = async () => {
+    if (!scriptText.trim()) return;
+    const result = await voiceHook.generateVoice(scriptText, selectedProfile);
+    if (!result.success && result.error?.includes('not configured')) {
+      setApiKeyMissing(true);
+    }
+  };
+
+  const handlePlayAudio = () => {
+    if (!voiceHook.audioDataUri) return;
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+        setIsPlaying(false);
+      } else {
+        audioRef.current.src = voiceHook.audioDataUri;
+        audioRef.current.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
+      }
+    }
+  };
+
+  const handleDownloadAudio = () => {
+    if (!voiceHook.audioDataUri) return;
+    const a = document.createElement('a');
+    a.href = voiceHook.audioDataUri;
+    const safeTitle = (profile.name.substring(0, 30).replace(/[^a-zA-Z0-9]/g, '_'));
+    a.download = `KHEPRA_VOICE_${safeTitle}_${Date.now()}.mp3`;
+    a.click();
+  };
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (audio) {
+      const onEnd = () => setIsPlaying(false);
+      audio.addEventListener('ended', onEnd);
+      return () => audio.removeEventListener('ended', onEnd);
+    }
+  }, []);
+
+  const tabs = [
+    { id: 'dashboard' as const, label: 'Dashboard', icon: 'ri-dashboard-line', count: `${STUDIO_STATS.totalVoicesGenerated}` },
+    { id: 'generate' as const, label: 'Générer', icon: 'ri-mic-line', count: 'ElevenLabs' },
+    { id: 'library' as const, label: 'Bibliothèque', icon: 'ri-folder-music-line', count: `${GENERATED_VOICES.length}` },
+    { id: 'profiles' as const, label: 'Profils Vocaux', icon: 'ri-user-voice-line', count: `${VOICE_PROFILES.length}` },
+  ];
+
+  return (
+    <hubLayout hubId={29}>
+      <SeoHead
+        title="KOS Voice AI Studio™ — Agent 4 : Génération Vocale ElevenLabs | KHEPRA EXPERTS"
+        description="Studio de génération vocale IA ElevenLabs — Voix officielles KHEPRA EXPERTS : Célestin Koffi, Fatoumata Diallo, Aminata Sow. Génération audio réelle via Edge Function kos-youtube-voice."
+        keywords="Voice AI Studio, ElevenLabs, génération vocale IA, voix institutionnelle, voice-over YouTube, KOS Agent 4, KHEPRA EXPERTS"
+        canonicalPath="/kos-voice-ai-studio"
+        ogType="website"
+        ogLocale="fr_FR"
+      />
+
+      {/* Hidden audio element */}
+      <audio ref={audioRef} style={{ display: 'none' }} />
+
+      {/* Hero */}
+      <section className="relative bg-foreground-950 overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full opacity-[0.06]" style={{ background: 'radial-gradient(circle, #86BC25 0%, transparent 70%)' }} />
+          <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full opacity-[0.05]" style={{ background: 'radial-gradient(circle, #D97757 0%, transparent 70%)' }} />
+        </div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-14">
+          <div className="max-w-3xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-white/80 text-xs font-semibold mb-4 backdrop-blur-sm">
+              <i className="ri-mic-line" />KOS Voice AI Studio™ — Agent 4 · Moteur ElevenLabs
+            </div>
+            <h1 className="font-heading text-2xl md:text-4xl font-bold text-white tracking-tight">
+              Voix IA Institutionnelle — Génération Réelle ElevenLabs
+            </h1>
+            <p className="text-sm md:text-base text-gray-400 mt-3 max-w-2xl">
+              3 voix signature KHEPRA EXPERTS · ElevenLabs Multilingual v2 · Production audio réelle via Edge Function · MP3 professionnel
+            </p>
+            <div className="flex flex-wrap gap-2 mt-4">
+              {['Célestin Koffi — UEMOA', 'Fatoumata Diallo — CEMAC', 'Aminata Sow — ESG', 'ElevenLabs v2', 'MP3 HQ'].map((t) => (
+                <span key={t} className="px-3 py-1.5 rounded-full text-xs font-semibold bg-white/10 text-white/70">{t}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Tab Navigation */}
+      <section className="sticky top-20 z-30 bg-background-50 border-b border-background-200/70">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex gap-1 overflow-x-auto py-3">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-bold cursor-pointer transition-all whitespace-nowrap ${
+                  activeTab === tab.id ? 'bg-foreground-950 text-background-50' : 'text-foreground-600 hover:bg-background-100 hover:text-foreground-900'
+                }`}
+              >
+                <i className={`${tab.icon} text-base`} />{tab.label}
+                {tab.count && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-background-200 text-foreground-500">{tab.count}</span>}
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════ DASHBOARD ═══════════════ */}
+      {activeTab === 'dashboard' && (
+        <section className="py-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+            {/* ElevenLabs Diagnostic Banner */}
+            <div className="mb-6 rounded-xl border border-background-200/70 bg-background-50 p-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <i className="ri-wifi-line text-foreground-600" />
+                    <span className="text-sm font-bold text-foreground-950">Moteur ElevenLabs — Edge Function kos-youtube-voice</span>
+                  </div>
+                  {voiceHook.diagnostic ? (
+                    <p className={`text-xs ${voiceHook.diagnostic.apiKeyConfigured ? 'text-emerald-600' : 'text-red-600'}`}>
+                      {voiceHook.diagnostic.apiKeyConfigured
+                        ? `✓ Connecté — ${voiceHook.diagnostic.apiStatus} · ${voiceHook.diagnostic.voicesAvailable} voix disponibles`
+                        : `✗ Non configuré — ${voiceHook.diagnostic.apiStatus}`}
+                    </p>
+                  ) : (
+                    <p className="text-xs text-foreground-400">Cliquez sur "Diagnostiquer" pour vérifier la connexion ElevenLabs.</p>
+                  )}
+                </div>
+                <button
+                  onClick={voiceHook.runDiagnostic}
+                  disabled={voiceHook.isDiagnosing}
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-background-200 text-sm font-bold text-foreground-700 hover:bg-background-100 cursor-pointer whitespace-nowrap disabled:opacity-50 transition-colors"
+                >
+                  {voiceHook.isDiagnosing ? <><span className="w-3 h-3 border-2 border-foreground-400 border-t-transparent rounded-full animate-spin" />Test...</> : <><i className="ri-wifi-line" />Diagnostiquer</>}
+                </button>
+              </div>
+            </div>
+
+            {/* API Key Missing Warning */}
+            {apiKeyMissing && (
+              <div className="mb-6 rounded-xl bg-amber-50 border border-amber-200 p-4">
+                <div className="flex items-start gap-3">
+                  <i className="ri-key-2-line text-amber-600 text-lg mt-0.5" />
+                  <div>
+                    <p className="text-sm font-bold text-amber-700 mb-1">Clé ElevenLabs non configurée</p>
+                    <p className="text-xs text-amber-600">
+                      Pour activer la génération audio réelle, vous devez configurer votre clé API ElevenLabs dans les secrets Supabase sous le nom <code className="bg-amber-100 px-1 rounded">ELEVENLABS_API_KEY</code>.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 mb-8">
+              {[
+                { label: 'Voix Générées', value: STUDIO_STATS.totalVoicesGenerated, icon: 'ri-mic-line', color: '#86BC25' },
+                { label: 'Minutes Audio', value: STUDIO_STATS.totalMinutes, icon: 'ri-time-line', color: '#C2410C' },
+                { label: 'Profils Actifs', value: STUDIO_STATS.activeProfiles, icon: 'ri-user-voice-line', color: '#D97757' },
+                { label: 'Score Qualité', value: `${STUDIO_STATS.qualityScore}/100`, icon: 'ri-shield-check-line', color: '#059669' },
+                { label: 'Temps Génération', value: STUDIO_STATS.avgGenerationTime, icon: 'ri-speed-line', color: '#0A66C2' },
+                { label: 'Langues', value: STUDIO_STATS.languagesCovered.length, icon: 'ri-global-line', color: '#4285F4' },
+                { label: 'Top Profil', value: 'Dr. Célestin K.', icon: 'ri-star-line', color: '#CA8A04' },
+                { label: 'Dernière Génération', value: new Date(STUDIO_STATS.lastGenerated).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }), icon: 'ri-calendar-line', color: '#6B7280' },
+              ].map((s, i) => (
+                <div key={i} className="rounded-xl bg-background-50 border border-background-200/70 p-4 text-center">
+                  <div className="w-8 h-8 mx-auto mb-2 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${s.color}15` }}>
+                    <i className={`${s.icon} text-sm`} style={{ color: s.color }} />
+                  </div>
+                  <span className="block text-lg font-bold text-foreground-950">{s.value}</span>
+                  <span className="text-[10px] text-foreground-400">{s.label}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Pending Scripts */}
+            <div className="mb-8">
+              <h2 className="font-heading text-xl font-bold text-foreground-950 mb-4">Scripts en Attente de Voice-Over</h2>
+              <div className="space-y-3">
+                {PENDING_SCRIPTS.map((ps) => (
+                  <div key={ps.id} className="rounded-xl bg-background-50 border border-background-200/70 p-4 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: ps.priority === 'high' ? '#FEE2E2' : '#FEF3C7' }}>
+                        <i className={`${ps.priority === 'high' ? 'ri-error-warning-line text-red-600' : 'ri-time-line text-amber-600'} text-lg`} />
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-bold text-foreground-950">{ps.title}</h3>
+                        <span className="text-xs text-foreground-500">{ps.duration} min · {ps.sections} sections · Priorité {ps.priority === 'high' ? 'Haute' : 'Moyenne'}</span>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => { setActiveTab('generate'); setScriptText(`${ps.title}\n\n---\n\nScript complet à charger depuis le Studio Média.`); }}
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold bg-foreground-950 text-white hover:bg-foreground-800 transition-colors cursor-pointer whitespace-nowrap"
+                    >
+                      <i className="ri-mic-line" />Générer la voix
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Recent Generations */}
+            <div>
+              <h2 className="font-heading text-xl font-bold text-foreground-950 mb-4">Dernières Générations</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {GENERATED_VOICES.filter((v) => v.status === 'completed').slice(0, 3).map((voice) => (
+                  <div key={voice.id} className="rounded-xl bg-background-50 border border-background-200/70 p-4 hover:border-foreground-300 transition-colors cursor-pointer" onClick={() => setSelectedVoice(voice)}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">Complété</span>
+                      <span className="text-[10px] text-foreground-400">{voice.format}</span>
+                    </div>
+                    <h3 className="text-sm font-bold text-foreground-950 mb-1 line-clamp-2">{voice.title}</h3>
+                    <p className="text-xs text-foreground-500 mb-2">{voice.profileName}</p>
+                    <div className="flex items-center gap-3 text-[10px] text-foreground-400">
+                      <span><i className="ri-time-line mr-1" />{voice.duration}</span>
+                      <span>{voice.fileSize}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ═══════════════ GENERATE — ElevenLabs Real ═══════════════ */}
+      {activeTab === 'generate' && (
+        <section className="py-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Profile Selection */}
+              <div className="lg:col-span-1">
+                <div className="flex items-center gap-2 mb-4">
+                  <h2 className="font-heading text-lg font-bold text-foreground-950">Profil Vocal KHEPRA</h2>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700">ElevenLabs v2</span>
+                </div>
+                <div className="space-y-3">
+                  {VOICE_PROFILES.map((vp) => {
+                    const isKhepra = ['vp-celestin-koffi', 'vp-fatoumata-diallo', 'vp-aminata-sow'].includes(vp.id);
+                    return (
+                      <button
+                        key={vp.id}
+                        onClick={() => setSelectedProfile(vp.id)}
+                        className={`w-full text-left rounded-xl p-4 border transition-all cursor-pointer ${
+                          selectedProfile === vp.id ? 'border-foreground-300 bg-background-50 ring-2 ring-foreground-200' : 'border-background-200/70 bg-background-50 hover:border-foreground-200'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${vp.color}20` }}>
+                            <i className={`${vp.icon} text-lg`} style={{ color: vp.color }} />
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-1.5 mb-0.5">
+                              <h3 className="text-sm font-bold text-foreground-950">{vp.name}</h3>
+                              {isKhepra && (
+                                <span className="px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[9px] font-bold whitespace-nowrap">KHEPRA Official</span>
+                              )}
+                            </div>
+                            <span className="text-[10px] text-foreground-400">{vp.gender === 'masculin' ? 'Masculin' : 'Féminin'} · {vp.accent}</span>
+                          </div>
+                        </div>
+                        <p className="text-xs text-foreground-500 line-clamp-2">{vp.description}</p>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Generator */}
+              <div className="lg:col-span-2">
+                <div className="rounded-2xl bg-background-50 border border-background-200/70 p-6">
+                  <div className="flex items-center gap-3 mb-4 pb-4 border-b border-background-200">
+                    <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${profile.color}20` }}>
+                      <i className={`${profile.icon} text-xl`} style={{ color: profile.color }} />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h2 className="font-heading text-lg font-bold text-foreground-950">{profile.name}</h2>
+                        {isKhepraProfile && (
+                          <span className="px-2 py-0.5 rounded-full bg-[#86BC25]/10 text-[#86BC25] text-[9px] font-bold border border-[#86BC25]/20">ElevenLabs Real</span>
+                        )}
+                      </div>
+                      <p className="text-xs text-foreground-500">{profile.accent} · {profile.languages.join(' / ')}</p>
+                    </div>
+                  </div>
+
+                  <div className="mb-4">
+                    <label className="block text-sm font-bold text-foreground-700 mb-2">Script à vocaliser</label>
+                    <textarea
+                      value={scriptText}
+                      onChange={(e) => setScriptText(e.target.value)}
+                      placeholder="Collez votre script YouTube ici... (max 5000 caractères pour ElevenLabs)"
+                      rows={12}
+                      maxLength={5000}
+                      className="w-full rounded-xl border border-background-200 bg-white p-4 text-sm text-foreground-900 resize-y focus:outline-none focus:border-foreground-400 transition-colors font-sans"
+                    />
+                    <div className="flex justify-between mt-1">
+                      <span className="text-[10px] text-foreground-400">Max 5 000 caractères (ElevenLabs)</span>
+                      <span className={`text-[10px] font-bold ${scriptText.length > 4500 ? 'text-amber-600' : 'text-foreground-400'}`}>{scriptText.length} / 5 000</span>
+                    </div>
+                  </div>
+
+                  {/* Generation Progress */}
+                  {voiceHook.isGenerating && (
+                    <div className="mb-4 p-3 rounded-xl bg-background-100 border border-background-200">
+                      <div className="flex items-center gap-2 text-xs text-foreground-700 mb-2">
+                        <span className="w-3 h-3 border-2 border-foreground-400 border-t-transparent rounded-full animate-spin" />
+                        {voiceHook.generationProgress.step}
+                      </div>
+                      <div className="w-full h-1.5 rounded-full bg-background-200">
+                        <div className="h-full rounded-full bg-emerald-500 transition-all" style={{ width: `${voiceHook.generationProgress.percent}%` }} />
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <button
+                      onClick={handleGenerate}
+                      disabled={!scriptText.trim() || voiceHook.isGenerating}
+                      className="flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all cursor-pointer whitespace-nowrap disabled:opacity-40 disabled:cursor-not-allowed"
+                      style={{ backgroundColor: profile.color, color: '#fff' }}
+                    >
+                      {voiceHook.isGenerating ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          ElevenLabs...
+                        </>
+                      ) : (
+                        <>
+                          <i className="ri-mic-line" />
+                          Générer via ElevenLabs
+                        </>
+                      )}
+                    </button>
+                    <Link
+                      to="/kos-youtube-download"
+                      className="flex items-center gap-2 px-4 py-3 rounded-xl border border-background-200 text-sm font-bold text-foreground-600 hover:bg-background-100 transition-colors cursor-pointer whitespace-nowrap"
+                    >
+                      <i className="ri-git-branch-line" />
+                      Big Four Factory
+                    </Link>
+                  </div>
+
+                  {/* Generation Result */}
+                  {voiceHook.lastResult && !voiceHook.isGenerating && (
+                    <div className={`mt-6 p-5 rounded-xl border ${voiceHook.lastResult.success ? 'bg-emerald-50 border-emerald-200' : 'bg-red-50 border-red-200'}`}>
+                      {voiceHook.lastResult.success ? (
+                        <>
+                          <div className="flex items-center gap-2 mb-3">
+                            <i className="ri-checkbox-circle-fill text-emerald-500 text-lg" />
+                            <span className="text-sm font-bold text-emerald-700">Voice-Over ElevenLabs généré avec succès !</span>
+                          </div>
+                          {voiceHook.lastResult.estimatedDuration && (
+                            <p className="text-xs text-emerald-600 mb-3">
+                              Durée estimée : ~{voiceHook.lastResult.estimatedDuration.estimatedMinutes} min ·
+                              Caractères utilisés : {voiceHook.lastResult.charactersUsed} ·
+                              Génération : {voiceHook.lastResult.durationMs ? `${(voiceHook.lastResult.durationMs / 1000).toFixed(1)}s` : '—'}
+                            </p>
+                          )}
+                          <div className="flex gap-2 flex-wrap">
+                            <button
+                              onClick={handlePlayAudio}
+                              className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-700 cursor-pointer whitespace-nowrap"
+                            >
+                              <i className={isPlaying ? 'ri-pause-fill' : 'ri-play-fill'} />
+                              {isPlaying ? 'Pause' : 'Écouter'}
+                            </button>
+                            <button
+                              onClick={handleDownloadAudio}
+                              className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold bg-white border border-emerald-300 text-emerald-700 hover:bg-emerald-50 cursor-pointer whitespace-nowrap"
+                            >
+                              <i className="ri-download-line" />Télécharger MP3
+                            </button>
+                            <button
+                              onClick={() => { voiceHook.clearAudio(); setScriptText(''); }}
+                              className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold text-foreground-500 hover:bg-background-100 cursor-pointer whitespace-nowrap"
+                            >
+                              Nouvelle génération
+                            </button>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="flex items-start gap-2">
+                          <i className="ri-error-warning-fill text-red-500 text-lg mt-0.5" />
+                          <div>
+                            <p className="text-sm font-bold text-red-700">Erreur de génération</p>
+                            <p className="text-xs text-red-600 mt-0.5">{voiceHook.lastResult.error}</p>
+                            {voiceHook.lastResult.error?.includes('not configured') && (
+                              <p className="text-xs text-amber-600 mt-1">→ Configurez la clé ELEVENLABS_API_KEY dans les secrets Supabase.</p>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Generation History */}
+                {voiceHook.history.length > 0 && (
+                  <div className="mt-6">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="font-heading text-base font-bold text-foreground-950">Historique de Session</h3>
+                      <button onClick={voiceHook.clearHistory} className="text-xs text-foreground-400 hover:text-foreground-600 cursor-pointer">Effacer</button>
+                    </div>
+                    <div className="space-y-2">
+                      {voiceHook.history.slice(0, 5).map((h) => (
+                        <div key={h.id} className="flex items-center gap-3 p-3 rounded-xl bg-background-50 border border-background-200/70">
+                          <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${h.status === 'completed' ? 'bg-emerald-100' : h.status === 'failed' ? 'bg-red-100' : 'bg-amber-100'}`}>
+                            <i className={`${h.status === 'completed' ? 'ri-check-line text-emerald-600' : h.status === 'failed' ? 'ri-close-line text-red-600' : 'ri-loader-4-line text-amber-600 animate-spin'} text-sm`} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[11px] font-bold text-foreground-800 truncate">{h.scriptPreview}</p>
+                            <p className="text-[10px] text-foreground-400">{h.voiceName} · {h.scriptLength} car. · {new Date(h.timestamp).toLocaleTimeString('fr-FR')}</p>
+                          </div>
+                          <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${h.status === 'completed' ? 'bg-emerald-100 text-emerald-700' : h.status === 'failed' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>
+                            {h.status === 'completed' ? 'Succès' : h.status === 'failed' ? 'Échec' : 'En cours'}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Quick Scripts */}
+                <div className="mt-6">
+                  <h3 className="font-heading text-base font-bold text-foreground-950 mb-3">Scripts Rapides — Test ElevenLabs</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {[
+                      { label: 'Hook 30s — BCEAO', text: 'La nouvelle circulaire BCEAO redéfinit les standards de gouvernance bancaire en zone UEMOA. Trois changements majeurs impactent directement votre institution. Décryptage complet dans cette vidéo.' },
+                      { label: 'CTA — Diagnostic', text: 'Vous avez un projet de mise en conformité ? Nos experts KHEPRA vous accompagnent de A à Z. Contactez-nous dès aujourd\'hui pour un diagnostic personnalisé sur notre site KhepraExperts.com.' },
+                      { label: 'Intro — Institutionnelle', text: 'Bienvenue sur KHEPRA EXPERTS, votre partenaire de référence en gouvernance, audit, conformité réglementaire et conseil stratégique en Afrique francophone.' },
+                      { label: 'Outro — CTA YouTube', text: 'Si cette analyse vous a été utile, abonnez-vous à notre chaîne YouTube pour ne manquer aucune de nos analyses réglementaires exclusives. Partagez avec vos collègues et laissez-nous un commentaire.' },
+                    ].map((qs, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setScriptText(qs.text)}
+                        className="text-left rounded-xl bg-background-50 border border-background-200/70 p-3 hover:border-foreground-200 transition-colors cursor-pointer"
+                      >
+                        <span className="text-[10px] font-bold text-foreground-400 uppercase tracking-wider">{qs.label}</span>
+                        <p className="text-xs text-foreground-600 mt-1 line-clamp-2">{qs.text}</p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ═══════════════ LIBRARY ═══════════════ */}
+      {activeTab === 'library' && (
+        <section className="py-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="font-heading text-2xl font-bold text-foreground-950 mb-6">Bibliothèque Vocale — {GENERATED_VOICES.length} Fichiers</h2>
+            <div className="space-y-3">
+              {GENERATED_VOICES.map((voice) => {
+                const isSelected = selectedVoice?.id === voice.id;
+                return (
+                  <div key={voice.id} className={`rounded-2xl border transition-all ${isSelected ? 'border-foreground-300 bg-background-50 ring-2 ring-foreground-200' : 'border-background-200/70 bg-background-50 hover:border-foreground-200'}`}>
+                    <button onClick={() => setSelectedVoice(isSelected ? null : voice)} className="w-full p-4 text-left flex items-center gap-4 cursor-pointer">
+                      <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: voice.status === 'completed' ? '#D1FAE5' : voice.status === 'generating' ? '#FEF3C7' : '#FEE2E2' }}>
+                        <i className={`${voice.status === 'completed' ? 'ri-check-line text-emerald-600' : voice.status === 'generating' ? 'ri-loader-4-line text-amber-600 animate-spin' : 'ri-close-line text-red-600'} text-lg`} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="text-sm font-bold text-foreground-950 truncate">{voice.title}</h3>
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${voice.status === 'completed' ? 'bg-emerald-100 text-emerald-700' : voice.status === 'generating' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
+                            {voice.status === 'completed' ? 'Prêt' : voice.status === 'generating' ? 'En cours' : 'Échec'}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-3 text-xs text-foreground-500">
+                          <span>{voice.profileName}</span>
+                          <span>{voice.duration}</span>
+                          <span>{voice.fileSize}</span>
+                          <span>{new Date(voice.generatedAt).toLocaleDateString('fr-FR')}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {voice.status === 'completed' && (
+                          <>
+                            <span className="w-8 h-8 flex items-center justify-center rounded-full bg-emerald-50 text-emerald-600 hover:bg-emerald-100 cursor-pointer"><i className="ri-play-fill text-lg" /></span>
+                            <span className="w-8 h-8 flex items-center justify-center rounded-full bg-background-100 text-foreground-500 hover:bg-background-200 cursor-pointer"><i className="ri-download-line" /></span>
+                          </>
+                        )}
+                        <i className={`ri-${isSelected ? 'subtract' : 'add'}-line text-foreground-400 text-lg`} />
+                      </div>
+                    </button>
+                    {isSelected && (
+                      <div className="px-5 pb-5 border-t border-background-200/70 pt-4 space-y-3">
+                        <div>
+                          <span className="text-[10px] font-bold text-foreground-500 uppercase tracking-wider">Aperçu du Script</span>
+                          <p className="text-sm text-foreground-700 mt-1 bg-background-100 rounded-lg p-3">{voice.scriptPreview}</p>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          <button className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold bg-foreground-950 text-white hover:bg-foreground-800 cursor-pointer whitespace-nowrap"><i className="ri-play-line" />Écouter</button>
+                          <button className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold border border-background-200 text-foreground-600 hover:bg-background-100 cursor-pointer whitespace-nowrap"><i className="ri-download-line" />Télécharger MP3</button>
+                          <button
+                            onClick={() => { setScriptText(voice.scriptPreview); setActiveTab('generate'); }}
+                            className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold border border-background-200 text-foreground-600 hover:bg-background-100 cursor-pointer whitespace-nowrap"
+                          >
+                            <i className="ri-mic-line" />Régénérer ElevenLabs
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ═══════════════ PROFILES ═══════════════ */}
+      {activeTab === 'profiles' && (
+        <section className="py-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="font-heading text-2xl font-bold text-foreground-950 mb-2">Profils Vocaux — {VOICE_PROFILES.length} Disponibles</h2>
+            <p className="text-sm text-foreground-500 mb-6">Les 3 voix officielles KHEPRA EXPERTS sont connectées à ElevenLabs Multilingual v2 pour une génération audio réelle.</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {VOICE_PROFILES.map((vp) => {
+                const tc = TONE_CONFIG[vp.tone];
+                const isKhepra = ['vp-celestin-koffi', 'vp-fatoumata-diallo', 'vp-aminata-sow'].includes(vp.id);
+                return (
+                  <div key={vp.id} className={`rounded-2xl p-5 hover:border-foreground-200 transition-colors border ${isKhepra ? 'border-foreground-200 bg-background-50' : 'border-background-200/70 bg-background-50'}`}>
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${vp.color}20` }}>
+                        <i className={`${vp.icon} text-xl`} style={{ color: vp.color }} />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-1.5 mb-0.5">
+                          <h3 className="text-sm font-bold text-foreground-950">{vp.name}</h3>
+                          {isKhepra && <span className="px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[8px] font-bold">ElevenLabs</span>}
+                        </div>
+                        <span className="text-[10px] text-foreground-400">{vp.gender === 'masculin' ? 'Masculin' : 'Féminin'} · {vp.accent}</span>
+                      </div>
+                    </div>
+                    <p className="text-xs text-foreground-600 mb-3">{vp.description}</p>
+                    <div className="flex flex-wrap gap-1.5 mb-3">
+                      {vp.languages.map((l) => <span key={l} className="text-[10px] px-2 py-0.5 rounded-full bg-background-100 text-foreground-500">{l}</span>)}
+                      <span className="text-[10px] px-2 py-0.5 rounded-full font-bold" style={{ backgroundColor: tc.bg, color: tc.color }}>{tc.label}</span>
+                    </div>
+                    <div className="rounded-lg bg-foreground-950 text-gray-300 p-3 text-xs leading-relaxed italic">"{vp.sampleText}"</div>
+                    <button
+                      onClick={() => { setSelectedProfile(vp.id); setActiveTab('generate'); }}
+                      className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-bold border border-background-200 text-foreground-600 hover:bg-background-100 transition-colors cursor-pointer whitespace-nowrap"
+                    >
+                      <i className="ri-mic-line" />{isKhepra ? 'Générer via ElevenLabs' : 'Utiliser ce profil'}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Cross-Link */}
+      <section className="py-12 bg-foreground-950">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
+            <div>
+              <h2 className="font-heading text-2xl font-bold text-white mb-2">Pipeline KOS Média — ElevenLabs → YouTube</h2>
+              <p className="text-gray-400 text-sm">Voice AI Studio (ElevenLabs) → Big Four Factory → Video Podcast Publishing Pack. Production industrielle de contenu institutionnel.</p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <Link to="/kos-youtube-download" className="flex items-center gap-2 px-5 py-3 rounded-xl bg-[#FF0000] text-white font-bold text-sm hover:bg-[#CC0000] cursor-pointer whitespace-nowrap">
+                <i className="ri-git-branch-line" />Big Four Factory
+              </Link>
+              <Link to="/kos-video-podcast-publishing-pack" className="flex items-center gap-2 px-5 py-3 rounded-xl text-white font-bold text-sm cursor-pointer whitespace-nowrap" style={{ backgroundColor: '#86BC25' }}>
+                <i className="ri-archive-line" />Publishing Pack
+              </Link>
+              <Link to="/youtube-connect" className="flex items-center gap-2 px-5 py-3 rounded-xl bg-white/10 text-white font-bold text-sm hover:bg-white/20 cursor-pointer whitespace-nowrap">
+                <i className="ri-youtube-fill" />YouTube Connect
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+    </hubLayout>
+  );
+}
+
+
+
+
+

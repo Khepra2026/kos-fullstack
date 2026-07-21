@@ -1,0 +1,777 @@
+import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import hubLayout from '@/components/feature/hubLayout';
+import { SeoHead } from '@/components/feature/SeoHead';
+import { useAgentBlockScanner } from '@/hooks/useAgentBlockScanner';
+import { AGENT_CATALOG } from '@/mocks/agentBlockScanner';
+import type { BlockScanResult, BlockDetection } from '@/mocks/agentBlockScanner';
+
+function getSeverityBadge(severity: string) {
+  switch (severity) {
+    case 'critical': return { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-700', label: 'CRITIQUE', dot: 'bg-red-500' };
+    case 'major': return { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700', label: 'MAJEUR', dot: 'bg-amber-500' };
+    case 'minor': return { bg: 'bg-slate-50', border: 'border-slate-200', text: 'text-slate-600', label: 'MINEUR', dot: 'bg-slate-400' };
+    default: return { bg: 'bg-gray-50', border: 'border-gray-200', text: 'text-gray-700', label: 'N/A', dot: 'bg-gray-500' };
+  }
+}
+
+function getStatusBadge(status: string) {
+  switch (status) {
+    case 'open': return { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-700', label: 'Ouvert', dot: 'bg-red-500' };
+    case 'in_progress': return { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700', label: 'En cours', dot: 'bg-amber-500' };
+    case 'fixed': return { bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-700', label: 'Corrigé', dot: 'bg-emerald-500' };
+    case 'false_positive': return { bg: 'bg-gray-50', border: 'border-gray-200', text: 'text-gray-500', label: 'Faux positif', dot: 'bg-gray-400' };
+    default: return { bg: 'bg-gray-50', border: 'border-gray-200', text: 'text-gray-700', label: 'N/A', dot: 'bg-gray-500' };
+  }
+}
+
+function getAgentStatusLabel(status: string) {
+  switch (status) {
+    case 'active': return { bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-700', label: 'Actif', pulse: true };
+    case 'scanning': return { bg: 'bg-accent-50', border: 'border-accent-200', text: 'text-accent-700', label: 'Scan en cours', pulse: true };
+    case 'executing': return { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700', label: 'Exécution', pulse: true };
+    case 'idle': return { bg: 'bg-slate-50', border: 'border-slate-200', text: 'text-slate-500', label: 'En attente', pulse: false };
+    default: return { bg: 'bg-gray-50', border: 'border-gray-200', text: 'text-gray-700', label: 'N/A', pulse: false };
+  }
+}
+
+function getLogStatusBadge(s: string) {
+  switch (s) {
+    case 'success': return { bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-700', label: 'Succès', icon: 'ri-check-line' };
+    case 'partial': return { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700', label: 'Partiel', icon: 'ri-timer-line' };
+    case 'failed': return { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-700', label: 'Échec', icon: 'ri-close-line' };
+    default: return { bg: 'bg-gray-50', border: 'border-gray-200', text: 'text-gray-700', label: 'N/A', icon: 'ri-question-line' };
+  }
+}
+
+function getHealthColor(score: number): string {
+  if (score >= 85) return '#86BC25';
+  if (score >= 70) return '#E8C547';
+  if (score >= 50) return '#E8943A';
+  return '#C2410C';
+}
+
+function getHealthLabel(score: number): string {
+  if (score >= 85) return 'OK';
+  if (score >= 70) return 'Attention';
+  if (score >= 50) return 'Dégradé';
+  return 'Critique';
+}
+
+type TabId = 'blocks' | 'agents' | 'logs';
+
+export default function agentBlockUpdatesPage() {
+  const { i18n } = useTranslation();
+  const lang = i18n.language.startsWith('en') ? 'en' : 'fr';
+  const [activeTab, setActiveTab] = useState<TabId>('blocks');
+  const [expandedBlock, setExpandedBlock] = useState<string | null>(null);
+  const [selectedBlock, setSelectedBlock] = useState<BlockScanResult | null>(null);
+  const [detectionModal, setDetectionModal] = useState<BlockDetection | null>(null);
+  const [blockFilter, setBlockFilter] = useState<string>('all');
+
+  const {
+    blocks,
+    logs,
+    stats,
+    scanUrl,
+    setScanUrl,
+    loading,
+    error,
+    executingBlocks,
+    toastMessage,
+    setToastMessage,
+    handleExecuteBlock,
+    handleFixAll,
+    handleScanBlock,
+    handleScanAll,
+    reload,
+  } = useAgentBlockScanner();
+
+  const filteredBlocks = useMemo(() => {
+    if (blockFilter === 'all') return blocks;
+    if (blockFilter === 'critical') return blocks.filter((b) => b.healthScore < 60);
+    if (blockFilter === 'warning') return blocks.filter((b) => b.healthScore >= 60 && b.healthScore < 85);
+    if (blockFilter === 'healthy') return blocks.filter((b) => b.healthScore >= 85);
+    return blocks;
+  }, [blocks, blockFilter]);
+
+  const allOpenDetections = useMemo(() => {
+    return blocks.flatMap((b) =>
+      b.detections
+        .filter((d) => d.status === 'open' || d.status === 'in_progress')
+        .map((d) => ({ ...d, blockName: b.blockName, blockColor: b.blockColor }))
+    ).sort((a, b) => {
+      const sev = { critical: 0, major: 1, minor: 2 };
+      return sev[a.severity] - sev[b.severity];
+    });
+  }, [blocks]);
+
+  const totalOpen = blocks.reduce((s, b) => s + b.totalIssues - b.fixedIssues, 0);
+  const totalAgentsActive = AGENT_CATALOG.filter((a) => a.status === 'active').length;
+
+  const tabs: { id: TabId; label: string; icon: string; count: string }[] = [
+    { id: 'blocks', label: 'Blocs', icon: 'ri-stack-line', count: String(stats.totalBlocks) },
+    { id: 'agents', label: 'Agents', icon: 'ri-robot-line', count: String(stats.totalAgents) },
+    { id: 'logs', label: 'Journal d\'exécution', icon: 'ri-history-line', count: String(logs.length) },
+  ];
+
+  return (
+    <hubLayout hubId={39}>
+      <SeoHead
+        title="KOS Agents — Scanner & Exécuter par Bloc | KHEPRA EXPERTS"
+        description="Système de scan et d'exécution par bloc. 9 agents KOS identifient les mises à jour requises sur 6 blocs (SEO, Sécurité, Contenu, Performance, Réseaux Sociaux, Conformité) et les exécutent automatiquement."
+        keywords="KOS Agents, scanner par bloc, exécution automatique, mises à jour KOS, agents IA, SEO, sécurité OWASP, contenu, performance, conformité, KHEPRA EXPERTS"
+        canonicalPath="/kos-agent-block-updates"
+        ogType="website"
+        ogLocale={lang === 'fr' ? 'fr_FR' : 'en_US'}
+      />
+
+      {/* Hero */}
+      <section className="relative bg-background-100 border-b border-background-200/70">
+        <div className="absolute inset-0">
+          <img
+            src="https://readdy.ai/api/search-image?query=abstract%20dark%20technological%20dashboard%20interface%20showing%20multiple%20interconnected%20data%20blocks%20arranged%20in%20a%20hexagonal%20grid%20pattern%20each%20block%20glowing%20with%20different%20status%20colors%20emerald%20green%20for%20healthy%20amber%20for%20warning%20red%20for%20critical%20with%20particle%20effects%20flowing%20between%20blocks%20representing%20automated%20agent%20scanning%20and%20execution%20no%20text%20no%20human%20figures%20premium%20enterprise%20AI%20monitoring%20visualization%20with%20layered%20depth%20and%20sophisticated%20node%20connections&width=1920&height=600&seq=kos-agents-blocks-hero&orientation=landscape"
+            alt=""
+            className="w-full h-full object-cover object-center opacity-18"
+            width="1920"
+            height="600"
+          />
+        </div>
+        <div className="absolute inset-0 bg-gradient-to-b from-foreground-950/60 via-foreground-950/80 to-foreground-950" />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="text-center max-w-4xl mx-auto">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/20 border border-emerald-400/30 backdrop-blur-sm mb-6">
+              <i className="ri-robot-line text-emerald-400 text-sm" />
+              <span className="text-sm font-semibold text-emerald-300 uppercase tracking-wider">
+                KOS Agents — Scanner & Exécuter par Bloc
+              </span>
+            </div>
+            <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
+              Identifier. Exécuter.
+              <span className="block text-emerald-400 mt-2">Corriger. Bloc par Bloc.</span>
+            </h1>
+            <p className="text-lg sm:text-xl text-gray-300 leading-relaxed mb-8 max-w-3xl mx-auto">
+              <strong className="text-white">{stats.totalAgents} agents KOS</strong> scannent{' '}
+              <strong className="text-white">{stats.totalBlocks} blocs</strong> du système.{' '}
+              <strong className="text-white">{stats.totalDetections} problèmes</strong> détectés —{' '}
+              <strong className="text-red-300">{stats.criticalOpen} critiques</strong>,{' '}
+              <strong className="text-amber-300">{stats.majorOpen} majeurs</strong>.{' '}
+              <strong className="text-emerald-300">{stats.autoFixable} corrigibles automatiquement.</strong>
+            </p>
+            <div className="flex flex-wrap justify-center gap-3">
+              <button
+                onClick={handleScanAll}
+                disabled={executingBlocks.size > 0}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-bold transition-all disabled:opacity-50 cursor-pointer whitespace-nowrap"
+              >
+                <i className={`ri-radar-line ${executingBlocks.size > 0 ? 'animate-spin' : ''}`} />
+                {executingBlocks.size > 0 ? 'Scan en cours...' : 'Scanner tous les blocs'}
+              </button>
+              <button
+                onClick={handleFixAll}
+                disabled={executingBlocks.size > 0 || stats.criticalOpen + stats.majorOpen === 0}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary-500 hover:bg-primary-600 text-white text-sm font-bold transition-all disabled:opacity-50 cursor-pointer whitespace-nowrap"
+              >
+                <i className="ri-magic-line" />
+                Corriger tout ({stats.criticalOpen + stats.majorOpen})
+              </button>
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-red-500/20 border border-red-400/30 backdrop-blur-sm">
+                <span className="w-2 h-2 rounded-full bg-red-500" />
+                <span className="text-sm text-red-300 font-semibold">{stats.criticalOpen} Critiques</span>
+              </div>
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/20 border border-amber-400/30 backdrop-blur-sm">
+                <span className="w-2 h-2 rounded-full bg-amber-500" />
+                <span className="text-sm text-amber-300 font-semibold">{stats.majorOpen} Majeurs</span>
+              </div>
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/20 border border-emerald-400/30 backdrop-blur-sm">
+                <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                <span className="text-sm text-emerald-300 font-semibold">{stats.totalFixed} Corrigés</span>
+              </div>
+            </div>
+            {/* URL Input */}
+            <div className="mt-6 flex items-center justify-center gap-3">
+              <div className="relative w-full max-w-md">
+                <i className="ri-link absolute left-3 top-1/2 -translate-y-1/2 text-foreground-400 text-sm" />
+                <input
+                  type="url"
+                  value={scanUrl}
+                  onChange={(e) => setScanUrl(e.target.value)}
+                  placeholder="https://votre-site.com"
+                  className="w-full pl-9 pr-4 py-2.5 rounded-full bg-white/10 border border-white/20 text-white placeholder:text-white/40 text-sm focus:outline-none focus:border-emerald-400/60 focus:ring-2 focus:ring-emerald-400/20 backdrop-blur-sm transition-all"
+                />
+              </div>
+              <span className="text-xs text-gray-400 whitespace-nowrap">URL a scanner</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Tab Navigation */}
+      <div className="sticky top-0 z-30 bg-background-50 border-b border-background-200/70">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+          {/* Loading Banner */}
+          {loading && (
+            <div className="flex items-center justify-center gap-2 py-3 text-sm text-amber-700 bg-amber-50 border-b border-amber-200 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8">
+              <i className="ri-loader-4-line animate-spin" />
+              Connexion à Supabase — chargement des données...
+            </div>
+          )}
+
+          {/* Error Banner */}
+          {error && !loading && (
+            <div className="flex items-center justify-between gap-2 py-3 text-sm text-red-700 bg-red-50 border-b border-red-200 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8">
+              <div className="flex items-center gap-2">
+                <i className="ri-error-warning-line" />
+                <span>{error} — Affichage des données mock de secours.</span>
+              </div>
+              <button
+                onClick={reload}
+                className="px-3 py-1 rounded-full text-xs font-bold bg-red-100 hover:bg-red-200 text-red-700 cursor-pointer whitespace-nowrap"
+              >
+                <i className="ri-refresh-line mr-1" />
+                Réessayer
+              </button>
+            </div>
+          )}
+
+          <div className="flex gap-1 overflow-x-auto py-3">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-bold cursor-pointer transition-all whitespace-nowrap ${
+                  activeTab === tab.id
+                    ? 'bg-foreground-950 text-white'
+                    : 'text-foreground-600 hover:bg-background-100 hover:text-foreground-900'
+                }`}
+              >
+                <i className={`${tab.icon} text-base`} />
+                {tab.label}
+                <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${activeTab === tab.id ? 'bg-white/20' : 'bg-background-200'}`}>
+                  {tab.count}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Stats Row */}
+      <section className="py-6 bg-white border-b border-background-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+            {[
+              { label: 'Blocs scannés', value: String(stats.totalBlocks), icon: 'ri-stack-line', color: '#4F46E5' },
+              { label: 'Agents actifs', value: `${totalAgentsActive}/${stats.totalAgents}`, icon: 'ri-robot-line', color: '#86BC25' },
+              { label: 'Problèmes totaux', value: String(stats.totalDetections), icon: 'ri-error-warning-line', color: '#C2410C' },
+              { label: 'Critiques', value: String(stats.criticalOpen), icon: 'ri-close-circle-line', color: '#C2410C' },
+              { label: 'Majeurs', value: String(stats.majorOpen), icon: 'ri-alert-line', color: '#E8943A' },
+              { label: 'Corrigés', value: String(stats.totalFixed), icon: 'ri-check-double-line', color: '#0D7B5F' },
+              { label: 'Auto-fixables', value: String(stats.autoFixable), icon: 'ri-flashlight-line', color: '#6B4A3A' },
+              { label: 'Effort estimé', value: stats.estimatedTotalEffort, icon: 'ri-timer-line', color: '#9B7B2C' },
+            ].map((stat, i) => (
+              <div key={i} className="rounded-xl bg-background-50 border border-background-200 p-4 text-center">
+                <div className="w-8 h-8 mx-auto mb-2 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${stat.color}15` }}>
+                  <i className={`${stat.icon} text-sm`} style={{ color: stat.color }} />
+                </div>
+                <span className="block text-lg font-bold text-foreground-950 font-heading">{stat.value}</span>
+                <span className="text-[10px] text-foreground-400">{stat.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* === TAB: BLOCKS === */}
+      {activeTab === 'blocks' && (
+        <section className="py-8 sm:py-10">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            {/* Filter */}
+            <div className="flex flex-wrap gap-2 mb-6 justify-center">
+              <button onClick={() => setBlockFilter('all')} className={`px-4 py-2 rounded-full text-sm font-bold cursor-pointer transition-all whitespace-nowrap ${blockFilter === 'all' ? 'bg-foreground-950 text-white' : 'bg-white border border-background-200 text-foreground-600 hover:border-foreground-300'}`}>
+                Tous ({stats.totalBlocks})
+              </button>
+              <button onClick={() => setBlockFilter('critical')} className={`px-4 py-2 rounded-full text-sm font-bold cursor-pointer transition-all whitespace-nowrap ${blockFilter === 'critical' ? 'bg-red-600 text-white' : 'bg-white border border-background-200 text-foreground-600 hover:border-red-200'}`}>
+                Critiques ({stats.blocksCritical})
+              </button>
+              <button onClick={() => setBlockFilter('warning')} className={`px-4 py-2 rounded-full text-sm font-bold cursor-pointer transition-all whitespace-nowrap ${blockFilter === 'warning' ? 'bg-amber-600 text-white' : 'bg-white border border-background-200 text-foreground-600 hover:border-amber-200'}`}>
+                Attention ({stats.blocksWarning})
+              </button>
+              <button onClick={() => setBlockFilter('healthy')} className={`px-4 py-2 rounded-full text-sm font-bold cursor-pointer transition-all whitespace-nowrap ${blockFilter === 'healthy' ? 'bg-emerald-600 text-white' : 'bg-white border border-background-200 text-foreground-600 hover:border-emerald-200'}`}>
+                OK ({stats.blocksHealthy})
+              </button>
+            </div>
+
+            {/* Blocks Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+              {filteredBlocks.map((block) => {
+                const isExpanded = expandedBlock === block.blockId;
+                const isExecuting = executingBlocks.has(block.blockId);
+                const healthColor = getHealthColor(block.healthScore);
+                const openCount = block.totalIssues - block.fixedIssues;
+                const autoCount = block.detections.filter((d) => d.autoFixAvailable && d.status !== 'fixed').length;
+
+                return (
+                  <div
+                    key={block.blockId}
+                    className={`rounded-2xl border transition-all duration-300 ${
+                      isExpanded ? 'border-foreground-300 bg-white shadow-lg' : 'border-background-200 bg-white hover:border-foreground-200 hover:shadow-md'
+                    }`}
+                  >
+                    {/* Block Header */}
+                    <button
+                      onClick={() => setExpandedBlock(isExpanded ? null : block.blockId)}
+                      className="w-full p-5 text-left flex items-start gap-4 cursor-pointer"
+                    >
+                      <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${block.blockColor}15` }}>
+                        <i className={`${block.blockIcon} text-xl`} style={{ color: block.blockColor }} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <h3 className="font-heading text-base font-bold text-foreground-950">{block.blockName}</h3>
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ backgroundColor: `${healthColor}15`, color: healthColor, border: `1px solid ${healthColor}30` }}>
+                            <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: healthColor }} />
+                            {getHealthLabel(block.healthScore)} · {block.healthScore}%
+                          </span>
+                        </div>
+                        <p className="text-xs text-foreground-500 line-clamp-1">{block.description}</p>
+                        <div className="flex flex-wrap items-center gap-3 mt-2 text-xs">
+                          <span className="text-foreground-400">
+                            <i className="ri-error-warning-line mr-1" />
+                            {openCount} ouverts
+                          </span>
+                          <span className="text-emerald-600">
+                            <i className="ri-check-line mr-1" />
+                            {block.fixedIssues} corrigés
+                          </span>
+                          {autoCount > 0 && (
+                            <span className="text-amber-600">
+                              <i className="ri-flashlight-line mr-1" />
+                              {autoCount} auto-fixables
+                            </span>
+                          )}
+                          <span className="text-foreground-400">
+                            <i className="ri-robot-line mr-1" />
+                            {block.agentAssignments.length} agents
+                          </span>
+                        </div>
+                        {/* Health bar */}
+                        <div className="w-full h-1.5 rounded-full bg-background-200 overflow-hidden mt-3">
+                          <div className="h-full rounded-full transition-all duration-700" style={{ width: `${block.healthScore}%`, backgroundColor: healthColor }} />
+                        </div>
+                      </div>
+                      <div className="flex-shrink-0 pt-1">
+                        <i className={`ri-${isExpanded ? 'subtract' : 'add'}-line text-foreground-400 text-lg`} />
+                      </div>
+                    </button>
+
+                    {/* Block Actions */}
+                    <div className="px-5 pb-3 flex items-center gap-2 border-t border-transparent">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleScanBlock(block.blockId); }}
+                        disabled={isExecuting}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-accent-50 border border-accent-200 text-accent-700 hover:bg-accent-100 transition-colors disabled:opacity-50 cursor-pointer whitespace-nowrap"
+                      >
+                        <i className={`ri-radar-line ${isExecuting ? 'animate-spin' : ''} text-xs`} />
+                        Scanner
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleExecuteBlock(block.blockId); }}
+                        disabled={isExecuting || autoCount === 0}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100 transition-colors disabled:opacity-50 cursor-pointer whitespace-nowrap"
+                      >
+                        <i className="ri-play-line text-xs" />
+                        Exécuter ({autoCount})
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setSelectedBlock(block); }}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-foreground-50 border border-foreground-200 text-foreground-700 hover:bg-foreground-100 transition-colors cursor-pointer whitespace-nowrap ml-auto"
+                      >
+                        <i className="ri-eye-line text-xs" />
+                        Détail
+                      </button>
+                    </div>
+
+                    {/* Expanded Content */}
+                    {isExpanded && (
+                      <div className="px-5 pb-5 border-t border-background-200 pt-4">
+                        {/* Agents assignés */}
+                        <h5 className="text-xs font-bold text-foreground-400 uppercase tracking-wider mb-3">Agents Assignés</h5>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
+                          {block.agentAssignments.map((agent) => {
+                            const statusLabel = getAgentStatusLabel(agent.status);
+                            return (
+                              <div key={agent.agentId} className="rounded-xl bg-background-50 border border-background-100 p-3">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${agent.agentColor}15` }}>
+                                    <i className={`${agent.agentIcon} text-xs`} style={{ color: agent.agentColor }} />
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-[10px] font-bold text-foreground-700 truncate">{agent.agentName}</p>
+                                  </div>
+                                  <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[8px] font-bold ${statusLabel.bg} ${statusLabel.border} ${statusLabel.text}`}>
+                                    {statusLabel.pulse && <span className="w-1 h-1 rounded-full bg-current animate-pulse" />}
+                                    {statusLabel.label}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-3 text-[10px]">
+                                  <span className="text-foreground-400">{agent.role === 'primary' ? '🔍 Lead' : agent.role === 'secondary' ? '🔄 Support' : '✅ Reviewer'}</span>
+                                  <span className="text-foreground-400">{agent.detectionsFound} / {agent.fixesApplied}</span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        {/* Detections List */}
+                        <h5 className="text-xs font-bold text-foreground-400 uppercase tracking-wider mb-3">
+                          Détections ({block.detections.length})
+                        </h5>
+                        <div className="space-y-2 max-h-[400px] overflow-y-auto">
+                          {block.detections.map((det) => {
+                            const sevBadge = getSeverityBadge(det.severity);
+                            const statusBadge = getStatusBadge(det.status);
+                            return (
+                              <div
+                                key={det.id}
+                                onClick={() => setDetectionModal(det)}
+                                className="rounded-xl bg-background-50 border border-background-100 p-3 hover:border-foreground-200 cursor-pointer transition-colors"
+                              >
+                                <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+                                  <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold ${sevBadge.bg} ${sevBadge.border} ${sevBadge.text}`}>
+                                    <span className={`w-1 h-1 rounded-full ${sevBadge.dot}`} />
+                                    {sevBadge.label}
+                                  </span>
+                                  <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold ${statusBadge.bg} ${statusBadge.border} ${statusBadge.text}`}>
+                                    {statusBadge.label}
+                                  </span>
+                                  {det.autoFixAvailable && det.status !== 'fixed' && (
+                                    <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-emerald-50 border border-emerald-200 text-emerald-700">
+                                      <i className="ri-robot-line text-[9px]" />Auto
+                                    </span>
+                                  )}
+                                  <span className="text-[9px] text-foreground-400 ml-auto">{det.estimatedEffort}</span>
+                                </div>
+                                <p className="text-xs font-bold text-foreground-800 mb-0.5">{det.title}</p>
+                                <div className="flex items-center gap-2 text-[9px] text-foreground-400">
+                                  <span><i className="ri-folder-line mr-0.5" />{det.location}</span>
+                                  <span><i className="ri-user-line mr-0.5" />{det.detectedBy}</span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Block Detail Modal */}
+            {selectedBlock && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setSelectedBlock(null)}>
+                <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[85vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
+                  <div className="sticky top-0 bg-white border-b border-background-200 p-5 flex items-center justify-between rounded-t-3xl">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${selectedBlock.blockColor}15` }}>
+                        <i className={`${selectedBlock.blockIcon} text-lg`} style={{ color: selectedBlock.blockColor }} />
+                      </div>
+                      <div>
+                        <h3 className="font-heading text-base font-bold text-foreground-950">{selectedBlock.blockName}</h3>
+                        <p className="text-xs text-foreground-500">Score santé : {selectedBlock.healthScore}% · Dernier scan : {new Date(selectedBlock.lastScan).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</p>
+                      </div>
+                    </div>
+                    <button onClick={() => setSelectedBlock(null)} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-background-100 cursor-pointer">
+                      <i className="ri-close-line text-foreground-500" />
+                    </button>
+                  </div>
+                  <div className="p-5">
+                    <p className="text-sm text-foreground-600 mb-4">{selectedBlock.description}</p>
+                    <div className="grid grid-cols-3 gap-3 mb-5">
+                      {[
+                        { label: 'Critiques', value: selectedBlock.criticalIssues, color: '#C2410C' },
+                        { label: 'Majeurs', value: selectedBlock.majorIssues, color: '#E8943A' },
+                        { label: 'Mineurs', value: selectedBlock.minorIssues, color: '#6B7280' },
+                      ].map((item) => (
+                        <div key={item.label} className="text-center p-3 rounded-xl bg-background-50 border border-background-100">
+                          <span className="text-2xl font-bold font-heading" style={{ color: item.color }}>{item.value}</span>
+                          <p className="text-[10px] text-foreground-400">{item.label}</p>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="space-y-2">
+                      {selectedBlock.detections.map((det) => {
+                        const sevBadge = getSeverityBadge(det.severity);
+                        const statusBadge = getStatusBadge(det.status);
+                        return (
+                          <div key={det.id} className="p-3 rounded-xl bg-background-50 border border-background-100">
+                            <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+                              <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold ${sevBadge.bg} ${sevBadge.border} ${sevBadge.text}`}>{sevBadge.label}</span>
+                              <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold ${statusBadge.bg} ${statusBadge.border} ${statusBadge.text}`}>{statusBadge.label}</span>
+                              {det.autoFixAvailable && det.status !== 'fixed' && (
+                                <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-emerald-50 border border-emerald-200 text-emerald-700">Auto-fixable</span>
+                              )}
+                            </div>
+                            <p className="text-sm font-bold text-foreground-800">{det.title}</p>
+                            <p className="text-xs text-foreground-500 mt-1">{det.description}</p>
+                            <div className="flex items-center gap-3 mt-2 text-[10px] text-foreground-400">
+                              <span>{det.location}</span>
+                              <span>{det.estimatedEffort}</span>
+                              {det.relatedBlocks.length > 0 && <span>Lié à : {det.relatedBlocks.join(', ')}</span>}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Detection Detail Modal */}
+            {detectionModal && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setDetectionModal(null)}>
+                <div className="bg-white rounded-3xl max-w-lg w-full shadow-2xl" onClick={(e) => e.stopPropagation()}>
+                  <div className="p-5 border-b border-background-200 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      {(() => { const b = getSeverityBadge(detectionModal.severity); return <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold ${b.bg} ${b.border} ${b.text}`}><span className={`w-1.5 h-1.5 rounded-full ${b.dot}`} />{b.label}</span>; })()}
+                      {(() => { const b = getStatusBadge(detectionModal.status); return <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold ${b.bg} ${b.border} ${b.text}`}>{b.label}</span>; })()}
+                    </div>
+                    <button onClick={() => setDetectionModal(null)} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-background-100 cursor-pointer">
+                      <i className="ri-close-line text-foreground-500" />
+                    </button>
+                  </div>
+                  <div className="p-5">
+                    <h3 className="font-heading text-lg font-bold text-foreground-950 mb-2">{detectionModal.title}</h3>
+                    <p className="text-sm text-foreground-600 leading-relaxed mb-4">{detectionModal.description}</p>
+                    <div className="space-y-2 mb-4">
+                      {[
+                        { label: 'Localisation', value: detectionModal.location, icon: 'ri-folder-line' },
+                        { label: 'Détecté par', value: detectionModal.detectedBy, icon: 'ri-robot-line' },
+                        { label: 'Détecté le', value: new Date(detectionModal.detectedAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }), icon: 'ri-time-line' },
+                        { label: 'Effort estimé', value: detectionModal.estimatedEffort, icon: 'ri-timer-line' },
+                        { label: 'Auto-fixable', value: detectionModal.autoFixAvailable ? 'Oui' : 'Non', icon: 'ri-robot-line' },
+                      ].map((item) => (
+                        <div key={item.label} className="flex items-center gap-2 text-sm">
+                          <i className={`${item.icon} text-foreground-400 text-xs w-4`} />
+                          <span className="text-foreground-500 text-xs">{item.label}:</span>
+                          <span className="text-foreground-800 text-xs font-medium">{item.value}</span>
+                        </div>
+                      ))}
+                    </div>
+                    {detectionModal.relatedBlocks.length > 0 && (
+                      <div>
+                        <p className="text-xs font-bold text-foreground-400 uppercase tracking-wider mb-2">Blocs liés</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {detectionModal.relatedBlocks.map((rb) => (
+                            <span key={rb} className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-foreground-50 border border-foreground-200 text-foreground-600">{rb}</span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* === TAB: AGENTS === */}
+      {activeTab === 'agents' && (
+        <section className="py-8 sm:py-10">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-8">
+              <h2 className="font-heading text-3xl sm:text-4xl font-bold text-foreground-950 mb-4">
+                {stats.totalAgents} Agents KOS — Équipe de Scan et Correction
+              </h2>
+              <p className="text-foreground-600 max-w-2xl mx-auto">
+                {stats.agentsActive} agents activés · {stats.agentsPartial} en déploiement partiel. Chaque agent scanne ses blocs assignés et exécute les corrections.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {AGENT_CATALOG.map((agent) => {
+                const assignedBlocks = blocks.filter((b) =>
+                  b.agentAssignments.some((a) => a.agentId === agent.id)
+                );
+                const agentStatus = agent.status === 'active' ? 'Activé' : agent.status === 'partial' ? 'Partiel' : 'GAP';
+                const statusColor = agent.status === 'active' ? '#86BC25' : agent.status === 'partial' ? '#E8C547' : '#C2410C';
+                return (
+                  <div key={agent.id} className="rounded-2xl bg-white border border-background-200 p-5 hover:shadow-md transition-all">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${agent.color}15` }}>
+                        <i className={`${agent.icon} text-lg`} style={{ color: agent.color }} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-sm font-bold text-foreground-950 truncate">{agent.name}</h3>
+                      </div>
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold" style={{ backgroundColor: `${statusColor}15`, color: statusColor }}>
+                        <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: statusColor }} />
+                        {agentStatus}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-2 mb-4">
+                      <div className="text-center p-2 rounded-lg bg-background-50">
+                        <span className="block text-lg font-bold text-foreground-950">{agent.blocksAssigned}</span>
+                        <span className="text-[9px] text-foreground-400">Blocs</span>
+                      </div>
+                      <div className="text-center p-2 rounded-lg bg-background-50">
+                        <span className="block text-lg font-bold text-foreground-950">{agent.totalScans}</span>
+                        <span className="text-[9px] text-foreground-400">Scans</span>
+                      </div>
+                      <div className="text-center p-2 rounded-lg bg-background-50">
+                        <span className="block text-lg font-bold text-foreground-950">{agent.totalFixes}</span>
+                        <span className="text-[9px] text-foreground-400">Correct°</span>
+                      </div>
+                    </div>
+
+                    <div>
+                      <p className="text-[10px] font-bold text-foreground-400 uppercase tracking-wider mb-2">Blocs assignés</p>
+                      <div className="space-y-1.5">
+                        {assignedBlocks.map((block) => {
+                          const assignment = block.agentAssignments.find((a) => a.agentId === agent.id);
+                          const statusLabel = assignment ? getAgentStatusLabel(assignment.status) : null;
+                          return (
+                            <div key={block.blockId} className="flex items-center gap-2 p-2 rounded-lg bg-background-50">
+                              <i className={`${block.blockIcon} text-xs`} style={{ color: block.blockColor }} />
+                              <span className="text-xs text-foreground-700 flex-1 truncate">{block.blockName}</span>
+                              {statusLabel && assignment && (
+                                <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[8px] font-bold ${statusLabel.bg} ${statusLabel.border} ${statusLabel.text}`}>
+                                  {statusLabel.pulse && assignment.status === 'scanning' && <span className="w-1 h-1 rounded-full bg-current animate-pulse" />}
+                                  {assignment.role === 'primary' ? 'Lead' : assignment.role === 'secondary' ? 'Support' : 'Review'}
+                                </span>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* === TAB: EXECUTION LOGS === */}
+      {activeTab === 'logs' && (
+        <section className="py-8 sm:py-10">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-8">
+              <h2 className="font-heading text-3xl sm:text-4xl font-bold text-foreground-950 mb-4">
+                Journal d'Exécution — {logs.length} Opérations
+              </h2>
+              <p className="text-foreground-600 max-w-2xl mx-auto">
+                Chaque correction automatique est tracée, horodatée et auditée. Historique complet des exécutions agent par agent.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              {logs.map((log) => {
+                const statusBadge = getLogStatusBadge(log.status);
+                return (
+                  <div key={log.id} className="rounded-2xl bg-white border border-background-200 p-5 hover:shadow-md transition-all">
+                    <div className="flex items-start gap-4">
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${statusBadge.bg}`}>
+                        <i className={`${statusBadge.icon} text-sm ${statusBadge.text}`} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <span className="text-xs font-bold text-foreground-400">{log.id}</span>
+                          <span className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold ${statusBadge.bg} ${statusBadge.border} ${statusBadge.text}`}>{statusBadge.label}</span>
+                        </div>
+                        <h3 className="text-sm font-bold text-foreground-950 mb-1">{log.action}</h3>
+                        <p className="text-xs text-foreground-500 leading-relaxed">{log.details}</p>
+                        <div className="flex items-center gap-4 mt-2 text-[10px] text-foreground-400">
+                          <span>
+                            <i className="ri-stack-line mr-0.5" />
+                            {log.blockName}
+                          </span>
+                          <span>
+                            <i className="ri-robot-line mr-0.5" />
+                            {log.agentName}
+                          </span>
+                          <span>
+                            <i className="ri-check-line mr-0.5" />
+                            {log.detectionsFixed} corrections
+                          </span>
+                          <span>
+                            <i className="ri-time-line mr-0.5" />
+                            {new Date(log.timestamp).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Empty state */}
+            {logs.length === 0 && (
+              <div className="text-center py-16">
+                <div className="w-16 h-16 rounded-full bg-background-100 flex items-center justify-center mx-auto mb-4">
+                  <i className="ri-history-line text-2xl text-foreground-300" />
+                </div>
+                <p className="text-foreground-500 font-medium">Aucune exécution enregistrée</p>
+                <p className="text-xs text-foreground-400 mt-1">Lancez un scan ou une exécution pour voir les logs apparaître ici.</p>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-slide-up">
+          <div className="bg-foreground-950 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3">
+            <i className="ri-check-double-line text-emerald-400" />
+            <span className="text-sm font-medium">{toastMessage}</span>
+          </div>
+        </div>
+      )}
+
+      {/* Cross-link Ecosystème */}
+      <section className="py-12 sm:py-16 bg-white border-t border-background-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8">
+            <h2 className="font-heading text-2xl sm:text-3xl font-bold text-foreground-950 mb-2">
+              Écosystème KOS Complet
+            </h2>
+            <p className="text-foreground-600">Tous les moteurs autonomes interconnectés.</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+            {[
+              { label: 'Orchestrator Engine', path: '/kos-orchestrator-engine', icon: 'ri-git-branch-line', color: '#4F46E5' },
+              { label: 'Unified Autopilot', path: '/kos-unified-autopilot', icon: 'ri-cpu-line', color: '#86BC25' },
+              { label: 'Task Orchestrator', path: '/kos-auto-task-orchestrator', icon: 'ri-list-check', color: '#0D7B5F' },
+              { label: 'URL Auto-Pointage', path: '/kos-url-auto-pointage', icon: 'ri-link', color: '#0891B2' },
+            ].map((link) => (
+              <a
+                key={link.path}
+                href={link.path}
+                className="rounded-xl border border-background-200 bg-background-50 p-4 text-center hover:shadow-md hover:border-foreground-200 transition-all cursor-pointer block"
+              >
+                <div className="w-10 h-10 mx-auto mb-2 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${link.color}15` }}>
+                  <i className={`${link.icon} text-lg`} style={{ color: link.color }} />
+                </div>
+                <span className="text-sm font-bold text-foreground-800">{link.label}</span>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+    </hubLayout>
+  );
+}
+
+
+
+
+

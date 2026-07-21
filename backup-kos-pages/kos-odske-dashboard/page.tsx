@@ -1,0 +1,355 @@
+import { useState } from 'react';
+import hubLayout from '@/components/feature/hubLayout';
+import hubSwitcher from '@/components/feature/hubSwitcher';
+import { useODSKEDashboard } from '@/hooks/useODSKEDashboard';
+import type { ODSKEMetric, ODSKESourceRegistry } from '@/mocks/odskeDashboard';
+
+type Tab = 'overview' | 'sources' | 'catalog' | 'validation' | 'quality' | 'knowledge' | 'watchlist' | 'governance';
+
+function MetricCard({ m }: { m: ODSKEMetric }) {
+  const pct = Math.min(100, Math.round((m.metric_value / m.metric_target) * 100));
+  const trendIcon = m.trend === 'up' ? 'ri-arrow-up-line text-accent-500' : m.trend === 'down' ? 'ri-arrow-down-line text-primary-500' : 'ri-subtract-line text-foreground-400';
+  return (
+    <div className="bg-background-50 border border-background-200/70 rounded-lg p-4 flex flex-col gap-2">
+      <div className="flex items-center justify-between">
+        <span className="text-xs text-foreground-500 uppercase tracking-wide">{m.domain}</span>
+        <i className={`${trendIcon} text-sm`}></i>
+      </div>
+      <div className="flex items-baseline gap-1">
+        <span className="text-2xl font-semibold text-foreground-950">{m.metric_value}</span>
+        <span className="text-xs text-foreground-500">{m.metric_unit}</span>
+      </div>
+      <div className="flex items-center gap-2">
+        <div className="flex-1 h-1.5 rounded-full bg-background-200">
+          <div className={`h-1.5 rounded-full transition-all ${pct >= 100 ? 'bg-accent-500' : pct >= 75 ? 'bg-primary-500' : 'bg-secondary-500'}`} style={{ width: `${pct}%` }} />
+        </div>
+        <span className="text-xs text-foreground-500 whitespace-nowrap">{pct}%</span>
+      </div>
+    </div>
+  );
+}
+
+function SourceCard({ s }: { s: ODSKESourceRegistry }) {
+  const levelColors: Record<number, string> = { 1: 'bg-accent-100 text-accent-900', 2: 'bg-primary-100 text-primary-900', 3: 'bg-secondary-100 text-secondary-900' };
+  return (
+    <div className="bg-background-50 border border-background-200/70 rounded-lg p-3 flex items-start gap-3">
+      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${levelColors[s.trust_level] || 'bg-background-200 text-foreground-600'}`}>
+        N{s.trust_level}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium text-foreground-950 truncate">{s.source_name}</p>
+        <p className="text-xs text-foreground-500">{s.organization} · {s.country}</p>
+        <p className="text-xs text-foreground-400 truncate">{s.url}</p>
+      </div>
+      {s.is_active && <span className="w-2 h-2 rounded-full bg-accent-500 flex-shrink-0 mt-1.5" title="Active" />}
+    </div>
+  );
+}
+
+const TABS: { key: Tab; label: string; icon: string }[] = [
+  { key: 'overview', label: 'Vue d\'Ensemble', icon: 'ri-dashboard-line' },
+  { key: 'sources', label: 'Sources', icon: 'ri-shield-check-line' },
+  { key: 'catalog', label: 'Data Catalog', icon: 'ri-database-2-line' },
+  { key: 'validation', label: 'Validation', icon: 'ri-check-double-line' },
+  { key: 'quality', label: 'Qualité', icon: 'ri-bar-chart-2-line' },
+  { key: 'knowledge', label: 'Knowledge Engine', icon: 'ri-book-open-line' },
+  { key: 'watchlist', label: 'Veille', icon: 'ri-radar-line' },
+  { key: 'governance', label: 'Gouvernance', icon: 'ri-scales-3-line' },
+];
+
+export default function odskeDashboardPage() {
+  const [tab, setTab] = useState<Tab>('overview');
+  const { metrics, domains, sources, provenance, validationRules, qualityReports, agentActivity, knowledgeRegulatory, watchlists, governanceLog, isLive, loading, liveTables } = useODSKEDashboard();
+
+  const totalRecords = metrics.find(m => m.metric_name === 'Volume données validées')?.metric_value || 0;
+  const coverage = metrics.find(m => m.metric_name === 'Données avec provenance documentée')?.metric_value || 0;
+  const activeRules = metrics.find(m => m.metric_name === 'Règles de validation actives')?.metric_value || 0;
+  const activeWatchlists = metrics.find(m => m.metric_name === 'Watchlists actives')?.metric_value || 0;
+  const uptime = metrics.find(m => m.metric_name === 'Taux de disponibilité système')?.metric_value || 0;
+
+  return (
+    <hubLayout hubId={150} title="ODSKE Governance Dashboard">
+      <div className="max-w-7xl mx-auto px-4 md:px-6 py-6 space-y-6">
+        <hubSwitcher currentHubId={150} activeTab={TABS.find(t => t.key === tab)?.label || ''} />
+
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h1 className="text-xl font-semibold text-foreground-950">ODSKE Governance Dashboard</h1>
+            <p className="text-sm text-foreground-500">Operating Data System for Knowledge Excellence — Gouvernance des données 100% réelles</p>
+          </div>
+          <div className="flex items-center gap-2">
+            {isLive ? (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent-100 text-accent-900 text-xs font-medium">
+                <span className="w-2 h-2 rounded-full bg-accent-500 animate-pulse" />
+                LIVE — {liveTables.length}/12 tables
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-foreground-100 text-foreground-600 text-xs">
+                <span className="w-2 h-2 rounded-full bg-foreground-400" />
+                Mode mock
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+          <div className="bg-background-50 border border-background-200/70 rounded-lg p-3 text-center">
+            <p className="text-2xl font-bold text-foreground-950">{totalRecords.toLocaleString()}</p>
+            <p className="text-xs text-foreground-500">Enregistrements</p>
+          </div>
+          <div className="bg-background-50 border border-background-200/70 rounded-lg p-3 text-center">
+            <p className="text-2xl font-bold text-accent-500">{coverage}%</p>
+            <p className="text-xs text-foreground-500">Traçabilité</p>
+          </div>
+          <div className="bg-background-50 border border-background-200/70 rounded-lg p-3 text-center">
+            <p className="text-2xl font-bold text-primary-500">{activeRules}</p>
+            <p className="text-xs text-foreground-500">Règles actives</p>
+          </div>
+          <div className="bg-background-50 border border-background-200/70 rounded-lg p-3 text-center">
+            <p className="text-2xl font-bold text-secondary-500">{activeWatchlists}</p>
+            <p className="text-xs text-foreground-500">Watchlists</p>
+          </div>
+          <div className="bg-background-50 border border-background-200/70 rounded-lg p-3 text-center">
+            <p className="text-2xl font-bold text-foreground-950">{uptime}%</p>
+            <p className="text-xs text-foreground-500">Disponibilité</p>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap gap-1 bg-background-100 rounded-lg p-1">
+          {TABS.map(t => (
+            <button
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium transition-colors whitespace-nowrap cursor-pointer ${tab === t.key ? 'bg-background-50 text-foreground-950 shadow-sm' : 'text-foreground-500 hover:text-foreground-700'}`}
+            >
+              <i className={`${t.icon} text-sm`}></i>
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        {loading && (
+          <div className="flex items-center justify-center py-20">
+            <div className="flex items-center gap-3 text-foreground-500">
+              <div className="w-5 h-5 border-2 border-foreground-300 border-t-foreground-600 rounded-full animate-spin" />
+              <span className="text-sm">Chargement des données ODSKE depuis Supabase...</span>
+            </div>
+          </div>
+        )}
+
+        {!loading && tab === 'overview' && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {metrics.map(m => <MetricCard key={m.id} m={m} />)}
+            </div>
+            <div className="bg-background-50 border border-background-200/70 rounded-lg p-4">
+              <h3 className="text-sm font-medium text-foreground-950 mb-3">Domaines du Data Catalog</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {domains.map(d => (
+                  <div key={d.domain} className="bg-background-100 rounded-lg p-3 text-center">
+                    <p className="text-lg font-bold text-primary-500">{d.tables_count}</p>
+                    <p className="text-xs text-foreground-500 leading-tight">{d.domain}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {!loading && tab === 'sources' && (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-foreground-500">{sources.length} sources enregistrées</p>
+              <div className="flex gap-2 text-xs">
+                <span className="px-2 py-0.5 rounded bg-accent-100 text-accent-900">N1: {sources.filter(s => s.trust_level === 1).length}</span>
+                <span className="px-2 py-0.5 rounded bg-primary-100 text-primary-900">N2: {sources.filter(s => s.trust_level === 2).length}</span>
+                <span className="px-2 py-0.5 rounded bg-secondary-100 text-secondary-900">N3: {sources.filter(s => s.trust_level === 3).length}</span>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {sources.map(s => <SourceCard key={s.id} s={s} />)}
+            </div>
+          </div>
+        )}
+
+        {!loading && tab === 'catalog' && (
+          <div className="space-y-3">
+            <div className="bg-background-50 border border-background-200/70 rounded-lg overflow-hidden">
+              <table className="w-full text-sm">
+                <thead className="bg-background-100">
+                  <tr>
+                    <th className="text-left px-4 py-2 text-xs font-medium text-foreground-500 uppercase">Domaine</th>
+                    <th className="text-right px-4 py-2 text-xs font-medium text-foreground-500 uppercase">Tables</th>
+                    <th className="text-right px-4 py-2 text-xs font-medium text-foreground-500 uppercase">% du total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {domains.map((d, i) => (
+                    <tr key={d.domain} className={i % 2 === 0 ? 'bg-background-50' : 'bg-background-100/50'}>
+                      <td className="px-4 py-2.5 text-foreground-950 font-medium">{d.domain}</td>
+                      <td className="px-4 py-2.5 text-right text-foreground-700">{d.tables_count}</td>
+                      <td className="px-4 py-2.5 text-right text-foreground-500">{Math.round((d.tables_count / 56) * 100)}%</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {!loading && tab === 'validation' && (
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {['critical', 'error', 'warning'].map(sev => {
+                const count = validationRules.filter(r => r.severity === sev).length;
+                const colors: Record<string, string> = { critical: 'text-primary-500', error: 'text-accent-500', warning: 'text-secondary-500' };
+                return (
+                  <div key={sev} className="bg-background-50 border border-background-200/70 rounded-lg p-3 text-center">
+                    <p className={`text-xl font-bold ${colors[sev] || 'text-foreground-950'}`}>{count}</p>
+                    <p className="text-xs text-foreground-500 capitalize">{sev}</p>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="bg-background-50 border border-background-200/70 rounded-lg overflow-hidden">
+              <table className="w-full text-sm">
+                <thead className="bg-background-100">
+                  <tr>
+                    <th className="text-left px-4 py-2 text-xs font-medium text-foreground-500 uppercase">Règle</th>
+                    <th className="text-left px-4 py-2 text-xs font-medium text-foreground-500 uppercase">Type</th>
+                    <th className="text-left px-4 py-2 text-xs font-medium text-foreground-500 uppercase">Table</th>
+                    <th className="text-left px-4 py-2 text-xs font-medium text-foreground-500 uppercase">Sévérité</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {validationRules.map((r, i) => (
+                    <tr key={r.id} className={i % 2 === 0 ? 'bg-background-50' : 'bg-background-100/50'}>
+                      <td className="px-4 py-2 text-foreground-950">{r.rule_name}</td>
+                      <td className="px-4 py-2 text-foreground-500 text-xs">{r.rule_type}</td>
+                      <td className="px-4 py-2 text-foreground-500 text-xs">{r.target_table}</td>
+                      <td className="px-4 py-2">
+                        <span className={`text-xs px-1.5 py-0.5 rounded ${r.severity === 'critical' ? 'bg-primary-100 text-primary-900' : r.severity === 'error' ? 'bg-accent-100 text-accent-900' : 'bg-secondary-100 text-secondary-900'}`}>{r.severity}</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {!loading && tab === 'quality' && (
+          <div className="space-y-3">
+            {qualityReports.map(r => (
+              <div key={r.id} className="bg-background-50 border border-background-200/70 rounded-lg p-4 flex flex-col sm:flex-row sm:items-center gap-4">
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-foreground-950">{r.report_title}</p>
+                  <p className="text-xs text-foreground-500">{r.domain} · {new Date(r.generated_at).toLocaleDateString('fr-FR')}</p>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="text-center">
+                    <p className="text-lg font-bold text-accent-500">{r.coverage_pct}%</p>
+                    <p className="text-xs text-foreground-500">Couverture</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-lg font-bold text-foreground-950">{r.valid_records}/{r.total_records}</p>
+                    <p className="text-xs text-foreground-500">Valides</p>
+                  </div>
+                  {r.issues_found > 0 && (
+                    <div className="text-center">
+                      <p className="text-lg font-bold text-primary-500">{r.issues_found}</p>
+                      <p className="text-xs text-foreground-500">Issues</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {!loading && tab === 'knowledge' && (
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <div className="bg-background-50 border border-background-200/70 rounded-lg p-3 text-center">
+                <p className="text-xl font-bold text-primary-500">{knowledgeRegulatory.length}+</p>
+                <p className="text-xs text-foreground-500">Textes réglementaires</p>
+              </div>
+              <div className="bg-background-50 border border-background-200/70 rounded-lg p-3 text-center">
+                <p className="text-xl font-bold text-accent-500">{provenance.length}+</p>
+                <p className="text-xs text-foreground-500">Entrées de provenance</p>
+              </div>
+              <div className="bg-background-50 border border-background-200/70 rounded-lg p-3 text-center">
+                <p className="text-xl font-bold text-secondary-500">{domains.length}</p>
+                <p className="text-xs text-foreground-500">Domaines couverts</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {knowledgeRegulatory.map(k => (
+                <div key={k.id} className="bg-background-50 border border-background-200/70 rounded-lg p-3">
+                  <p className="text-xs text-foreground-500">{k.text_reference}</p>
+                  <p className="text-sm font-medium text-foreground-950 line-clamp-2">{k.title}</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-xs bg-background-200 text-foreground-600 px-1.5 py-0.5 rounded">{k.authority}</span>
+                    <span className="text-xs text-foreground-400">{k.domain}</span>
+                    <span className={`text-xs px-1.5 py-0.5 rounded ml-auto ${k.status === 'active' ? 'bg-accent-100 text-accent-900' : 'bg-foreground-100 text-foreground-600'}`}>{k.status}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {!loading && tab === 'watchlist' && (
+          <div className="space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {watchlists.map(w => (
+                <div key={w.id} className="bg-background-50 border border-background-200/70 rounded-lg p-3 flex items-start gap-3">
+                  <div className={`w-3 h-3 rounded-full mt-1 flex-shrink-0 ${w.is_active ? 'bg-accent-500' : 'bg-foreground-300'}`} />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-medium text-foreground-950 truncate">{w.source_name}</p>
+                      <span className={`text-xs px-1.5 py-0.5 rounded ${w.check_frequency === 'daily' ? 'bg-primary-100 text-primary-900' : w.check_frequency === 'weekly' ? 'bg-accent-100 text-accent-900' : 'bg-secondary-100 text-secondary-900'}`}>{w.check_frequency}</span>
+                    </div>
+                    <p className="text-xs text-foreground-500 mt-0.5">Dernière vérification: {new Date(w.last_checked).toLocaleDateString('fr-FR')}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {!loading && tab === 'governance' && (
+          <div className="space-y-3">
+            <div className="bg-background-50 border border-background-200/70 rounded-lg overflow-hidden">
+              <table className="w-full text-sm">
+                <thead className="bg-background-100">
+                  <tr>
+                    <th className="text-left px-4 py-2 text-xs font-medium text-foreground-500 uppercase">Date</th>
+                    <th className="text-left px-4 py-2 text-xs font-medium text-foreground-500 uppercase">Opération</th>
+                    <th className="text-left px-4 py-2 text-xs font-medium text-foreground-500 uppercase">Agent</th>
+                    <th className="text-left px-4 py-2 text-xs font-medium text-foreground-500 uppercase">Détails</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {governanceLog.map((g, i) => (
+                    <tr key={g.id} className={i % 2 === 0 ? 'bg-background-50' : 'bg-background-100/50'}>
+                      <td className="px-4 py-2 text-foreground-500 text-xs whitespace-nowrap">{new Date(g.created_at).toLocaleDateString('fr-FR')}</td>
+                      <td className="px-4 py-2 text-foreground-950 font-medium">{g.operation}</td>
+                      <td className="px-4 py-2 text-foreground-500 text-xs">{g.performed_by}</td>
+                      <td className="px-4 py-2 text-foreground-500 text-xs max-w-xs truncate">{g.details}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </div>
+    </hubLayout>
+  );
+}
+
+
+
+
+

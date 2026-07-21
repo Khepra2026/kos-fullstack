@@ -1,0 +1,33 @@
+name: KOS Killer Workflow
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  killer_audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Killer Audit – SEO & URLs
+        run: |
+          pwsh ./scripts/KOS_Audit.ps1 -Mode Killer
+          pwsh ./scripts/SEO_Indexation.ps1 -ForceFullIndex
+
+      - name: Killer Correctifs – Performance
+        run: |
+          pwsh ./scripts/Perf_Optimization.ps1 -Aggressive
+          pwsh ./scripts/CLS_Stabilizer.ps1 -ZeroDefect
+
+      - name: Killer Compliance – ISO & Big Four
+        run: |
+          pwsh ./scripts/ISO_Audit.ps1 -FullCheck
+          pwsh ./scripts/BigFour_Conformity.ps1 -ImmediateFix
+
+      - name: Killer Dashboard – KPI
+        run: |
+          pwsh ./scripts/KPI_Generator.ps1 -Realtime
+          pwsh ./scripts/Alerts.ps1 -CriticalOnly

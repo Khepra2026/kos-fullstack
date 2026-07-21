@@ -1,0 +1,511 @@
+import { useState } from 'react';
+import KOSHubLayout from '@/components/feature/KOSHubLayout';
+import ScrollReveal from '@/components/feature/ScrollReveal';
+import { useKOSPowerPointFactory } from '@/hooks/useKOSPowerPointFactory';
+
+type TabId = 'decks' | 'detail' | 'formats' | 'quality' | 'kpis';
+
+const TABS: { id: TabId; label: string; icon: string }[] = [
+  { id: 'decks', label: 'Décks Présentations', icon: 'ri-slideshow-line' },
+  { id: 'detail', label: 'Slides Détaillées', icon: 'ri-file-copy-line' },
+  { id: 'formats', label: 'Formats & Audiences', icon: 'ri-stack-line' },
+  { id: 'quality', label: 'Qualité Standard', icon: 'ri-medal-line' },
+  { id: 'kpis', label: 'KPIs Factory', icon: 'ri-line-chart-line' },
+];
+
+const AUDIENCE_LABELS: Record<string, string> = {
+  'conseil-administration': 'Conseil d\'Administration', 'comite-audit': 'Comité d\'Audit',
+  'direction-generale': 'Direction Générale', 'regulateurs': 'Régulateurs', 'investisseurs': 'Investisseurs',
+};
+const CONTENT_TYPE_LABELS: Record<string, { icon: string; color: string }> = {
+  'title': { icon: 'ri-file-2-line', color: 'bg-background-100 text-foreground-500' },
+  'executive-summary': { icon: 'ri-lightbulb-flash-line', color: 'bg-primary-100 text-primary-700' },
+  'chart': { icon: 'ri-bar-chart-line', color: 'bg-accent-100 text-accent-700' },
+  'table': { icon: 'ri-table-line', color: 'bg-secondary-100 text-secondary-700' },
+  'analysis': { icon: 'ri-search-eye-line', color: 'bg-amber-100 text-amber-700' },
+  'recommendation': { icon: 'ri-check-double-line', color: 'bg-emerald-100 text-emerald-700' },
+  'appendix': { icon: 'ri-attachment-2', color: 'bg-background-100 text-foreground-500' },
+  'conclusion': { icon: 'ri-flag-line', color: 'bg-primary-100 text-primary-700' },
+};
+
+export default function KOSPowerPointFactoryPage() {
+  const [kosData, setKosData] = useState<any>(null);
+  useEffect(() => {
+    fetch('/mocks/kos-blog.json').then(r => r.json()).then(setKosData);
+  }, []);
+  if (!kosData) return null;
+
+  const [activeTab, setActiveTab] = useState<TabId>('decks');
+  const [selectedDeck, setSelectedDeck] = useState<string | null>(null);
+  const engine = useKOSPowerPointFactory();
+  const stats = engine.getStats();
+
+  return (
+    <KOSHubLayout hubId={96} activeTab="PowerPoint-Factory" tabLabel="KOS PowerPoint Factory">
+      <main>
+        {/* Hero */}
+        <section className="relative overflow-hidden bg-background-50 border-b border-background-200/70">
+          <div className="max-w-7xl mx-auto px-4 md:px-6 py-10 md:py-14">
+            <ScrollReveal>
+              <div className="flex flex-col lg:flex-row items-start lg:items-center gap-6">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-3 flex-wrap">
+                    <span className="px-3 py-1 rounded-full text-xs font-semibold bg-primary-100 text-primary-700 font-body tracking-wide">
+                      {stats.engineVersion}
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-accent-100 text-accent-700 font-body">
+                      <i className="ri-slideshow-line text-xs"></i>
+                      {stats.totalDecks} décks · {stats.totalSlides} slides
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700 font-body">
+                      <i className="ri-check-double-line text-xs"></i>
+                      {stats.standardLevel}
+                    </span>
+                  </div>
+                  <h1 className="text-2xl md:text-3xl font-bold text-foreground-950 mb-2 font-heading">
+                    KOS PowerPoint Factory
+                  </h1>
+                  <p className="text-sm text-foreground-600 max-w-2xl font-body">
+                    Production automatique de présentations exécutives KHEPRA. 5 audiences (CA, Comité d'Audit, DG, Régulateurs, Investisseurs). 4 formats (10/20/30/50 slides). Graphiques, tableaux, synthèses exécutives, recommandations. Standard Big Four.
+                  </p>
+                </div>
+                <div className="grid grid-cols-4 gap-3 flex-shrink-0">
+                  {[
+                    { label: 'Décks', value: stats.totalDecks, icon: 'ri-slideshow-line', color: 'text-primary-500' },
+                    { label: 'Slides', value: stats.totalSlides, icon: 'ri-file-copy-line', color: 'text-accent-500' },
+                    { label: 'Audiences', value: stats.totalAudiences, icon: 'ri-group-line', color: 'text-secondary-500' },
+                    { label: 'Qualité', value: `${stats.qualityScore}%`, icon: 'ri-medal-line', color: 'text-emerald-500' },
+                  ].map(s => (
+                    <div key={s.label} className="bg-background-50 border border-background-200/70 rounded-xl p-3 text-center min-w-[80px]">
+                      <i className={`${s.icon} ${s.color} text-lg`}></i>
+                      <p className="text-lg font-bold text-foreground-950 mt-1">{s.value}</p>
+                      <p className="text-xs text-foreground-500">{s.label}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </ScrollReveal>
+          </div>
+        </section>
+
+        {/* Tabs */}
+        <div className="sticky top-0 z-40 bg-background-50/95 backdrop-blur-md border-b border-background-200/70">
+          <div className="max-w-7xl mx-auto px-4 md:px-6">
+            <div className="flex items-center gap-1 overflow-x-auto py-2">
+              {TABS.map(tab => (
+                <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors cursor-pointer ${
+                    activeTab === tab.id ? 'bg-primary-500 text-white' : 'text-foreground-600 hover:bg-background-100'
+                  }`}>
+                  <i className={`${tab.icon} text-sm`}></i>{tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* kosData.Content */}
+        <div className="max-w-7xl mx-auto px-4 md:px-6 py-10">
+          {activeTab === 'decks' && <DecksTab engine={engine} onSelect={setSelectedDeck} selectedDeck={selectedDeck} />}
+          {activeTab === 'detail' && <DetailTab engine={engine} selectedDeck={selectedDeck} onSelect={setSelectedDeck} />}
+          {activeTab === 'formats' && <FormatsTab engine={engine} />}
+          {activeTab === 'quality' && <QualityTab engine={engine} />}
+          {activeTab === 'kpis' && <KPIsTab engine={engine} />}
+        </div>
+      </main>
+    </KOSHubLayout>
+  );
+}
+
+// ============================================================================
+// TAB 1: DECKS
+// ============================================================================
+function DecksTab({ engine, onSelect, selectedDeck }: { engine: ReturnType<typeof useKOSPowerPointFactory>; onSelect: (id: string) => void; selectedDeck: string | null }) {
+  const [searchQ, setSearchQ] = useState('');
+  const [audienceF, setAudienceF] = useState('all');
+  const filtered = searchQ ? engine.searchDecks(searchQ) : engine.getDecksByAudience(audienceF);
+
+  return (
+    <div className="space-y-6">
+      <ScrollReveal>
+        <div className="bg-primary-50 border border-primary-200/60 rounded-xl p-5">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-full bg-primary-500 flex items-center justify-center flex-shrink-0">
+              <i className="ri-slideshow-line text-white text-lg"></i>
+            </div>
+            <div>
+              <h3 className="font-semibold text-foreground-950 text-sm">Production Automatique — Décks Big Four</h3>
+              <p className="text-sm text-foreground-600 mt-1">
+                Présentations prêtes pour conseil d'administration, comité d'audit, direction générale, régulateurs et investisseurs. Incluant graphiques, tableaux, synthèses exécutives et recommandations. Niveau cabinet international.
+              </p>
+            </div>
+          </div>
+        </div>
+      </ScrollReveal>
+
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1 max-w-md">
+          <i className="ri-search-line absolute left-3.5 top-1/2 -translate-y-1/2 text-foreground-400 text-sm"></i>
+          <input type="text" value={searchQ} onChange={e => setSearchQ(e.target.value)} placeholder="Rechercher un déck, thème..."
+            className="w-full pl-10 pr-4 py-2.5 text-sm bg-background-100 border border-background-200/70 rounded-lg text-foreground-950 focus:outline-none focus:border-primary-300" />
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          <button onClick={() => setAudienceF('all')} className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors cursor-pointer ${audienceF === 'all' ? 'bg-primary-500 text-white' : 'bg-background-100 text-foreground-600 hover:bg-background-200/70'}`}>Tous</button>
+          {engine.availableAudiences.map(a => (
+            <button key={a} onClick={() => setAudienceF(a)} className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors cursor-pointer ${audienceF === a ? 'bg-primary-500 text-white' : 'bg-background-100 text-foreground-600 hover:bg-background-200/70'}`}>
+              {AUDIENCE_LABELS[a] || a}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {filtered.map(deck => (
+          <ScrollReveal key={deck.id}>
+            <button onClick={() => onSelect(deck.id)} className={`w-full text-left bg-background-50 border rounded-xl p-5 transition-all cursor-pointer ${selectedDeck === deck.id ? 'border-primary-400 ring-2 ring-primary-200' : 'border-background-200/70 hover:border-background-300'}`}>
+              <div className="flex items-start gap-3 mb-3">
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${deck.domainColor === 'primary' ? 'bg-primary-100 text-primary-700' : deck.domainColor === 'accent' ? 'bg-accent-100 text-accent-700' : 'bg-secondary-100 text-secondary-700'}`}>
+                  <i className={`${deck.domainIcon} text-lg`}></i>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-background-100 text-foreground-500">{deck.formatLabel}</span>
+                    <span className="text-xs text-foreground-400">{deck.domain}</span>
+                  </div>
+                  <h3 className="text-sm font-semibold text-foreground-950 line-clamp-2">{deck.title}</h3>
+                </div>
+              </div>
+              <p className="text-xs text-foreground-600 leading-relaxed mb-3 line-clamp-2">{deck.executiveSummary}</p>
+              <div className="flex items-center gap-2 text-xs">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent-100 text-accent-700">
+                  <i className="ri-bar-chart-line text-xs"></i>
+                  {deck.slides.filter(s => s.contentType === 'chart').length} graph.
+                </span>
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-secondary-100 text-secondary-700">
+                  <i className="ri-table-line text-xs"></i>
+                  {deck.slides.filter(s => s.contentType === 'table').length} tabl.
+                </span>
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">
+                  <i className="ri-check-double-line text-xs"></i>
+                  {deck.slides.filter(s => s.contentType === 'recommendation').length} reco.
+                </span>
+              </div>
+            </button>
+          </ScrollReveal>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// TAB 2: SLIDES DÉTAILLÉES
+// ============================================================================
+function DetailTab({ engine, selectedDeck, onSelect }: { engine: ReturnType<typeof useKOSPowerPointFactory>; selectedDeck: string | null; onSelect: (id: string) => void }) {
+  const [searchQ, setSearchQ] = useState('');
+  const deck = selectedDeck ? engine.getDeckById(selectedDeck) : null;
+
+  return (
+    <div className="space-y-6">
+      {!deck ? (
+        <ScrollReveal>
+          <div className="bg-background-50 border border-background-200/70 rounded-xl p-8 text-center">
+            <i className="ri-file-copy-line text-4xl text-foreground-300 mb-3"></i>
+            <h3 className="text-sm font-semibold text-foreground-700 mb-2">Sélectionnez un déck</h3>
+            <p className="text-xs text-foreground-500">Choisissez un déck dans l'onglet "Décks Présentations" pour voir les slides détaillées.</p>
+          </div>
+        </ScrollReveal>
+      ) : (
+        <>
+          <ScrollReveal>
+            <div className="flex items-start gap-4 bg-background-50 border border-background-200/70 rounded-xl p-5">
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${deck.domainColor === 'primary' ? 'bg-primary-100 text-primary-700' : deck.domainColor === 'accent' ? 'bg-accent-100 text-accent-700' : 'bg-secondary-100 text-secondary-700'}`}>
+                <i className={`${deck.domainIcon} text-xl`}></i>
+              </div>
+              <div className="flex-1">
+                <h2 className="text-lg font-bold text-foreground-950 mb-2 font-heading">{deck.title}</h2>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-background-100 text-foreground-500">{deck.formatLabel}</span>
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-primary-100 text-primary-700">{AUDIENCE_LABELS[deck.audience] || deck.audience}</span>
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-accent-100 text-accent-700">{deck.domain}</span>
+                </div>
+                <p className="text-sm text-foreground-600">{deck.executiveSummary}</p>
+              </div>
+            </div>
+          </ScrollReveal>
+
+          <div className="relative max-w-md">
+            <i className="ri-search-line absolute left-3.5 top-1/2 -translate-y-1/2 text-foreground-400 text-sm"></i>
+            <input type="text" value={searchQ} onChange={e => setSearchQ(e.target.value)} placeholder="Rechercher dans les slides..."
+              className="w-full pl-10 pr-4 py-2.5 text-sm bg-background-100 border border-background-200/70 rounded-lg text-foreground-950 focus:outline-none focus:border-primary-300" />
+          </div>
+
+          <div className="space-y-3">
+            {deck.slides.filter(s => !searchQ || s.title.toLowerCase().includes(searchQ.toLowerCase()) || s.description.toLowerCase().includes(searchQ.toLowerCase())).map(slide => {
+              const ct = CONTENT_TYPE_LABELS[slide.contentType] || CONTENT_TYPE_LABELS.analysis;
+              return (
+                <ScrollReveal key={slide.slideNumber}>
+                  <details className="bg-background-50 border border-background-200/70 rounded-xl overflow-hidden group">
+                    <summary className="p-4 cursor-pointer list-none flex items-start gap-3">
+                      <span className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 text-xs font-bold bg-background-100 text-foreground-500">{slide.slideNumber}</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className={`text-xs px-2 py-0.5 rounded-full ${ct.color}`}>{slide.contentType === 'executive-summary' ? 'Synthèse' : slide.contentType === 'recommendation' ? 'Recommandation' : slide.contentType}</span>
+                          {slide.chartType && <span className="text-xs text-foreground-400">{slide.chartType}</span>}
+                        </div>
+                        <h4 className="text-sm font-semibold text-foreground-950">{slide.title}</h4>
+                      </div>
+                      <i className="ri-arrow-down-s-line text-foreground-400 mt-1 group-open:rotate-180 transition-transform"></i>
+                    </summary>
+                    <div className="px-4 pb-4 border-t border-background-200/40 space-y-3">
+                      <div className="bg-background-100 rounded-lg p-3">
+                        <p className="text-sm text-foreground-700">{slide.description}</p>
+                      </div>
+                      {slide.tableData && (
+                        <div className="overflow-x-auto">
+                          <table className="w-full text-xs">
+                            <thead>
+                              <tr className="bg-background-100">
+                                {slide.tableData.headers.map(h => (
+                                  <th key={h} className="px-3 py-2 text-left font-semibold text-foreground-700 whitespace-nowrap">{h}</th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {slide.tableData.rows.map((row, i) => (
+                                <tr key={i} className="border-t border-background-200/40">
+                                  {row.map((cell, j) => (
+                                    <td key={j} className="px-3 py-2 text-foreground-600 whitespace-nowrap">{cell}</td>
+                                  ))}
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                      <div className="bg-primary-50 border border-primary-200/50 rounded-lg p-3">
+                        <span className="text-xs font-semibold text-primary-700">Key Message :</span>
+                        <p className="text-sm text-foreground-700 mt-0.5">{slide.keyMessage}</p>
+                      </div>
+                      <div className="bg-amber-50 border border-amber-200/50 rounded-lg p-3">
+                        <span className="text-xs font-semibold text-amber-700">Notes Orateur :</span>
+                        <p className="text-xs text-amber-800 mt-0.5">{slide.speakerNotes}</p>
+                      </div>
+                    </div>
+                  </details>
+                </ScrollReveal>
+              );
+            })}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+// ============================================================================
+// TAB 3: FORMATS & AUDIENCES
+// ============================================================================
+function FormatsTab({ engine }: { engine: ReturnType<typeof useKOSPowerPointFactory> }) {
+  const [audienceF, setAudienceF] = useState('all');
+  const [formatF, setFormatF] = useState('all');
+
+  let decks = engine.decks;
+  if (audienceF !== 'all') decks = decks.filter(d => d.audience === audienceF);
+  if (formatF !== 'all') decks = decks.filter(d => d.slideCount === parseInt(formatF, 10));
+
+  const audienceIcons: Record<string, string> = { 'conseil-administration': 'ri-government-line', 'comite-audit': 'ri-file-search-line', 'direction-generale': 'ri-user-star-line', 'regulateurs': 'ri-bank-line', 'investisseurs': 'ri-funds-line' };
+  const audienceColors: Record<string, string> = { 'conseil-administration': 'text-amber-500', 'comite-audit': 'text-emerald-500', 'direction-generale': 'text-primary-500', 'regulateurs': 'text-accent-500', 'investisseurs': 'text-secondary-500' };
+
+  return (
+    <div className="space-y-6">
+      <ScrollReveal>
+        <div className="bg-accent-50 border border-accent-200/60 rounded-xl p-5">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-full bg-accent-500 flex items-center justify-center flex-shrink-0">
+              <i className="ri-stack-line text-white text-lg"></i>
+            </div>
+            <div>
+              <h3 className="font-semibold text-foreground-950 text-sm">Couverture Audiences & Formats</h3>
+              <p className="text-sm text-foreground-600 mt-1">
+                5 audiences couvertes — 4 formats de 10 à 50 slides. Chaque déck inclut systématiquement : graphiques, tableaux, synthèses exécutives et recommandations. Standard Big Four.
+              </p>
+            </div>
+          </div>
+        </div>
+      </ScrollReveal>
+
+      <div className="flex flex-wrap gap-2">
+        <span className="text-xs text-foreground-500 py-1">Audience :</span>
+        <button onClick={() => setAudienceF('all')} className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors cursor-pointer ${audienceF === 'all' ? 'bg-primary-500 text-white' : 'bg-background-100 text-foreground-600 hover:bg-background-200/70'}`}>Toutes</button>
+        {engine.availableAudiences.map(a => (
+          <button key={a} onClick={() => setAudienceF(a)} className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors cursor-pointer ${audienceF === a ? 'bg-primary-500 text-white' : 'bg-background-100 text-foreground-600 hover:bg-background-200/70'}`}>
+            {AUDIENCE_LABELS[a] || a}
+          </button>
+        ))}
+      </div>
+      <div className="flex flex-wrap gap-2">
+        <span className="text-xs text-foreground-500 py-1">Format :</span>
+        <button onClick={() => setFormatF('all')} className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors cursor-pointer ${formatF === 'all' ? 'bg-accent-500 text-white' : 'bg-background-100 text-foreground-600 hover:bg-background-200/70'}`}>Tous</button>
+        {engine.availableFormats.map(f => (
+          <button key={f} onClick={() => setFormatF(f)} className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors cursor-pointer ${formatF === f ? 'bg-accent-500 text-white' : 'bg-background-100 text-foreground-600 hover:bg-background-200/70'}`}>{f} slides</button>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {decks.map(deck => (
+          <ScrollReveal key={deck.id}>
+            <div className="bg-background-50 border border-background-200/70 rounded-xl p-5 h-full">
+              <div className="flex items-center gap-3 mb-3">
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${deck.domainColor === 'primary' ? 'bg-primary-100 text-primary-700' : deck.domainColor === 'accent' ? 'bg-accent-100 text-accent-700' : 'bg-secondary-100 text-secondary-700'}`}>
+                  <i className={`${deck.domainIcon} text-lg`}></i>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <span className={`text-xs font-medium ${audienceColors[deck.audience] || 'text-foreground-500'}`}>
+                    <i className={`${audienceIcons[deck.audience] || 'ri-user-line'} mr-1`}></i>
+                    {AUDIENCE_LABELS[deck.audience] || deck.audience}
+                  </span>
+                  <h3 className="text-sm font-semibold text-foreground-950 line-clamp-2 mt-1">{deck.title}</h3>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-1.5 mb-3">
+                <span className="text-xs px-2 py-0.5 rounded-full bg-background-100 text-foreground-500">{deck.formatLabel}</span>
+                <span className="text-xs px-2 py-0.5 rounded-full bg-accent-100 text-accent-700">{deck.slides.filter(s => s.contentType === 'chart').length} graphiques</span>
+                <span className="text-xs px-2 py-0.5 rounded-full bg-secondary-100 text-secondary-700">{deck.slides.filter(s => s.contentType === 'table').length} tableaux</span>
+                <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">{deck.slides.filter(s => s.contentType === 'recommendation').length} recommandations</span>
+              </div>
+              <p className="text-xs text-foreground-500 line-clamp-2">{deck.executiveSummary}</p>
+            </div>
+          </ScrollReveal>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// TAB 4: QUALITY
+// ============================================================================
+function QualityTab({ engine }: { engine: ReturnType<typeof useKOSPowerPointFactory> }) {
+  const stats = engine.getStats();
+  const standards = [
+    { dimension: 'Structure Exécutive', description: 'Synthèse exécutive en slide 2, ordre du jour, conclusion et perspectives', threshold: 95, icon: 'ri-layout-line' },
+    { dimension: 'kosData.Data Visualization', description: 'Graphiques vectoriels, tableaux chiffrés, chart types appropriés (bar/line/pie/waterfall)', threshold: 90, icon: 'ri-bar-chart-line' },
+    { dimension: 'Recommandations Actionnables', description: 'Recommandations chiffrées, responsables, échéances, KPIs de suivi', threshold: 92, icon: 'ri-check-double-line' },
+    { dimension: 'Branding KHEPRA', description: 'Charte graphique institutionnelle, logo, typographie, palette cohérente', threshold: 90, icon: 'ri-palette-line' },
+    { dimension: 'Notes Orateur', description: 'Script complet pour chaque slide avec timing et messages clés', threshold: 95, icon: 'ri-mic-line' },
+    { dimension: 'Conformité Big Four', description: 'Méthodologie Deloitte/PwC/EY/KPMG, standards professionnels', threshold: 88, icon: 'ri-building-line' },
+  ];
+
+  return (
+    <div className="space-y-6">
+      <ScrollReveal>
+        <div className="bg-emerald-50 border border-emerald-200/60 rounded-xl p-5">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0">
+              <i className="ri-medal-line text-white text-lg"></i>
+            </div>
+            <div>
+              <h3 className="font-semibold text-foreground-950 text-sm">Standard Qualité — Big Four Consulting</h3>
+              <p className="text-sm text-foreground-600 mt-1">
+                6 dimensions de qualité pour chaque présentation. Score qualité global : <strong className="text-emerald-700">{stats.qualityScore}/100</strong>. Cible : {stats.targetMaturity}/100.
+              </p>
+            </div>
+          </div>
+        </div>
+      </ScrollReveal>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {standards.map(s => (
+          <ScrollReveal key={s.dimension}>
+            <div className="bg-background-50 border border-background-200/70 rounded-xl p-5 text-center">
+              <div className="w-14 h-14 mx-auto rounded-full bg-emerald-100 flex items-center justify-center mb-3">
+                <i className={`${s.icon} text-emerald-600 text-xl`}></i>
+              </div>
+              <h3 className="text-sm font-semibold text-foreground-950 mb-2">{s.dimension}</h3>
+              <p className="text-xs text-foreground-500 mb-3">{s.description}</p>
+              <div className="flex items-center justify-center gap-2">
+                <span className="text-sm font-bold text-emerald-600">≥ {s.threshold}%</span>
+                <span className="text-xs text-foreground-400">seuil</span>
+              </div>
+              <div className="w-full h-2 bg-background-200 rounded-full mt-2 overflow-hidden">
+                <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${s.threshold}%` }}></div>
+              </div>
+            </div>
+          </ScrollReveal>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// TAB 5: KPIs
+// ============================================================================
+function KPIsTab({ engine }: { engine: ReturnType<typeof useKOSPowerPointFactory> }) {
+  const stats = engine.getStats();
+  const kpis = engine.getKPIs();
+
+  return (
+    <div className="space-y-6">
+      <ScrollReveal>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="bg-background-50 border border-background-200/70 rounded-xl p-5 text-center">
+            <p className="text-xs text-foreground-500 uppercase tracking-wider mb-2">Score Maturité</p>
+            <p className="text-5xl font-bold text-primary-500 font-heading">{stats.maturityScore}</p>
+            <p className="text-xs text-foreground-400 mt-1">/100 — Cible {stats.targetMaturity}</p>
+            <div className="w-full h-2 bg-background-200 rounded-full mt-3 overflow-hidden">
+              <div className="h-full bg-primary-500 rounded-full" style={{ width: `${stats.maturityScore}%` }}></div>
+            </div>
+          </div>
+          <div className="bg-background-50 border border-background-200/70 rounded-xl p-5 text-center">
+            <p className="text-xs text-foreground-500 uppercase tracking-wider mb-2">Qualité Slides</p>
+            <p className="text-5xl font-bold text-accent-500 font-heading">{stats.qualityScore}</p>
+            <p className="text-xs text-foreground-400 mt-1">/100 — Big Four Grade</p>
+          </div>
+          <div className="bg-background-50 border border-background-200/70 rounded-xl p-5 text-center">
+            <p className="text-xs text-foreground-500 uppercase tracking-wider mb-2">Composants</p>
+            <p className="text-5xl font-bold text-secondary-500 font-heading">{kpis[5]?.current || 85}</p>
+            <p className="text-xs text-foreground-400 mt-1">réutilisables</p>
+          </div>
+        </div>
+      </ScrollReveal>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {kpis.map(kpi => (
+          <ScrollReveal key={kpi.id}>
+            <div className="bg-background-50 border border-background-200/70 rounded-xl p-5">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${kpi.color === 'primary' ? 'bg-primary-100 text-primary-700' : kpi.color === 'accent' ? 'bg-accent-100 text-accent-700' : 'bg-secondary-100 text-secondary-700'}`}>
+                    <i className={`${kpi.icon} text-sm`}></i>
+                  </div>
+                  <span className="text-sm font-semibold text-foreground-950">{kpi.name}</span>
+                </div>
+                <span className="text-lg font-bold text-foreground-950">{kpi.current}{kpi.unit}</span>
+              </div>
+              <div className="flex items-end gap-1 h-16 mb-2">
+                {kpi.history.map((h, i) => {
+                  const maxVal = Math.max(...kpi.history.map(hh => hh.value), kpi.target);
+                  const heightPct = maxVal > 0 ? (h.value / maxVal) * 100 : 0;
+                  return (
+                    <div key={i} className="flex-1 flex flex-col items-center gap-0.5">
+                      <div className="w-full relative" style={{ height: '48px' }}>
+                        <div className="absolute bottom-0 w-full rounded-sm bg-primary-400 transition-all" style={{ height: `${heightPct}%` }}></div>
+                      </div>
+                      <span className="text-[9px] text-foreground-400">{h.month}</span>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="flex items-center justify-between text-xs text-foreground-500">
+                <span>Cible: {kpi.target}{kpi.unit}</span>
+                <span className="text-accent-600 font-medium">Standard Big Four</span>
+              </div>
+            </div>
+          </ScrollReveal>
+        ))}
+      </div>
+    </div>
+  );
+}

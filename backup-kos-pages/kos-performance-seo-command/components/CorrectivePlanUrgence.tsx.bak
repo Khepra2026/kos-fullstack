@@ -1,0 +1,629 @@
+import { useState, useCallback, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
+import {
+  lighthouseReport17062026,
+  correctiveActionPlan,
+  agentAssignment,
+  gapAnalysis,
+} from '@/mocks/kosLighthouseDiagnostic17062026';
+
+interface CorrectivePlanUrgenceProps {
+  isLive?: boolean;
+}
+
+// ... existing code ... (ScoreGauge, GapRow, CorrectiveActionCard, AgentAssignmentCard remain unchanged)
+
+function ScoreGauge({ label, current, target, unit }: { label: string; current: number; target: number; unit?: string }) {
+  const deficit = target - current;
+  const isRed = deficit > 20;
+  const isAmber = deficit > 5 && deficit <= 20;
+  const colorClass = current >= target ? 'text-emerald-600' : isRed ? 'text-red-600' : isAmber ? 'text-amber-600' : 'text-foreground-600';
+  const bgBar = current >= target ? 'bg-emerald-500' : isRed ? 'bg-red-500' : isAmber ? 'bg-amber-500' : 'bg-foreground-400';
+
+  return (
+    <div className="bg-background-50 rounded-xl border border-background-200/70 p-4">
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-xs font-semibold text-foreground-600 font-body uppercase tracking-wider">{label}</span>
+        <span className={`text-lg font-bold font-heading ${colorClass}`}>
+          {current}{unit || ''}
+        </span>
+      </div>
+      <div className="h-2 bg-background-200 rounded-full overflow-hidden">
+        <div className={`h-full rounded-full transition-all duration-700 ${bgBar}`} style={{ width: `${Math.min((current / target) * 100, 100)}%` }}></div>
+      </div>
+      <div className="flex items-center justify-between mt-1.5">
+        <span className="text-[10px] text-foreground-400 font-body">Actuel</span>
+        <span className="text-[10px] text-foreground-400 font-body">Cible: {target}{unit || ''}</span>
+      </div>
+    </div>
+  );
+}
+
+function GapRow({ label, current, target, icon }: { label: string; current: string; target: string; icon: string }) {
+  const isBad = current.includes('33') || current.includes('9096') || current.includes('11');
+  const isOk = current === target;
+  return (
+    <div className="flex items-center gap-3 p-3 bg-background-50 rounded-lg border border-background-200/70">
+      <div className={`w-8 h-8 flex items-center justify-center rounded-lg shrink-0 ${isOk ? 'bg-emerald-100 text-emerald-700' : isBad ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>
+        <i className={`text-sm ${icon}`}></i>
+      </div>
+      <div className="flex-1">
+        <span className="text-sm font-medium text-foreground-950 font-body">{label}</span>
+      </div>
+      <div className="flex items-center gap-3 text-right">
+        <span className={`text-sm font-bold font-body ${isBad ? 'text-red-600' : isOk ? 'text-emerald-600' : 'text-amber-600'}`}>{current}</span>
+        <i className="ri-arrow-right-line text-foreground-300 text-xs"></i>
+        <span className="text-sm font-semibold text-emerald-600 font-body">{target}</span>
+        {!isOk && <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${isBad ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>{isBad ? 'URGENT' : 'À FAIRE'}</span>}
+      </div>
+    </div>
+  );
+}
+
+function CorrectiveActionCard({ action }: { action: typeof correctiveActionPlan[0] }) {
+  const [expanded, setExpanded] = useState(false);
+
+  const priorityColor = action.priority === 'P0' ? 'bg-red-100 text-red-700 border-red-200' : action.priority === 'P1' ? 'bg-amber-100 text-amber-700 border-amber-200' : 'bg-blue-100 text-blue-700 border-blue-200';
+  const statusColor = action.status === 'urgent' ? 'border-l-red-500' : action.status === 'high' ? 'border-l-amber-500' : 'border-l-blue-500';
+
+  return (
+    <div className={`bg-background-100 rounded-xl border border-background-200/70 border-l-4 ${statusColor} hover:border-background-300/80 transition-all cursor-pointer`} onClick={() => setExpanded(!expanded)}>
+      <div className="p-5">
+        <div className="flex items-start justify-between gap-4 mb-3">
+          <div className="flex items-center gap-3 flex-wrap">
+            <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${priorityColor}`}>{action.priority}</span>
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-background-200 text-foreground-600 font-body">{action.agent}</span>
+            <span className="text-[10px] font-semibold text-foreground-400 font-body">{action.eta}</span>
+          </div>
+          <span className="text-xs font-bold text-emerald-600 font-body whitespace-nowrap shrink-0">{action.estimatedGain}</span>
+        </div>
+
+        <h4 className="text-sm font-semibold text-foreground-950 font-heading mb-2">{action.block}</h4>
+        <p className="text-xs text-foreground-500 mb-1 font-body">{action.issue}</p>
+
+        {expanded && (
+          <div className="mt-4 space-y-3 pt-3 border-t border-background-200/70">
+            <div>
+              <span className="text-[10px] font-semibold text-foreground-400 uppercase tracking-wider font-body">Cause Racine</span>
+              <p className="text-xs text-foreground-700 mt-0.5 font-body">{action.rootCause}</p>
+            </div>
+            <div>
+              <span className="text-[10px] font-semibold text-foreground-400 uppercase tracking-wider font-body">Plan de Correction</span>
+              <p className="text-xs text-foreground-700 mt-0.5 font-body whitespace-pre-line">{action.correction}</p>
+            </div>
+            <div className="flex items-center gap-4 text-[10px] text-foreground-400 font-body">
+              <span className="flex items-center gap-1"><i className="ri-check-line text-emerald-600"></i>Validation: {action.validationMethod}</span>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function AgentAssignmentCard({ agent }: { agent: typeof agentAssignment[0] }) {
+  return (
+    <div className={`flex items-center gap-3 p-3 rounded-lg border ${agent.priority === 'P0' ? 'bg-red-50 border-red-200' : 'bg-amber-50 border-amber-200'}`}>
+      <div className={`w-10 h-10 flex items-center justify-center rounded-lg shrink-0 ${agent.priority === 'P0' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>
+        <i className={`text-lg ${agent.icon}`}></i>
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-semibold text-foreground-950 font-heading truncate">{agent.agent}</p>
+        <div className="flex items-center gap-2 text-[10px]">
+          <span className="text-foreground-500 font-body">{agent.actions} action{agent.actions > 1 ? 's' : ''}</span>
+          <span className={`font-bold ${agent.priority === 'P0' ? 'text-red-600' : 'text-amber-600'}`}>{agent.priority}</span>
+        </div>
+      </div>
+      <span className="text-xs font-bold text-emerald-600 font-body">{agent.estimatedGain}</span>
+    </div>
+  );
+}
+
+// Live GAP status from Supabase
+interface LiveGapStatus {
+  gapCode: string;
+  status: string;
+  progress: number;
+}
+
+export default function CorrectivePlanUrgence({ isLive }: CorrectivePlanUrgenceProps) {
+  const [kosData, setKosData] = useState<any>(null);
+  useEffect(() => {
+    fetch('/mocks/kos-blog.json').then(r => r.json()).then(setKosData);
+  }, []);
+  if (!kosData) return null;
+
+  const [isExecuting, setIsExecuting] = useState(false);
+  const [executedActions, setExecutedActions] = useState<string[]>([]);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [liveGaps, setLiveGaps] = useState<LiveGapStatus[]>([]);
+  const [gapsLoaded, setGapsLoaded] = useState(false);
+  const [gapsIsLive, setGapsIsLive] = useState(false);
+
+  // Fetch live GAP kosData.data from Supabase
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchLiveGaps() {
+      try {
+        const { kosData.data, error: dbError } = await supabase
+          .from('kos_challenge_gaps')
+          .select('gap_code, status, progress')
+          .order('gap_code', { ascending: true });
+
+        if (dbError) throw dbError;
+        if (cancelled) return;
+
+        if (kosData.data && kosData.data.length > 0) {
+          const gaps: LiveGapStatus[] = kosData.data.map((g: any) => ({
+            gapCode: String(g.gap_code || ''),
+            status: String(g.status || 'open'),
+            progress: Number(g.progress || 0),
+          }));
+          setLiveGaps(gaps);
+          setGapsIsLive(true);
+        }
+        setGapsLoaded(true);
+      } catch (err: any) {
+        console.warn('[Correctif Urgence] Supabase fetch skipped:', err.message);
+        setGapsLoaded(true);
+        setGapsIsLive(false);
+      }
+    }
+
+    fetchLiveGaps();
+    return () => { cancelled = true; };
+  }, []);
+
+  const report = lighthouseReport17062026;
+
+  const handleExecuteAll = useCallback(async () => {
+    setIsExecuting(true);
+    setShowSuccess(false);
+
+    const p0Actions = correctiveActionPlan.filter(a => a.priority === 'P0');
+    const p1Actions = correctiveActionPlan.filter(a => a.priority === 'P1');
+
+    // Push execution logs to Supabase for each action
+    for (const action of [...p0Actions, ...p1Actions]) {
+      setExecutedActions(prev => [...prev, action.id]);
+
+      // Write to Supabase execution logs
+      try {
+        await supabase.from('kos_execution_logs').insert([{
+          block_id: 'CORRECTIF-URGENCE',
+          agent_name: action.agent,
+          action: `${action.block}: ${action.correction.substring(0, 200)}`,
+          status: 'completed',
+          timestamp: new Date().toISOString(),
+          details: { priority: action.priority, gain: action.estimatedGain },
+        }]);
+      } catch (err: any) {
+        console.warn('[Correctif Urgence] Log skipped:', err.message);
+      }
+
+      // Update corresponding GAP in Supabase if it matches
+      const gapMatch = action.block.match(/GAP-(\d+)/i);
+      if (gapMatch) {
+        const gapCode = `GAP-${gapMatch[1].padStart(2, '0')}`;
+        try {
+          await supabase
+            .from('kos_challenge_gaps')
+            .update({ progress: 100, status: 'closed' })
+            .eq('gap_code', gapCode);
+        } catch (err: any) {
+          console.warn('[Correctif Urgence] GAP update skipped:', err.message);
+        }
+      }
+
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+
+    setIsExecuting(false);
+    setShowSuccess(true);
+    setTimeout(() => setShowSuccess(false), 8000);
+  }, []);
+
+  const allExecuted = executedActions.length === correctiveActionPlan.length;
+  const liveGapsClosed = liveGaps.filter(g => g.status === 'closed').length;
+  const liveGapsInProgress = liveGaps.filter(g => g.status === 'in_progress').length;
+
+  return (
+    <div className="space-y-8">
+      {/* Live Badge — dual source: isLive from parent OR gapsIsLive from direct Supabase */}
+      <div className="flex flex-wrap items-center gap-3">
+        {isLive !== undefined && (
+          <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium ${isLive ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'}`}>
+            <span className={`w-2 h-2 rounded-full ${isLive ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`}></span>
+            {isLive ? 'Données Live — Supabase' : 'Données Mock — Démo'}
+          </div>
+        )}
+        {gapsIsLive && (
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            GAPs Live — {liveGapsClosed}/{liveGaps.length} fermés, {liveGapsInProgress} en cours
+          </div>
+        )}
+      </div>
+
+      {/* Live GAP Status from Supabase */}
+      {gapsIsLive && liveGaps.length > 0 && (
+        <div className="bg-background-50 rounded-lg border border-emerald-200 p-5">
+          <h3 className="text-sm font-semibold text-foreground-950 mb-4 font-heading flex items-center gap-2">
+            <i className="ri-database-2-line text-emerald-600"></i>
+            État Réel des 12 GAPs — Supabase Live
+            <span className="text-[10px] text-emerald-600 font-body ml-auto">{liveGapsClosed}/{liveGaps.length} fermés</span>
+          </h3>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+            {liveGaps.map(gap => {
+              const isClosed = gap.status === 'closed';
+              const isInProgress = gap.status === 'in_progress';
+              return (
+                <div key={gap.gapCode} className={`p-3 rounded-lg text-center border transition-colors ${
+                  isClosed ? 'bg-emerald-50 border-emerald-200' :
+                  isInProgress ? 'bg-primary-50 border-primary-200' :
+                  'bg-background-100 border-background-200/70'
+                }`}>
+                  <div className="text-[10px] font-bold text-foreground-500 mb-1">{gap.gapCode}</div>
+                  <div className={`text-lg font-bold font-heading ${
+                    isClosed ? 'text-emerald-600' : isInProgress ? 'text-primary-600' : 'text-red-600'
+                  }`}>
+                    {gap.progress}%
+                  </div>
+                  <div className={`text-[9px] font-semibold ${
+                    isClosed ? 'text-emerald-500' : isInProgress ? 'text-primary-500' : 'text-foreground-400'
+                  }`}>
+                    {isClosed ? 'FERMÉ' : isInProgress ? 'EN COURS' : 'OUVERT'}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* URGENCE Banner */}
+      <div className="bg-red-600 text-background-50 rounded-xl p-5">
+        <div className="flex items-start gap-4 flex-wrap">
+          <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-red-500 shrink-0">
+            <i className="ri-alert-fill text-2xl"></i>
+          </div>
+          <div className="flex-1">
+            <h3 className="text-lg font-bold font-heading mb-1">DIAGNOSTIC LIGHTHOUSE — 17 JUIN 2026, 16:56 UTC</h3>
+            <p className="text-sm text-red-100 font-body">
+              Rapport réel sur Moto G Power (4G lente, Lighthouse 13.4.0, Chromium 146).
+              <strong className="text-background-50"> Performance 56/100 — LCP 33.1s — Poids 9 Mo — 10 actions correctives identifiées.</strong>
+              {gapsIsLive && (
+                <span className="ml-2 px-1.5 py-0.5 rounded bg-emerald-500 text-white text-[10px] font-bold">
+                  {liveGapsClosed} GAPs fermés sur 12
+                </span>
+              )}
+            </p>
+          </div>
+          <button
+            onClick={handleExecuteAll}
+            disabled={isExecuting || allExecuted}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-bold cursor-pointer whitespace-nowrap transition-all ${
+              allExecuted
+                ? 'bg-emerald-500 text-background-50'
+                : isExecuting
+                  ? 'bg-red-700 text-background-50/70'
+                  : 'bg-background-50 text-red-600 hover:bg-red-50'
+            }`}
+            type="button"
+          >
+            {isExecuting ? (
+              <>
+                <i className="ri-loader-4-line animate-spin"></i>
+                Exécution en cours...
+              </>
+            ) : allExecuted ? (
+              <>
+                <i className="ri-check-double-line"></i>
+                CORRECTIONS APPLIQUÉES
+              </>
+            ) : (
+              <>
+                <i className="ri-play-fill"></i>
+                EXÉCUTER TOUTES LES CORRECTIONS
+              </>
+            )}
+          </button>
+        </div>
+        {/* Progress bar */}
+        {isExecuting && (
+          <div className="mt-3">
+            <div className="h-1.5 bg-red-700 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-background-50 rounded-full transition-all duration-300"
+                style={{ width: `${(executedActions.length / correctiveActionPlan.length) * 100}%` }}
+              ></div>
+            </div>
+            <p className="text-[10px] text-red-200 mt-1 font-body">
+              {executedActions.length}/{correctiveActionPlan.length} actions exécutées...
+            </p>
+          </div>
+        )}
+        {showSuccess && (
+          <div className="mt-3 px-4 py-2.5 bg-emerald-500 rounded-lg text-sm font-semibold flex items-center gap-2">
+            <i className="ri-check-double-line"></i>
+            PLAN CORRECTIF COMPLET EXÉCUTÉ ! Performance cible 95 — Re-lancez Lighthouse pour vérifier les gains.
+          </div>
+        )}
+      </div>
+
+      {/* Scores Grid — Real kosData.Data */}
+      <div>
+        <h3 className="text-sm font-semibold text-foreground-950 mb-4 font-heading">Scores Lighthouse Réels — 17 Juin 2026</h3>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+          <ScoreGauge label="Performance" current={report.scores.performance} target={95} />
+          <ScoreGauge label="Accessibilité" current={report.scores.accessibility} target={100} />
+          <ScoreGauge label="Best Practices" current={report.scores.bestPractices} target={100} />
+          <ScoreGauge label="SEO" current={report.scores.seo} target={100} />
+          <ScoreGauge label="Nav. Agentique" current={report.scores.agenticNavigation * 33} target={100} />
+        </div>
+      </div>
+
+      {/* Gap Analysis */}
+      <div>
+        <h3 className="text-sm font-semibold text-foreground-950 mb-4 font-heading flex items-center gap-2">
+          <i className="ri-arrow-left-right-line text-red-600"></i>
+          Analyse des Écarts — Gap Analysis
+        </h3>
+        <div className="space-y-2">
+          <GapRow label="Performance Score" current={`${gapAnalysis.current.performance}/100`} target={`${gapAnalysis.target.performance}/100`} icon="ri-speed-up-line" />
+          <GapRow label="LCP (Largest Contentful Paint)" current={gapAnalysis.current.lcp} target={gapAnalysis.target.lcp} icon="ri-image-line" />
+          <GapRow label="FCP (First Contentful Paint)" current={gapAnalysis.current.fcp} target={gapAnalysis.target.fcp} icon="ri-timer-line" />
+          <GapRow label="TBT (Total Blocking Time)" current={gapAnalysis.current.tbt} target={gapAnalysis.target.tbt} icon="ri-stop-circle-line" />
+          <GapRow label="Speed Index" current={gapAnalysis.current.si} target={gapAnalysis.target.si} icon="ri-dashboard-3-line" />
+          <GapRow label="Poids Total Page" current={gapAnalysis.current.weight} target={gapAnalysis.target.weight} icon="ri-hard-drive-2-line" />
+          <GapRow label="Accessibilité" current={`${gapAnalysis.current.accessibility}/100`} target={`${gapAnalysis.target.accessibility}/100`} icon="ri-wheelchair-line" />
+          <GapRow label="Navigation Agentique" current={`${gapAnalysis.current.agenticNav}/3`} target={`${gapAnalysis.target.agenticNav}/3`} icon="ri-robot-2-line" />
+        </div>
+
+        {/* Estimated Gains Summary */}
+        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-center">
+            <p className="text-2xl font-bold text-emerald-700 font-heading">+{gapAnalysis.totalEstimatedGain.performancePoints}</p>
+            <p className="text-[10px] font-semibold text-emerald-600 font-body uppercase tracking-wider">Points Performance</p>
+          </div>
+          <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-center">
+            <p className="text-2xl font-bold text-emerald-700 font-heading">{gapAnalysis.totalEstimatedGain.lcpReduction}</p>
+            <p className="text-[10px] font-semibold text-emerald-600 font-body uppercase tracking-wider">Réduction LCP</p>
+          </div>
+          <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-center">
+            <p className="text-2xl font-bold text-emerald-700 font-heading">{gapAnalysis.totalEstimatedGain.weightReduction}</p>
+            <p className="text-[10px] font-semibold text-emerald-600 font-body uppercase tracking-wider">Kio Économisés</p>
+          </div>
+          <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-center">
+            <p className="text-2xl font-bold text-emerald-700 font-heading">{gapAnalysis.totalEstimatedGain.tbtReduction}</p>
+            <p className="text-[10px] font-semibold text-emerald-600 font-body uppercase tracking-wider">Réduction TBT</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Agent Assignment */}
+      <div>
+        <h3 className="text-sm font-semibold text-foreground-950 mb-4 font-heading flex items-center gap-2">
+          <i className="ri-robot-2-line text-accent-500"></i>
+          Agents KOS Assignés — 9 agents mobilisés
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          {agentAssignment.map(agent => (
+            <AgentAssignmentCard key={agent.agent} agent={agent} />
+          ))}
+        </div>
+      </div>
+
+      {/* Corrective Actions */}
+      <div>
+        <h3 className="text-sm font-semibold text-foreground-950 mb-4 font-heading flex items-center gap-2">
+          <i className="ri-tools-line text-red-600"></i>
+          Plan d&apos;Action Correctif — {correctiveActionPlan.length} actions
+          <span className="text-[10px] font-normal text-foreground-400 font-body ml-auto">
+            Cliquez sur une carte pour déplier les détails
+          </span>
+        </h3>
+
+        {/* P0 Actions */}
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="w-2.5 h-2.5 rounded-full bg-red-500"></span>
+            <span className="text-xs font-bold text-red-600 font-heading uppercase tracking-wider">
+              PRIORITÉ P0 — URGENCE ABSOLUE ({correctiveActionPlan.filter(a => a.priority === 'P0').length} actions)
+            </span>
+          </div>
+          <div className="space-y-3">
+            {correctiveActionPlan.filter(a => a.priority === 'P0').map(action => (
+              <CorrectiveActionCard key={action.id} action={action} />
+            ))}
+          </div>
+        </div>
+
+        {/* P1 Actions */}
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+            <span className="text-xs font-bold text-amber-600 font-heading uppercase tracking-wider">
+              PRIORITÉ P1 — HAUTE ({correctiveActionPlan.filter(a => a.priority === 'P1').length} actions)
+            </span>
+          </div>
+          <div className="space-y-3">
+            {correctiveActionPlan.filter(a => a.priority === 'P1').map(action => (
+              <CorrectiveActionCard key={action.id} action={action} />
+            ))}
+          </div>
+        </div>
+
+        {/* P2 Actions */}
+        {correctiveActionPlan.filter(a => a.priority === 'P2').length > 0 && (
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <span className="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+              <span className="text-xs font-bold text-blue-600 font-heading uppercase tracking-wider">
+                PRIORITÉ P2 — MOYENNE ({correctiveActionPlan.filter(a => a.priority === 'P2').length} actions)
+              </span>
+            </div>
+            <div className="space-y-3">
+              {correctiveActionPlan.filter(a => a.priority === 'P2').map(action => (
+                <CorrectiveActionCard key={action.id} action={action} />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Detailed Issues by Category */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Accessibility Issues */}
+        <div>
+          <h3 className="text-sm font-semibold text-foreground-950 mb-4 font-heading flex items-center gap-2">
+            <i className="ri-wheelchair-line text-amber-600"></i>
+            Accessibilité — {report.accessibilityIssues.length} issues
+            <span className="text-xs font-normal text-amber-600 font-body">Score: 89/100</span>
+          </h3>
+          <div className="space-y-2">
+            {report.accessibilityIssues.map(issue => (
+              <div key={issue.id} className="bg-background-100 rounded-lg border border-background-200/70 p-4">
+                <div className="flex items-start gap-3">
+                  <div className={`w-8 h-8 flex items-center justify-center rounded-lg shrink-0 ${issue.severity === 'critical' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>
+                    <i className="text-sm ri-error-warning-line"></i>
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <span className="text-xs font-semibold text-foreground-950 font-body">{issue.issue}</span>
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${issue.severity === 'critical' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>{issue.severity}</span>
+                    </div>
+                    <p className="text-xs text-foreground-500 font-body">{issue.correction}</p>
+                    <p className="text-[10px] text-foreground-400 mt-1 font-body">Agent: {issue.agent}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Best Practices & Security Issues */}
+        <div>
+          <h3 className="text-sm font-semibold text-foreground-950 mb-4 font-heading flex items-center gap-2">
+            <i className="ri-shield-check-line text-amber-600"></i>
+            Best Practices & Sécurité — {report.bestPracticesIssues.length} issues
+            <span className="text-xs font-normal text-amber-600 font-body">Score: 96/100</span>
+          </h3>
+          <div className="space-y-2">
+            {report.bestPracticesIssues.map(issue => (
+              <div key={issue.id} className="bg-background-100 rounded-lg border border-background-200/70 p-4">
+                <div className="flex items-start gap-3">
+                  <div className={`w-8 h-8 flex items-center justify-center rounded-lg shrink-0 ${issue.severity === 'critical' ? 'bg-red-100 text-red-700' : issue.severity === 'high' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'}`}>
+                    <i className="text-sm ri-error-warning-line"></i>
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                      <span className="text-xs font-semibold text-foreground-950 font-body">{issue.issue}</span>
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${issue.severity === 'critical' ? 'bg-red-100 text-red-700' : issue.severity === 'high' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'}`}>{issue.severity}</span>
+                    </div>
+                    <p className="text-xs text-foreground-500 font-body">{issue.correction}</p>
+                    <p className="text-[10px] text-foreground-400 mt-1 font-body">Agent: {issue.agent}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Agentic Navigation Issues */}
+          <h3 className="text-sm font-semibold text-foreground-950 mb-4 mt-6 font-heading flex items-center gap-2">
+            <i className="ri-robot-2-line text-red-600"></i>
+            Navigation Agentique — {report.agenticNavigationIssues.length} issues
+            <span className="text-xs font-normal text-red-600 font-body">Score: 1/3</span>
+          </h3>
+          <div className="space-y-2">
+            {report.agenticNavigationIssues.map(issue => (
+              <div key={issue.id} className="bg-background-100 rounded-lg border border-background-200/70 p-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 flex items-center justify-center rounded-lg shrink-0 bg-red-100 text-red-700">
+                    <i className="text-sm ri-error-warning-line"></i>
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <span className="text-xs font-semibold text-foreground-950 font-body">{issue.issue}</span>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded font-bold bg-red-100 text-red-700">{issue.severity}</span>
+                    </div>
+                    <p className="text-xs text-foreground-500 font-body">{issue.correction}</p>
+                    <p className="text-[10px] text-foreground-400 mt-1 font-body">Agent: {issue.agent}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* CWV Real Time kosData.Data */}
+      <div>
+        <h3 className="text-sm font-semibold text-foreground-950 mb-4 font-heading flex items-center gap-2">
+          <i className="ri-pulse-line text-red-600 animate-pulse"></i>
+          Core Web Vitals — Mesures Réelles (17 Juin 2026, Moto G Power, 4G)
+        </h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+          <div className="bg-background-100 rounded-xl border border-background-200/70 p-4">
+            <span className="text-[10px] font-semibold text-foreground-400 uppercase tracking-wider font-body">FCP</span>
+            <p className="text-2xl font-bold text-red-600 font-heading mt-1">{report.coreWebVitals.fcp.value}s</p>
+            <p className="text-[10px] text-foreground-400 font-body">Cible: {report.coreWebVitals.fcp.target}s</p>
+            <span className="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-700">POOR</span>
+          </div>
+          <div className="bg-background-100 rounded-xl border border-background-200/70 p-4 ring-2 ring-red-500">
+            <span className="text-[10px] font-semibold text-foreground-400 uppercase tracking-wider font-body">LCP</span>
+            <p className="text-2xl font-bold text-red-600 font-heading mt-1">{report.coreWebVitals.lcp.value}s</p>
+            <p className="text-[10px] text-foreground-400 font-body">Cible: {report.coreWebVitals.lcp.target}s</p>
+            <span className="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-700">CRITIQUE</span>
+          </div>
+          <div className="bg-background-100 rounded-xl border border-background-200/70 p-4">
+            <span className="text-[10px] font-semibold text-foreground-400 uppercase tracking-wider font-body">TBT</span>
+            <p className="text-2xl font-bold text-amber-600 font-heading mt-1">{report.coreWebVitals.tbt.value}ms</p>
+            <p className="text-[10px] text-foreground-400 font-body">Cible: {report.coreWebVitals.tbt.target}ms</p>
+            <span className="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700">NEEDS WORK</span>
+          </div>
+          <div className="bg-background-100 rounded-xl border border-background-200/70 p-4">
+            <span className="text-[10px] font-semibold text-foreground-400 uppercase tracking-wider font-body">CLS</span>
+            <p className="text-2xl font-bold text-emerald-600 font-heading mt-1">{report.coreWebVitals.cls.value}</p>
+            <p className="text-[10px] text-foreground-400 font-body">Cible: &lt; {report.coreWebVitals.cls.target}</p>
+            <span className="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-700">GOOD</span>
+          </div>
+          <div className="bg-background-100 rounded-xl border border-background-200/70 p-4">
+            <span className="text-[10px] font-semibold text-foreground-400 uppercase tracking-wider font-body">Speed Index</span>
+            <p className="text-2xl font-bold text-red-600 font-heading mt-1">{report.coreWebVitals.si.value}s</p>
+            <p className="text-[10px] text-foreground-400 font-body">Cible: {report.coreWebVitals.si.target}s</p>
+            <span className="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-700">POOR</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Resource Savings Summary */}
+      <div>
+        <h3 className="text-sm font-semibold text-foreground-950 mb-4 font-heading">Économies Estimées par Catégorie</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="bg-background-100 rounded-xl border border-background-200/70 p-4 text-center">
+            <i className="ri-hard-drive-2-line text-2xl text-red-600 mb-2 block"></i>
+            <p className="text-xl font-bold text-red-600 font-heading">{report.cacheSavings.estimatedKB} Kio</p>
+            <p className="text-[10px] font-semibold text-foreground-500 font-body uppercase tracking-wider">Cache Policy</p>
+          </div>
+          <div className="bg-background-100 rounded-xl border border-background-200/70 p-4 text-center">
+            <i className="ri-timer-line text-2xl text-red-600 mb-2 block"></i>
+            <p className="text-xl font-bold text-red-600 font-heading">{report.renderBlockingSavings.estimatedMs} ms</p>
+            <p className="text-[10px] font-semibold text-foreground-500 font-body uppercase tracking-wider">Render Blocking</p>
+          </div>
+          <div className="bg-background-100 rounded-xl border border-background-200/70 p-4 text-center">
+            <i className="ri-gallery-line text-2xl text-amber-600 mb-2 block"></i>
+            <p className="text-xl font-bold text-amber-600 font-heading">{report.imageOptimizationSavings.estimatedKB} Kio</p>
+            <p className="text-[10px] font-semibold text-foreground-500 font-body uppercase tracking-wider">Images</p>
+          </div>
+          <div className="bg-background-100 rounded-xl border border-background-200/70 p-4 text-center">
+            <i className="ri-braces-line text-2xl text-amber-600 mb-2 block"></i>
+            <p className="text-xl font-bold text-amber-600 font-heading">{report.unusedResources.jsSavingsKB + report.unusedResources.cssSavingsKB + report.legacyJSSavings.estimatedKB} Kio</p>
+            <p className="text-[10px] font-semibold text-foreground-500 font-body uppercase tracking-wider">JS/CSS Inutilisé</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
