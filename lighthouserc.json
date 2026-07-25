@@ -1,0 +1,10 @@
+{
+  "ci": {
+    "collect": {
+      "url": ["https://khepraexperts.com/", "https://app.khepraexperts.com/"],
+      "numberOfRuns": 1,
+      "settings": {"preset": "desktop", "chromeFlags": "--no-sandbox --headless --disable-dev-shm-usage"}
+    },
+    "upload": {"target": "temporary-public-storage"}
+  }
+}
