@@ -1,4 +1,4 @@
-name: KOS RegTech - Fixed v5 GREEN
+name: KOS RegTech - Fixed v6 GREEN
 on:
  push:
  branches: [main]
