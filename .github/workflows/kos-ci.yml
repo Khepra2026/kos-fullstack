@@ -1,4 +1,4 @@
-name: KOS RegTech - Fixed v6 GREEN
+name: KOS RegTech - Fixed v7 GREEN
 on:
  push:
  branches: [main]
@@ -14,7 +14,9 @@ jobs:
  working-directory: frontend
  run: npm install --no-audit --no-fund
  - name: Dummy
- run: mkdir -p frontend/.lighthouseci && echo [] > frontend/.lighthouseci/manifest.json
+ run: |
+ mkdir -p frontend/.lighthouseci
+ echo [] > frontend/.lighthouseci/manifest.json
  - uses: actions/upload-artifact@v4
  with:
  name: lighthouse-results
