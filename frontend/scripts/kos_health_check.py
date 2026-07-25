@@ -1,1 +1,1 @@
-print("KOS Health 200 OK")
+print('KOS Health 200 OK')
