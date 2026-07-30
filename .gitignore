@@ -5,3 +5,8 @@ node_modules/
 __pycache__/
 .env
 .env.local
+*.local
+client_secret.json
+youtube-token.json
+.env.youtube
+route-backup.ts
