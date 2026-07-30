@@ -1,0 +1,49 @@
+{
+  "kind": "youtube#video",
+  "etag": "hEcRahBkgz7ETLphppzecWeMX-k",
+  "id": "sipgr3j8_yU",
+  "snippet": {
+    "publishedAt": "2026-07-30T12:08:25Z",
+    "channelId": "UCjkq4dMhKIW1LbMNXYHjjLg",
+    "title": "kos v3 01 BCEAO KYC 2026 - VOIX FR - KOS RegTech | Big Four 100/100",
+    "description": "Version VOIX FR souveraine - 100% Piper TTS offline\n\nKOS RegTech AI:\n- Voix FR Piper 0 API externe\n- Detection 0.3s\n- SHA256 74c9e939 BC47B669\n- Big Four 100/100\n\nDemo: https://app.khepraexperts.com/pitch\nEvidence: BC47B669-F3A2-4D91-8E5C-1029AF3D7C21\n\n#BCEAO #RegTech #VoixFR #KOS #Togo",
+    "thumbnails": {
+      "default": {
+        "url": "https://i.ytimg.com/vi/sipgr3j8_yU/default.jpg",
+        "width": 120,
+        "height": 90
+      },
+      "medium": {
+        "url": "https://i.ytimg.com/vi/sipgr3j8_yU/mqdefault.jpg",
+        "width": 320,
+        "height": 180
+      },
+      "high": {
+        "url": "https://i.ytimg.com/vi/sipgr3j8_yU/hqdefault.jpg",
+        "width": 480,
+        "height": 360
+      }
+    },
+    "channelTitle": "KHEPRA EXPERTS",
+    "tags": [
+      "BCEAO",
+      "KOS",
+      "RegTech",
+      "VoixFR"
+    ],
+    "categoryId": "27",
+    "liveBroadcastContent": "none",
+    "localized": {
+      "title": "kos v3 01 BCEAO KYC 2026 - VOIX FR - KOS RegTech | Big Four 100/100",
+      "description": "Version VOIX FR souveraine - 100% Piper TTS offline\n\nKOS RegTech AI:\n- Voix FR Piper 0 API externe\n- Detection 0.3s\n- SHA256 74c9e939 BC47B669\n- Big Four 100/100\n\nDemo: https://app.khepraexperts.com/pitch\nEvidence: BC47B669-F3A2-4D91-8E5C-1029AF3D7C21\n\n#BCEAO #RegTech #VoixFR #KOS #Togo"
+    }
+  },
+  "status": {
+    "uploadStatus": "uploaded",
+    "privacyStatus": "public",
+    "license": "youtube",
+    "embeddable": true,
+    "publicStatsViewable": true,
+    "selfDeclaredMadeForKids": false
+  }
+}
