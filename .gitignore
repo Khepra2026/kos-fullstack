@@ -1,12 +1,12 @@
+# KOS BIG FOUR - NEVER COMMIT SECRETS OR HEAVY MEDIA
+kos-tv-engine/output/
+kos-tv-engine/voices/output.wav
+*.mp4
+*.wav
+*.onnx
 node_modules/
 .next/
-.lighthouseci/
-*.log
-__pycache__/
 .env
 .env.local
-*.local
-client_secret.json
-youtube-token.json
-.env.youtube
-route-backup.ts
+.env.linkedin.local
+scripts/linkedin/.env.linkedin.local

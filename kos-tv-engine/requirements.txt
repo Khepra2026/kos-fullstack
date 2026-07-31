@@ -1,0 +1,5 @@
+pillow
+piper-tts
+openai-whisper
+ffmpeg-python
+supabase

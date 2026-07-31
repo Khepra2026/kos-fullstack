@@ -1,0 +1,11 @@
+{
+  "remoteName": "origin",
+  "projects": [
+    {
+      "id": "prj_AUWe6SzdDTWefRO7TW2FHHtatlke",
+      "name": "kos-fullstack",
+      "directory": "frontend",
+      "orgId": "team_xIGcy1DdVXnsyrq5Zsi3VTIL"
+    }
+  ]
+}

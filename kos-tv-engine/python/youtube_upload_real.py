@@ -1,83 +1,71 @@
-import os, json, requests
-from pathlib import Path
+import os
+import sys
+import json
+import google.auth.transport.requests
+from google.oauth2.credentials import Credentials
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaFileUpload
 
-# Load env
-env_path = Path("../scripts/youtube/.env.youtube.local")
-env = {}
-for line in env_path.read_text().splitlines():
-    if "=" in line:
-        k,v = line.split("=",1)
-        env[k]=v
+# Fix youtube_upload_real.py - version stable KOS
+VIDEO_PATH = sys.argv[sys.argv.index("--video")+1] if "--video" in sys.argv else "output/kos_shorts_bceao_001.mp4"
+TITLE = sys.argv[sys.argv.index("--title")+1] if "--title" in sys.argv else "BCEAO 2026-03 KYC - 3 erreurs qui coutent 2M$ | KOS"
+TAGS = sys.argv[sys.argv.index("--tags")+1].split(",") if "--tags" in sys.argv else ["BCEAO","KOS","KYC"]
 
-CLIENT_ID = env["YOUTUBE_CLIENT_ID"]
-CLIENT_SECRET = env["YOUTUBE_CLIENT_SECRET"]
-REFRESH_TOKEN = env["YOUTUBE_REFRESH_TOKEN"]
+TOKEN_PATH = "scripts/youtube/token.json"
 
-# Refresh
-resp = requests.post("https://oauth2.googleapis.com/token", data={
-    "client_id": CLIENT_ID,
-    "client_secret": CLIENT_SECRET,
-    "refresh_token": REFRESH_TOKEN,
-    "grant_type": "refresh_token"
-})
-token = resp.json()["access_token"]
-print(f"✅ Token OK {token[:20]}...")
+print(f"=== KOS YOUTUBE UPLOAD ===")
+print(f"Video: {VIDEO_PATH}")
+print(f"Title: {TITLE}")
 
-# Upload video
-video_path = Path("output/kos_shorts_bceao_001.mp4")
-if not video_path.exists():
-    print("❌ Video pas trouvee - genere d'abord")
-    exit()
+if not os.path.exists(VIDEO_PATH):
+    print(f"❌ Video not found: {VIDEO_PATH}")
+    sys.exit(1)
 
-# Metadata Big Four
-title = "BCEAO KYC 2026: 3 erreurs qui coutent 2M$ - KOS RegTech [Shorts]"
-description = """🚨 BCEAO Instruction 2026-03 KYC
+if not os.path.exists(TOKEN_PATH):
+    print(f"❌ Token not found: {TOKEN_PATH}")
+    sys.exit(1)
 
-3 erreurs critiques qui coutent 2M$ aux banques UEMOA:
+with open(TOKEN_PATH, "r") as f:
+    token_data = json.load(f)
 
-❌ 1. Audit manuel - 90% echec, 50M FCFA amende COBAC
-❌ 2. Pas d'audit trail immutable
-❌ 3. Detection KYC/AML lente
+creds = Credentials.from_authorized_user_info(token_data, ["https://www.googleapis.com/auth/youtube.upload"])
+# Refresh if needed
+if creds.expired and creds.refresh_token:
+    print("Refreshing token...")
+    request = google.auth.transport.requests.Request()
+    creds.refresh(request)
+    with open(TOKEN_PATH, "w") as f:
+        f.write(creds.to_json())
 
-✅ SOLUTION KOS RegTech AI:
-- Detection KYC/AML 0.3s
-- Audit trail SHA256 immutable BC47B669
-- Rapport SOC2 Type II auto
-- Big Four Certified 100/100
+youtube = build("youtube", "v3", credentials=creds)
 
-🎯 Demo live: https://app.khepraexperts.com/pitch
-📊 Audit report: app.khepraexperts.com/pitch
-
-#BCEAO #COBAC #KYC #AML #RegTech #UEMOA #Compliance #FinTech #Togo #KOS #BigFour #SOC2
-
-Chaine KHEPRA EXPERTS - RegTech AI souveraine UEMOA
-"""
-tags = ["BCEAO","KYC","RegTech","COBAC","UEMOA","KOS","Compliance","Togo","BigFour"]
-
-# Init upload
-headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
 body = {
-    "snippet": {"title": title, "description": description, "tags": tags, "categoryId": "27"},
-    "status": {"privacyStatus": "private", "selfDeclaredMadeForKids": False} # PRIVATE pour test
+    "snippet": {
+        "title": TITLE[:100],
+        "description": f"{TITLE}\n\nKOS BCEAO Instruction 2026-03 KYC en 0.3s, SHA256 BC47B669\nDemo: app.khepraexperts.com/pitch\n\n#BCEAO #KOS #KYCauditUEMOA",
+        "tags": TAGS,
+        "categoryId": "27"
+    },
+    "status": {
+        "privacyStatus": "public",
+        "selfDeclaredMadeForKids": False
+    }
 }
 
-init = requests.post("https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status",
-    headers={**headers, "X-Upload-Content-Length": str(video_path.stat().st_size), "X-Upload-Content-Type": "video/mp4"},
-    json=body)
+media = MediaFileUpload(VIDEO_PATH, chunksize=-1, resumable=True, mimetype="video/mp4")
 
-upload_url = init.headers.get("Location")
-print(f"Upload URL: {upload_url[:60]}...")
+print("Uploading...")
+request = youtube.videos().insert(part="snippet,status", body=body, media_body=media)
 
-# Upload bytes
-with open(video_path, "rb") as f:
-    upload = requests.put(upload_url, headers={"Authorization": f"Bearer {token}", "Content-Type": "video/mp4"}, data=f)
+response = None
+while response is None:
+    status, response = request.next_chunk()
+    if status:
+        print(f"Upload {int(status.progress()*100)}%")
 
-print(upload.text[:500])
-if upload.status_code in [200,201]:
-    vid = upload.json()
-    print(f"\n🎉 UPLOAD OK! Video ID: {vid['id']}")
-    print(f"https://www.youtube.com/watch?v={vid['id']}")
-    print(f"https://studio.youtube.com/video/{vid['id']}/edit")
-    Path("output/last_upload.json").write_text(json.dumps(vid, indent=2))
+if response:
+    print(f"✅ UPLOAD OK - Video ID: {response['id']}")
+    print(f"URL: https://youtu.be/{response['id']}")
 else:
-    print(f"❌ Upload fail {upload.status_code}")
+    print("❌ Upload failed - no response")
+    sys.exit(1)

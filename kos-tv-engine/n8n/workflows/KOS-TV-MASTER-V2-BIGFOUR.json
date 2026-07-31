@@ -1,0 +1,22 @@
+{
+  "name": "KOS TV MASTER V2 BigFour - 10 Masters",
+  "nodes": [
+    {"name": "Cron 2h","type": "n8n-nodes-base.scheduleTrigger","parameters": {"rule": {"interval": [{"field": "hours","minutesInterval":2}]}}},
+    {"name": "Scan Trends BCEAO","type": "n8n-nodes-base.executeCommand","parameters": {"command": "cd C:\\Users\\essoc\\Downloads\\kos-fullstack\\kos-tv-engine && python python/kos_engine.py"}},
+    {"name": "Generate Script","type": "n8n-nodes-base.executeCommand","parameters": {"command": "cd C:\\Users\\essoc\\Downloads\\kos-fullstack\\kos-tv-engine && python python/kos_tv_master.py"}},
+    {"name": "Voice FR Piper","type": "n8n-nodes-base.executeCommand","parameters": {"command": "cd C:\\Users\\essoc\\Downloads\\kos-fullstack\\kos-tv-engine && python python/voice_fr_sovereign.py"}},
+    {"name": "Video V3 Voice","type": "n8n-nodes-base.executeCommand","parameters": {"command": "cd C:\\Users\\essoc\\Downloads\\kos-fullstack\\kos-tv-engine && python python/make_video_v3_voice.py"}},
+    {"name": "YouTube Upload","type": "n8n-nodes-base.executeCommand","parameters": {"command": "cd C:\\Users\\essoc\\Downloads\\kos-fullstack\\kos-tv-engine && python python/youtube_upload_queue_bigfour.py"}},
+    {"name": "Comments AI Reply","type": "n8n-nodes-base.executeCommand","parameters": {"command": "cd C:\\Users\\essoc\\Downloads\\kos-fullstack\\kos-tv-engine && python python/comments_ai_bigfour.py"}},
+    {"name": "BigFour Audit","type": "n8n-nodes-base.executeCommand","parameters": {"command": "cd C:\\Users\\essoc\\Downloads\\kos-fullstack\\kos-tv-engine && python python/kos_bigfour_tv.py"}}
+  ],
+  "connections": {
+    "Cron 2h": {"main": [[{"node": "Scan Trends BCEAO","type": "main","index":0}]]},
+    "Scan Trends BCEAO": {"main": [[{"node": "Generate Script","type": "main","index":0}]]},
+    "Generate Script": {"main": [[{"node": "Voice FR Piper","type": "main","index":0}]]},
+    "Voice FR Piper": {"main": [[{"node": "Video V3 Voice","type": "main","index":0}]]},
+    "Video V3 Voice": {"main": [[{"node": "YouTube Upload","type": "main","index":0}]]},
+    "YouTube Upload": {"main": [[{"node": "Comments AI Reply","type": "main","index":0}]]},
+    "Comments AI Reply": {"main": [[{"node": "BigFour Audit","type": "main","index":0}]]}
+  }
+}
