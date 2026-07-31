@@ -10,3 +10,5 @@ node_modules/
 .env.local
 .env.linkedin.local
 scripts/linkedin/.env.linkedin.local
+scripts/youtube/.env.youtube.local
+**/.env*.local
