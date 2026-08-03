@@ -1,5 +1,0 @@
-{"name": "KOS-TV-MASTER - 24/7 TV Engine", "nodes": [
-  {"name": "Cron 2h", "type": "n8n-nodes-base.scheduleTrigger", "parameters": {"rule": {"interval": [{"field": "hours", "minutesInterval": 2}]}}},
-  {"name": "Python Scan", "type": "n8n-nodes-base.executeCommand", "parameters": {"command": "python kos-tv-engine/python/kos_engine.py"}},
-  {"name": "YouTube Upload", "type": "n8n-nodes-base.youTube", "parameters": {"operation": "upload", "privacyStatus": "public"}}
-]}
