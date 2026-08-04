@@ -1,9 +1,10 @@
+import { createClient } from "@supabase/supabase-js"
 export async function GET() {
-  return Response.json([
-    {id:"1",name:"BAD",type:"Multilateral"},
-    {id:"2",name:"BOAD",type:"DFI"},
-    {id:"3",name:"IFC",type:"DFI"},
-    {id:"4",name:"AFD",type:"DFI"},
-    {id:"5",name:"Ecobank",type:"Bank"}
-  ])
+  try {
+    const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
+    const { data } = await supabase.from("funding_sources").select("*").limit(30)
+    return Response.json(data || [])
+  } catch {
+    return Response.json([{name:"BAD"},{name:"BOAD"},{name:"IFC"},{name:"AFD"},{name:"Ecobank"}])
+  }
 }
