@@ -1,0 +1,35 @@
+{
+  "status": "100% PASS",
+  "score": "4/4",
+  "veilleurs": {
+    "local": "KOS_Watcher_24_7 - 15min - Ready",
+    "github": ".github/workflows/kos-watcher.yml - 15min Cloud",
+    "vercel": "daily 08h UTC"
+  },
+  "headers": {
+    "xcto": [
+      "nosniff"
+    ],
+    "csp": "present",
+    "xfo": [
+      "DENY"
+    ],
+    "hsts": [
+      "max-age=63072000; includeSubDomains; preload"
+    ]
+  },
+  "domain": "kos.khepraexperts.com",
+  "vercel_id": [
+    "cpt1::vsmlm-1786011274264-c337d325be30"
+  ],
+  "kos_done": true,
+  "readdy_safe": {
+    "app.khepraexperts.com": "monitored only, no DNS touch",
+    "khepraexperts.com": "monitored only, no DNS touch"
+  },
+  "cache": [
+    "PRERENDER"
+  ],
+  "timestamp": "2026-08-06 10:14:33 UTC",
+  "deployment": "af810cb"
+}
