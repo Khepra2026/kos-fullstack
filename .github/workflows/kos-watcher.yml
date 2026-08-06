@@ -1,0 +1,37 @@
+name: KOS Watcher 24/7 - 15min Cloud
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check KOS Big Four Headers LIVE
+        id: check
+        run: |
+          echo "=== KOS WATCHER $(date -u) ==="
+          KOS=$(curl -I -s https://kos.khepraexperts.com/ | tr -d '\r')
+          echo "$KOS"
+          HSTS=$(echo "$KOS" | grep -i "strict-transport-security" | wc -l)
+          CSP=$(echo "$KOS" | grep -i "content-security-policy" | wc -l)
+          XFO=$(echo "$KOS" | grep -i "x-frame-options" | wc -l)
+          if [ $HSTS -eq 0 ] || [ $CSP -eq 0 ] || [ $XFO -eq 0 ]; then
+            echo "CRITICAL FAIL KOS"
+            echo "needs_redeploy=true" >> $GITHUB_OUTPUT
+          else
+            echo "PASS KOS 100%"
+            echo "needs_redeploy=false" >> $GITHUB_OUTPUT
+          fi
+          echo "--- Readdy INFO ---"
+          curl -I -s https://khepraexperts.com/ | grep -i -E "strict|content-security|x-frame" || echo "INFO Readdy no headers"
+          curl -I -s https://app.khepraexperts.com/ | grep -i -E "strict|content-security|x-frame" || echo "INFO Readdy no headers"
+      - name: Auto-Redeploy if FAIL
+        if: steps.check.outputs.needs_redeploy == 'true'
+        run: |
+          echo "AUTO-HEALING"
+          if [ -n "${{ secrets.VERCEL_DEPLOY_HOOK }}" ]; then
+            curl -X POST "${{ secrets.VERCEL_DEPLOY_HOOK }}"
+          else
+            echo "Add VERCEL_DEPLOY_HOOK secret"
+          fi
