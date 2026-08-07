@@ -1,5 +1,9 @@
-.env.local
+node_modules/
+.next/
+.lighthouseci/
+*.log
+__pycache__/
 .env
-.env.bak
+.env.local
 .vercel
 .env*
