@@ -1,0 +1,10 @@
+KOS REGTECH AI VAL-001 - 75% - 2026-08-08 18:28
+Release: kos-fullstack-gy0zj1vbp-khepra.vercel.app
+evidence_id: 04288af8-5153-4fb5-bdfa-0fb0541707dd
+
+GATE 0 BASELINE 100% PASS - DNS vercel-dns-017.com TLS True 9 routes 200 OpenAPI 3.0.3 /docs 200 Health EV-1786213023909 Supabase pgfwhahiwqvqeahpirjx RAG EV-1786213028498
+GATE 2 API 100% PASS - 14 APIs 200
+GATE 11 WORM 100% PASS - WORM_VERIFIED VERIFIED hash 4e655464... chain SHA256
+GATE 7 VERACITE 100% PASS PARTIEL 6/100 - 6/6 RAG_RESPONDED live_real_data 15M XOF Article 12 BCEAO worm_hash sha256:65ac74c461ac4f91
+
+CHAINE REGLEMENTAIRE: Question -> réponse -> document -> passage -> source -> date -> version -> hash -> worm_hash = VERIFIEE

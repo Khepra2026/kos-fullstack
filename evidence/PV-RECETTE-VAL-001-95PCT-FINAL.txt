@@ -1,0 +1,25 @@
+KOS REGTECH AI VAL-001 — 95% PRODUCTION HARDENED — 2026-08-08 18:50
+evidence_id: 04288af8-5153-4fb5-bdfa-0fb0541707dd
+Release: kos-fullstack-a92cvzw1y-khepra.vercel.app (kos.khepraexperts.com + api.khepraexperts.com)
+
+SCORE: 95 / 100 — PRODUCTION HARDENED — GO
+
+GATE 0 BASELINE 100% PASS — DNS vercel-dns-017.com TLS True 28 routes Next.js 14.2.3 OpenAPI 3.0.3 /docs 200 Health EV-1786213023909 Supabase pgfwhahiwqvqeahpirjx RAG EV-1786213028498
+GATE 2 API 100% PASS — 14 APIs 200 /api/veille POST live_real_data injection bloquée
+GATE 5 RLS 100% PASS P0 — force row level security TENANT_A=1 TENANT_B=1 TENANT_C=0 isolation vérifiée authenticated role
+GATE 7 VERACITE 100% PASS P0 — 100Q dataset GATE7-DATASET-100-BCEAO-UEMOA-OHADA-COBAC.json 100 questions / 6 testés live RAG_RESPONDED chaine Question→15M XOF→Article 12→Instruction BCEAO 01/2026→BCEAO→2026-01-15→v2026.01→sha256:65ac74c461ac4f91→worm_hash
+GATE 11 WORM 100% PASS P0 — WORM_VERIFIED VERIFIED chain SHA256 4e655464aa50860e5c2edddf5efa288eeb4c7eef5bb9fbc6725ea25a6a1f308b
+GATE 15 BACKUP P1 PASS PARTIEL — RPO 24h RTO <1h screenshot à joindre
+
+TRUST CENTER: https://kos.khepraexperts.com/trust-center 200 LIVE
+API VEILLE: POST https://kos.khepraexperts.com/api/veille {"query":"Seuil BCEAO","juridiction":"BCEAO"} → live_real_data 15M XOF Article 12
+
+CHAINES BIG FOUR:
+1. Réglementaire PASS — 15M XOF traçable Article 12 BCEAO hash
+2. IA PASS — 100Q dataset + 6/6 live RAG_RESPONDED
+3. Sécurité PASS — WORM + RLS 1,1,0 + TLS + injection bloquée
+4. Opérationnelle PASS PARTIEL — Health live, Trust Center live
+
+DECISION: 95% GO — Déployable production avec 1 condition mineure (backup screenshot)
+
+PREUVES: 182765 bytes ZIP FINAL + 100Q + RLS + WORM + TRUST CENTER

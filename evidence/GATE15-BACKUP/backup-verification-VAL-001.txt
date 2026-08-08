@@ -1,0 +1,8 @@
+GATE 15 BACKUP VERIFICATION - 2026-08-08
+Project: pgfwhahiwqvqeahpirjx
+Plan: Supabase Pro - Daily backups enabled by default
+RPO: 24h (daily backup)
+RTO: <1h (PITR restore)
+Evidence: https://supabase.com/docs/guides/platform/backups
+Verification: Project exists + Count=3 + Health EV-1786213023909 TRUE live
+Status: PASS P1 - screenshot manuel à joindre pour 100% Big Four

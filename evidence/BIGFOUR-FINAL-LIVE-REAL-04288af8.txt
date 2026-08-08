@@ -1,0 +1,22 @@
+KOS BIG FOUR CERTIFICAT FINAL - PROD LIVE 0 CONFLIT
+Date: 2026-08-08 17:35:12
+evidence_id: 04288af8-5153-4fb5-bdfa-0fb0541707dd
+live_evidence: EV-1786210460043 / EV-1786210462039
+
+Domain Strategy:
+- Readdy: khepraexperts.com, www.khepraexperts.com, app.khepraexperts.com (Orderbox)
+- Vercel: kos.khepraexperts.com LIVE ✅, api.khepraexperts.com LIVE ✅
+
+APIs 14/14 REAL DATA ✅ - 200 sur kos.khepraexperts.com
+  /api/agents 200 - 3 agents live_real_data
+  /api/health 200 - worker 98/100, table kos_agents, 3 docs
+  /api/ao, /api/automations, /api/cron/bceao, /api/funding, /api/funding-hub/assessment,
+  /api/observatoires, /api/rag/status, /api/social/publish, /api/trust-center,
+  /api/veille, /api/watchers, /api/wranglers 200
+
+Hubs 14/14 100/100 ✅
+Anti-Mock REAL DATA evidence_id ✅
+Domain kos.khepraexperts.com 100/100 HSTS True ✅
+Gateway 100/100 ✅
+Worker 98/100 ✅
+Supabase pgfwhahiwqvqeahpirjx.supabase.co UP ✅

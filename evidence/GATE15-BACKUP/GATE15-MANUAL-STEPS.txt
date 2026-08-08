@@ -1,0 +1,19 @@
+Date: 08/08/2026 18:23:23
+Project: pgfwhahiwqvqeahpirjx.supabase.co
+Evidence: 04288af8
+
+Preuve 1 - Backup automatique Supabase (Dashboard):
+  → https://supabase.com/dashboard/project/pgfwhahiwqvqeahpirjx/database/backups
+  → Screenshot daily backup enabled + PITR enabled = preuve P1
+
+Preuve 2 - Backup manuel via CLI (optionnel):
+  npx supabase login
+  npx supabase db dump --project-ref pgfwhahiwqvqeahpirjx -f evidence/GATE15-BACKUP/backup-$(Get-Date -Format yyyyMMdd).sql
+
+Preuve 3 - Restore test:
+  - Créer projet vide: npx supabase projects create kos-restore-test
+  - Restore: psql backup.sql
+  - Vérifier count=3 dans kos_agents
+
+RPO: 24h (daily backup) RTO: <1h
+Status: MANUEL - Preuve screenshot requise

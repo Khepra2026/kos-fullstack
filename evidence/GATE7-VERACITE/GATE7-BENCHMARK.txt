@@ -1,0 +1,5 @@
+=== GATE 7 VERACITE REGLEMENTAIRE - BENCHMARK ===
+Q: Seuil déclaration LBC/FT BCEAO UEMOA | Expected: 15M XOF | Juridiction: UEMOA | Status: A VERIFIER MANUELLEMENT DANS /dashboard RAG
+Q: Instruction BCEAO LBC/FT 01/2026 | Expected: Article 12 | Juridiction: UEMOA | Status: A VERIFIER MANUELLEMENT DANS /dashboard RAG
+Q: COBAC règlement LBC/FT | Expected: COBAC | Juridiction: CEMAC | Status: A VERIFIER MANUELLEMENT DANS /dashboard RAG
+REGLE ABSOLUE: Une réponse sans source vérifiable = FAIL P0

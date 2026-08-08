@@ -1,0 +1,21 @@
+=== GATE 0 - INVENTAIRE BASELINE 2026-08-08 18:12:55 ===
+evidence_id: 04288af8-5153-4fb5-bdfa-0fb0541707dd
+PRE-001 DNS KOS: 2d25d3ddc537c0c9.vercel-dns-017.com PASS
+PRE-002 DNS API: 2d25d3ddc537c0c9.vercel-dns-017.com PASS
+PRE-003 TLS: TcpTestSucceeded=True PASS
+PRE-008 Route / : 200 PASS
+PRE-008 Route /dashboard : 200 PASS
+PRE-008 Route /hub : 200 PASS
+PRE-008 Route /api-docs : 200 PASS
+PRE-008 Route /docs : 200 PASS
+PRE-008 Route /funding-hub : 200 PASS
+PRE-008 Route /observatoires : 200 PASS
+PRE-008 Route /trust-center : 200 PASS
+PRE-008 Route /billing : 200 PASS
+PRE-008 Route /checkout : 200 PASS
+PRE-011 Health: live_real_data real_data=True PASS
+  -> Supabase: pgfwhahiwqvqeahpirjx.supabase.co Count=3 Worker=98/100 EV=EV-1786212791593
+PRE-012 Readiness RAG: real_data gateway=https://kos-gateway-prod.khepra-experts.workers.dev PASS
+PRE-009 OpenAPI /api/openapi: 200 PASS
+PRE-009 OpenAPI /api/openapi.json: 200 PASS
+PRE-010 Docs /docs: 200 PASS

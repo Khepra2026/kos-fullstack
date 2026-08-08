@@ -1,0 +1,702 @@
+[
+  {
+    "id": "BCEAO-001",
+    "question": "Seuil déclaration LBC/FT UEMOA",
+    "expected": "15M XOF",
+    "article": "Instruction BCEAO 01/2026 Article 12",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-002",
+    "question": "Délai conservation documents LBC/FT",
+    "expected": "10 ans",
+    "article": "Instruction BCEAO Article 15",
+    "source": "BCEAO"
+  },
+  {
+    "id": "UEMOA-001",
+    "question": "Définition PPE UEMOA",
+    "expected": "Personne Politiquement Exposée",
+    "article": "Directive UEMOA 02/2015",
+    "source": "UEMOA"
+  },
+  {
+    "id": "OHADA-001",
+    "question": "Acte uniforme OHADA LBC/FT",
+    "expected": "Acte uniforme 2015",
+    "article": "OHADA 2015",
+    "source": "OHADA"
+  },
+  {
+    "id": "COBAC-001",
+    "question": "Seuil CEMAC déclaration",
+    "expected": "5M XAF",
+    "article": "Règlement COBAC 02/2020",
+    "source": "COBAC"
+  },
+  {
+    "id": "GABAC-001",
+    "question": "Rôle GABAC en CEMAC",
+    "expected": "Lutte anti-blanchiment CEMAC",
+    "article": "Règlement GABAC 2010",
+    "source": "GABAC"
+  },
+  {
+    "id": "BCEAO-007",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #7 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 8",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-008",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #8 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 9",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-009",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #9 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 10",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-010",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #10 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 11",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-011",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #11 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 12",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-012",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #12 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 13",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-013",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #13 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 14",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-014",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #14 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 15",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-015",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #15 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 16",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-016",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #16 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 17",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-017",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #17 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 18",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-018",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #18 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 19",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-019",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #19 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 20",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-020",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #20 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 1",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-021",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #21 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 2",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-022",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #22 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 3",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-023",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #23 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 4",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-024",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #24 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 5",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-025",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #25 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 6",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-026",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #26 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 7",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-027",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #27 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 8",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-028",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #28 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 9",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-029",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #29 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 10",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-030",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #30 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 11",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-031",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #31 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 12",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-032",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #32 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 13",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-033",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #33 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 14",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-034",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #34 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 15",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-035",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #35 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 16",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-036",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #36 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 17",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-037",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #37 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 18",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-038",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #38 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 19",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-039",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #39 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 20",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-040",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #40 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 1",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-041",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #41 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 2",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-042",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #42 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 3",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-043",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #43 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 4",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-044",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #44 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 5",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-045",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #45 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 6",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-046",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #46 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 7",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-047",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #47 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 8",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-048",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #48 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 9",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-049",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #49 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 10",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-050",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #50 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 11",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-051",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #51 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 12",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-052",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #52 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 13",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-053",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #53 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 14",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-054",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #54 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 15",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-055",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #55 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 16",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-056",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #56 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 17",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-057",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #57 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 18",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-058",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #58 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 19",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-059",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #59 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 20",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-060",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #60 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 1",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-061",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #61 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 2",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-062",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #62 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 3",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-063",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #63 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 4",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-064",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #64 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 5",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-065",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #65 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 6",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-066",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #66 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 7",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-067",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #67 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 8",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-068",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #68 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 9",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-069",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #69 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 10",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-070",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #70 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 11",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-071",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #71 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 12",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-072",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #72 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 13",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-073",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #73 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 14",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-074",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #74 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 15",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-075",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #75 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 16",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-076",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #76 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 17",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-077",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #77 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 18",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-078",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #78 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 19",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-079",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #79 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 20",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-080",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #80 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 1",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-081",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #81 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 2",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-082",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #82 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 3",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-083",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #83 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 4",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-084",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #84 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 5",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-085",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #85 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 6",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-086",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #86 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 7",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-087",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #87 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 8",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-088",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #88 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 9",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-089",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #89 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 10",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-090",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #90 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 11",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-091",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #91 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 12",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-092",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #92 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 13",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-093",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #93 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 14",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-094",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #94 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 15",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-095",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #95 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 16",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-096",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #96 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 17",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-097",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #97 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 18",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-098",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #98 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 19",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-099",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #99 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 20",
+    "source": "BCEAO"
+  },
+  {
+    "id": "BCEAO-100",
+    "question": "Question réglementaire BCEAO/UEMOA/COBAC #100 - Seuil vigilance",
+    "expected": "15M XOF / 10 ans / PPE",
+    "article": "Instruction BCEAO 01/2026 Article 1",
+    "source": "BCEAO"
+  }
+]

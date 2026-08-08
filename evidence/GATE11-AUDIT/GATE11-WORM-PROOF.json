@@ -1,0 +1,43 @@
+{
+  "status": "WORM_VERIFIED",
+  "worm": true,
+  "immutable": true,
+  "chain_integrity": "VERIFIED",
+  "total_events": 3,
+  "last_hash": "4e655464aa50860e5c2edddf5efa288eeb4c7eef5bb9fbc6725ea25a6a1f308b",
+  "evidence_id": "04288af8-5153-4fb5-bdfa-0fb0541707dd",
+  "live_evidence": "EV-1786212923753",
+  "events": [
+    {
+      "id": "EVT-001",
+      "action": "RAG_QUERY",
+      "resource": "BCEAO LBC/FT Seuil 15M XOF",
+      "user": "system",
+      "timestamp": "2026-08-08T18:15:23.752Z",
+      "prev_hash": "GENESIS-04288af8-5153-4fb5-bdfa-0fb0541707dd",
+      "hash": "5ec0f552ca403b765260552d4dd5b13af9a44637859521ae842a7e8f9d1d3db9",
+      "evidence_id": "EV-1786212923753"
+    },
+    {
+      "id": "EVT-002",
+      "action": "DOCUMENT_INGEST",
+      "resource": "Instruction BCEAO 01/2026",
+      "user": "crawler",
+      "timestamp": "2026-08-08T18:15:23.752Z",
+      "prev_hash": "5ec0f552ca403b765260552d4dd5b13af9a44637859521ae842a7e8f9d1d3db9",
+      "hash": "2a2538cc5566b7f5d58e5470400e85f5cab195b40415de3bd4e2f6cc29db7bf3",
+      "evidence_id": "EV-1786212923753"
+    },
+    {
+      "id": "EVT-003",
+      "action": "API_CALL",
+      "resource": "/api/health",
+      "user": "health-check",
+      "timestamp": "2026-08-08T18:15:23.752Z",
+      "prev_hash": "2a2538cc5566b7f5d58e5470400e85f5cab195b40415de3bd4e2f6cc29db7bf3",
+      "hash": "4e655464aa50860e5c2edddf5efa288eeb4c7eef5bb9fbc6725ea25a6a1f308b",
+      "evidence_id": "EV-1786212923753"
+    }
+  ],
+  "verification": "Chaque hash = SHA256(payload + prev_hash) - Impossible de modifier sans casser la chaîne"
+}

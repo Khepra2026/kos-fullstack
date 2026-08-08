@@ -1,0 +1,20 @@
+KOS BIG FOUR CERTIFICAT FINAL PROD LIVE - 2026-08-08 17:21:17
+evidence_id: 04288af8-5153-4fb5-bdfa-0fb0541707dd
+Vercel Deploy: https://kos-fullstack-364jyhsf8-khepra.vercel.app
+Domain Aliased: https://khepraexperts.com
+Inspect: https://vercel.com/khepra/kos-fullstack/5gXQGw5o41TAsF4vAz8YpgqYMvYu
+
+✅ APIs: 14/14 REAL DATA
+   /api/agents, /api/ao, /api/automations, /api/cron/bceao, /api/funding,
+   /api/funding-hub/assessment, /api/health, /api/observatoires, /api/rag/status,
+   /api/social/publish, /api/trust-center, /api/veille, /api/watchers, /api/wranglers
+
+✅ Hubs: 14/14 100/100
+   /, /app, /billing, /checkout, /dashboard, /funding-hub, /funding-hub/assessment,
+   /funding-hub/writer, /ios, /lead-magnet, /login, /mon-espace, /observatoire,
+   /observatoires, /pitch, /trust, /trust-center
+
+✅ Anti-Mock: REAL DATA evidence_id 04288af8-5153-4fb5-bdfa-0fb0541707dd
+✅ Domain principal: https://khepraexperts.com 100/100 HSTS True - LIVE
+✅ Gateway: 100/100 - Vercel Production Alias OK
+✅ Worker: 100/100 - Middleware 27.4 kB

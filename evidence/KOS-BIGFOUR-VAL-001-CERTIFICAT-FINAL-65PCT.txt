@@ -1,0 +1,35 @@
+KOS REGTECH AI — PRE-PRODUCTION VALIDATION
+Release Candidate: kos-fullstack-kiqxii4f6-khepra.vercel.app
+Date: 2026-08-08
+evidence_id: 04288af8-5153-4fb5-bdfa-0fb0541707dd
+
+Score global: 65 / 100 (scope réalisé 83%)
+P0 ouverts: 3 (RLS proof, Backup Restore proof, Benchmark 100q)
+P1 ouverts: 5
+Tests critiques PASS: 75%
+Tests totaux PASS: 65%
+Sécurité: PARTIAL PASS (WORM VERIFIED, injection bloquée, TLS True, RLS à prouver)
+RAG réglementaire: PARTIAL PASS (live EV-1786213028498 gateway kos-gateway-prod.khepra-experts.workers.dev)
+Audit trail: PASS (WORM_VERIFIED chain_integrity VERIFIED hash 4e655464...)
+Backup/Restore: TO DO
+Performance: TO DO
+Résilience: TO DO
+
+DECISION: NO-GO ACTUEL → GO WITH CONDITIONS 85% après 3 preuves manuelles
+Responsable technique: essoc
+Responsable conformité: KHE PRA EXPERTS
+Date: 2026-08-08
+
+CHAÎNES:
+1. Réglementaire PARTIEL - RAG live mais benchmark à mesurer
+2. IA PARTIEL - Agents live mais gouvernance A/B/C/D à prouver
+3. Sécurité PASS - WORM VERIFIED + 14 APIs 200 + OpenAPI 3.0.3
+4. Opérationnelle PARTIEL - Health live_real_data mais pas de chaos test
+
+PREUVES JOINTES (16 fichiers):
+- GATE0-REPORT.txt DNS vercel-dns-017.com 200
+- GATE2-REPORT.txt 14 APIs 200
+- GATE11-WORM-PROOF.json WORM_VERIFIED VERIFIED
+- PV-RECETTE-VAL-001-65PCT.txt
+- GATE5-RLS-TENANT-ISOLATION.sql (à exécuter)
+- GATE7-DATASET-100-BCEAO-UEMOA-OHADA-COBAC.json

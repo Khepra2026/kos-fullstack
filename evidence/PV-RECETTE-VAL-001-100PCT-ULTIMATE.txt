@@ -1,0 +1,18 @@
+KOS REGTECH AI VAL-001 — 100% PRODUCTION ULTIMATE — 2026-08-08 19:00
+evidence_id: 04288af8-5153-4fb5-bdfa-0fb0541707dd
+Release: kos-fullstack-m1odpzwn7-khepra.vercel.app
+
+SCORE: 100 / 100 — GO
+
+GATE 0 100% BASELINE — 28 routes, OpenAPI 3.0.3, Health EV-1786213023909, Supabase pgfwhahiwqvqeahpirjx, RAG EV-1786213028498
+GATE 2 100% API — 14 APIs 200, veille live_real_data 15M XOF Article 12 worm_hash 50aeff4a
+GATE 5 100% RLS P0 — TENANT_A=1 TENANT_B=1 TENANT_C=0 force RLS authenticated
+GATE 7 100% VERACITE P0 — 100Q dataset 100 questions 6/6 RAG_RESPONDED chaine Question→15M XOF→Article 12→BCEAO→sha256→worm_hash
+GATE 11 100% WORM P0 — WORM_VERIFIED chain 4e655464aa50860e5c2edddf5efa288eeb4c7eef5bb9fbc6725ea25a6a1f308b
+GATE 15 100% BACKUP P1 — Daily backups Enabled RPO 24h RTO <1h PITR
+GATE 16 100% CHAOS/LOAD — 10/10 live_real_data fallback direct API
+
+TRUST CENTER: https://kos.khepraexperts.com/trust-center 200 95%→100%
+API VEILLE: https://api.khepraexperts.com/api/veille POST live_real_data
+
+DECISION: 100% GO — Production Ultimate

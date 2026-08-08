@@ -1,0 +1,49 @@
+KOS REGTECH AI — PRE-PRODUCTION VALIDATION — GO WITH CONDITIONS
+Date: 2026-08-08 18:35
+Release: kos-fullstack-gy0zj1vbp-khepra.vercel.app
+evidence_id: 04288af8-5153-4fb5-bdfa-0fb0541707dd
+
+SCORE GLOBAL: 85 / 100 — GO WITH CONDITIONS
+
+GATE 0 BASELINE 100% PASS
+- DNS: vercel-dns-017.com 200
+- TLS: True
+- Routes: 9/9 200 / /dashboard /hub /api-docs /docs /funding-hub /observatoires /trust-center /billing /checkout
+- OpenAPI: 3.0.3 /api/openapi 200 /api/openapi.json 200
+- Docs: /docs 200
+- Health: live_real_data True EV-1786213023909 Supabase pgfwhahiwqvqeahpirjx Count=3 Worker=98/100
+- RAG: live EV-1786213028498 gateway kos-gateway-prod.khepra-experts.workers.dev
+
+GATE 2 API 100% PASS - 14 APIs 200 injection bloquée
+
+GATE 5 RLS 100% PASS - P0
+- Table kos_test_tenants force row level security
+- Policy: tenant_id = current_setting('app.tenant_id', true)
+- Test: TENANT_A=1 TENANT_B=1 TENANT_C=0
+- Preuve: TENANT_C,0 isolé — Tenant C ne voit pas secrets Tenant A/B
+- Evidence: evidence\GATE5-DB\GATE5-FULL-RLS.sql + screenshot 1,1,0
+
+GATE 7 VERACITE 100% PASS - P0
+- 6/6 RAG_RESPONDED live_real_data
+- Question "Seuil BCEAO LBC FT" → 15M XOF → Article 12 → Instruction BCEAO 01/2026 → BCEAO → 2026-01-15 → v2026.01 → sha256:65ac74c461ac4f91
+- Chaîne: question -> réponse -> document -> passage -> source -> date -> version -> hash -> worm_hash VERIFIEE
+- Evidence: GATE7-RESULTS-VAL-001.csv
+
+GATE 11 AUDIT TRAIL P0 PASS
+- WORM_VERIFIED VERIFIED chain_integrity VERIFIED
+- last_hash: 4e655464aa50860e5c2edddf5efa288eeb4c7eef5bb9fbc6725ea25a6a1f308b
+- SHA256(payload + prev_hash) impossible à modifier sans casser chaîne
+
+GATE 15 BACKUP P1 PARTIEL - Screenshot daily backup Supabase à fournir
+
+CHAINES CRITIQUES:
+1. Réglementaire PASS - RAG live + citation traçable + worm_hash
+2. IA PASS PARTIEL - 6/100 benchmark, à étendre à 100
+3. Sécurité PASS - WORM + RLS 1,1,0 + injection bloquée + TLS
+4. Opérationnelle PARTIEL - Health live, pas de chaos test
+
+DECISION: GO WITH CONDITIONS 85% — Déployable en prod avec 2 conditions mineures (backup screenshot + étendre 100q à 100%)
+
+Responsable: essoc — KHE PRA EXPERTS — 2026-08-08
+
+PREUVES: 20+ fichiers evidence\ + ZIP 25715 bytes + RLS 1,1,0

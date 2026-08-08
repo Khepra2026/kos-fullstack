@@ -1,0 +1,3 @@
+Supabase Host: pgfwhahiwqvqeahpirjx.supabase.co
+Table: kos_agents RLS à vérifier dans Supabase Dashboard -> Authentication -> Policies
+CRITIQUE: Tester manuellement: Tenant A ne doit pas lire Tenant B - Preuve à joindre

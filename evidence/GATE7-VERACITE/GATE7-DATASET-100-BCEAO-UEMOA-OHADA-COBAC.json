@@ -1,0 +1,17 @@
+{
+  "benchmark": "KOS-REGTECH-AI-BENCHMARK-100",
+  "evidence_id": "04288af8-5153-4fb5-bdfa-0fb0541707dd",
+  "version": "VAL-001",
+  "juridictions": ["UEMOA", "CEMAC", "OHADA", "BCEAO", "COBAC", "GABAC"],
+  "questions": [
+    {"id": "BCEAO-001", "q": "Seuil déclaration LBC/FT UEMOA", "expected": "15M XOF", "article": "Article 12 Instruction 01/2026", "source": "BCEAO", "niveau": "A - Preuve directe"},
+    {"id": "BCEAO-002", "q": "Délai conservation documents LBC/FT", "expected": "10 ans", "article": "Article 15", "source": "BCEAO", "niveau": "A"},
+    {"id": "UEMOA-001", "q": "Définition PPE UEMOA", "expected": "Personne Politiquement Exposée", "article": "Directive 02/2015", "source": "UEMOA", "niveau": "A"},
+    {"id": "OHADA-001", "q": "Acte uniforme OHADA LBC/FT applicable", "expected": "Acte uniforme 2015", "source": "OHADA", "niveau": "B"},
+    {"id": "COBAC-001", "q": "Seuil CEMAC déclaration", "expected": "5M XAF", "article": "Règlement COBAC", "source": "COBAC", "niveau": "A"},
+    {"id": "GABAC-001", "q": "Rôle GABAC en CEMAC", "expected": "Lutte anti-blanchiment CEMAC", "source": "GABAC", "niveau": "B"}
+  ],
+  "note": "Dataset complet 100 questions à étendre - Format: Question -> Réponse -> Document -> Passage -> Source -> Date -> Version -> Hash -> Niveau confiance A/B/C/D. Exigence cahier: Aucune réponse sans source vérifiable = FAIL P0",
+  "mesures": ["précision", "rappel", "citation correcte", "fraîcheur", "hallucination", "taux refus approprié"],
+  "objectif": "Précision > 90% sur niveau A, Hallucination 0% sur P0, Provenance 100% traçable"
+}
