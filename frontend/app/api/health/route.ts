@@ -8,7 +8,8 @@ export async function GET(){
   let data:any = []; let errMsg = ''; let statusCode = 0;
   try{
     if(!url || !anon) throw new Error('Missing env');
-    const r = await fetch(url+'/rest/v1/kos_agents?select=*&limit=20', {
+    const fetchUrl = url + '/rest/v1/kos_agents?select=%2A&limit=20';
+    const r = await fetch(fetchUrl, {
       headers: { apikey: anon, Authorization: 'Bearer '+anon },
       cache: 'no-store'
     });
@@ -22,8 +23,7 @@ export async function GET(){
     status: data.length>0?'live_real_data':'live_no_data',
     real_data: data.length>0,
     count: data.length, data, evidence_id,
-    debug: { url_host: url?new URL(url).host:'missing', anon_len: anon?.length||0, statusCode, error: errMsg },
+    debug: { url_host: url?new URL(url).host:'missing', statusCode, error: errMsg },
     timestamp: new Date().toISOString(), worker: '98/100'
   }, { headers: { 'X-Evidence-Id': evidence_id, 'Cache-Control':'no-store' } });
 }
-
