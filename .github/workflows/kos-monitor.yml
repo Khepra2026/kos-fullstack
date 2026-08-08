@@ -1,0 +1,24 @@
+name: KOS BigFour Live Monitor
+on:
+  schedule:
+    - cron: '0 * * * *'  # toutes les heures
+  workflow_dispatch:
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run DNS HSTS Monitor
+        run: |
+          pip install requests
+          python workers/kos-dns-monitor/monitor.py
+      - name: Run SEC AutoFix
+        run: |
+          pip install pip-audit
+          pip-audit --fix --requirement requirements.txt || true
+      - name: Upload reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: kos-reports
+          path: reports/
