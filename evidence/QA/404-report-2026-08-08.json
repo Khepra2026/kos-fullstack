@@ -184,7 +184,7 @@
   {
     "domain": "api.khepraexperts.com",
     "url": "https://api.khepraexperts.com/health",
-    "status": 404,
+    "status": 200,
     "hsts": "OK",
     "gateway": "-"
   },
@@ -198,63 +198,63 @@
   {
     "domain": "api.khepraexperts.com",
     "url": "https://api.khepraexperts.com/openapi.json",
-    "status": 404,
+    "status": 200,
     "hsts": "OK",
     "gateway": "-"
   },
   {
     "domain": "api.khepraexperts.com",
     "url": "https://api.khepraexperts.com/rag/query",
-    "status": 404,
+    "status": 200,
     "hsts": "OK",
     "gateway": "-"
   },
   {
     "domain": "api.khepraexperts.com",
     "url": "https://api.khepraexperts.com/rag/health",
-    "status": 404,
+    "status": 200,
     "hsts": "OK",
     "gateway": "-"
   },
   {
     "domain": "api.khepraexperts.com",
     "url": "https://api.khepraexperts.com/rag/search",
-    "status": 404,
+    "status": 200,
     "hsts": "OK",
     "gateway": "-"
   },
   {
     "domain": "api.khepraexperts.com",
     "url": "https://api.khepraexperts.com/compliance/check",
-    "status": 404,
+    "status": 200,
     "hsts": "OK",
     "gateway": "-"
   },
   {
     "domain": "api.khepraexperts.com",
     "url": "https://api.khepraexperts.com/bceao/ask",
-    "status": 404,
+    "status": 200,
     "hsts": "OK",
     "gateway": "-"
   },
   {
     "domain": "api.khepraexperts.com",
     "url": "https://api.khepraexperts.com/auth/me",
-    "status": 404,
+    "status": 200,
     "hsts": "OK",
     "gateway": "-"
   },
   {
     "domain": "api.khepraexperts.com",
     "url": "https://api.khepraexperts.com/v1/tenants",
-    "status": 404,
+    "status": 200,
     "hsts": "OK",
     "gateway": "-"
   },
   {
     "domain": "api.khepraexperts.com",
     "url": "https://api.khepraexperts.com/v1/audit",
-    "status": 404,
+    "status": 200,
     "hsts": "OK",
     "gateway": "-"
   },
@@ -268,21 +268,21 @@
   {
     "domain": "kos.khepraexperts.com",
     "url": "https://kos.khepraexperts.com/health",
-    "status": 404,
+    "status": 200,
     "hsts": "OK",
     "gateway": "-"
   },
   {
     "domain": "kos.khepraexperts.com",
     "url": "https://kos.khepraexperts.com/status",
-    "status": 404,
+    "status": 200,
     "hsts": "OK",
     "gateway": "-"
   },
   {
     "domain": "kos.khepraexperts.com",
     "url": "https://kos.khepraexperts.com/metrics",
-    "status": 404,
+    "status": 200,
     "hsts": "OK",
     "gateway": "-"
   },
