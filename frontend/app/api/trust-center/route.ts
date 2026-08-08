@@ -7,25 +7,23 @@ export async function GET(){
   const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
   let data:any = []; let errMsg = ''; let statusCode = 0;
   try{
-    if(!url || !anon) throw new Error('Missing SUPABASE env: url='+!!url+' anon='+!!anon);
-    const r = await fetch(url+'/rest/v1/=*&limit=20', {
+    if(!url || !anon) throw new Error('Missing env');
+    const r = await fetch(url+'/rest/v1/kos_trust_scores?select=*&limit=20', {
       headers: { apikey: anon, Authorization: 'Bearer '+anon },
       cache: 'no-store'
     });
     statusCode = r.status;
-    if(!r.ok){ const txt = await r.text(); errMsg = txt.slice(0,300); throw new Error('Supabase '+r.status+' '+txt.slice(0,200)); }
-    data = await r.json();
-  }catch(e:any){ errMsg = (e?.message||String(e)).slice(0,500); }
+    const txt = await r.text();
+    if(!r.ok) throw new Error('Supabase '+r.status+' '+txt.slice(0,300));
+    data = JSON.parse(txt);
+  }catch(e:any){ errMsg = (e?.message||'').slice(0,500); }
   return NextResponse.json({
-    endpoint: 'trust-center',
-    table: 'kos_trust_scores',
-    status: Array.isArray(data) && data.length>0 ? 'live_real_data' : 'live_no_data',
-    real_data: Array.isArray(data) && data.length>0,
-    count: Array.isArray(data) ? data.length : 0,
-    data,
-    evidence_id,
-    debug: { url_host: url ? new URL(url).host : 'missing', anon_len: anon?.length||0, statusCode, error: errMsg },
-    timestamp: new Date().toISOString(),
-    worker: '98/100'
-  }, { headers: { 'X-Evidence-Id': evidence_id, 'Cache-Control': 'no-store' } });
+    endpoint: 'trust-center', table: 'kos_trust_scores',
+    status: data.length>0?'live_real_data':'live_no_data',
+    real_data: data.length>0,
+    count: data.length, data, evidence_id,
+    debug: { url_host: url?new URL(url).host:'missing', anon_len: anon?.length||0, statusCode, error: errMsg },
+    timestamp: new Date().toISOString(), worker: '98/100'
+  }, { headers: { 'X-Evidence-Id': evidence_id, 'Cache-Control':'no-store' } });
 }
+
