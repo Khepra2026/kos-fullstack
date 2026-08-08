@@ -8,3 +8,6 @@ __pycache__/
 .vercel
 .env*
 .env.local
+data/raw/
+frontend/.next/
+.env.local
