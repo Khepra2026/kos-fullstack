@@ -3,38 +3,32 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+function getSupabase(){
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  return createClient(url, key)
+}
 
 function normalize(q: string){
-  return q.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9 ]/g, ' ').trim()
-}
-function aliases(q: string){
-  const n = normalize(q)
-  const map: Record<string,string[]> = {
-    'bale': ['bale','basel','fonds propres','capital'],
-    'basel': ['basel','bale','capital','fonds propres'],
-    'blanchiment': ['blanchiment','lbc','vigilance'],
-    'kyc': ['kyc','beneficiaire','pep'],
-    'syscoa': ['syscoa','comptable']
-  }
-  for(const k in map) if(n.includes(k)) return map[k]
-  return [q, n]
+  return q.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9 ]/g,' ').trim()
 }
 
 export async function GET(req: NextRequest){
   const question = req.nextUrl.searchParams.get('question') || ''
-  if(!question) return NextResponse.json({status:'error'}, {status:400})
+  if(!question) return NextResponse.json({status:'error', message:'question required'}, {status:400})
+  
+  const supabase = getSupabase()
+  const n = normalize(question)
+  const terms = n.includes('bale') || n.includes('basel') ? ['basel','bale','fonds propres','capital'] :
+                n.includes('blanchiment') ? ['blanchiment','lbc'] :
+                n.includes('kyc') ? ['kyc','pep','beneficiaire'] : [question, n]
 
-  const terms = aliases(question)
   let results: any[] = []
   for(const t of terms){
-    const { data } = await supabase.from('kos_documents').select('id,source,title,content,evidence_id').ilike('content','%'+t+'%').limit(5)
+    const { data } = await supabase.from('kos_documents').select('id,source,title,content,evidence_id').ilike('content', `%${t}%`).limit(5)
     if(data) results.push(...data)
   }
-  results = [...new Map(results.map(r=>[r.id,r])).values()].slice(0,5)
+  results = [...new Map(results.map((r:any)=>[r.id,r])).values()].slice(0,5)
 
   if(results.length===0){
     const { data } = await supabase.from('kos_documents').select('id,source,title,content,evidence_id').limit(3)
