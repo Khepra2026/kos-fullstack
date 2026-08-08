@@ -1,5 +1,4 @@
 {
-  "crons": [{ "path": "/api/cron/bceao", "schedule": "*/15 * * * *" }],
   "headers": [
     {
       "source": "/(.*)",
@@ -11,8 +10,11 @@
         { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
         { "key": "Permissions-Policy", "value": "geolocation=(), microphone=(), camera=()" },
         { "key": "X-KOS-BigFour-Score", "value": "98/100" },
-        { "key": "X-KOS-Evidence-ID", "value": "EV-SEC-LIVE-VERCEL-CRON" }
+        { "key": "X-KOS-Evidence-ID", "value": "EV-SEC-LIVE-VERCEL-JSON" }
       ]
     }
+  ],
+  "crons": [
+    { "path": "/api/cron/bceao", "schedule": "*/15 * * * *" }
   ]
 }
