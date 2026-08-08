@@ -1,0 +1,5 @@
+name = "kos-gateway-hsts"
+main = "index.js"
+compatibility_date = "2024-08-08"
+[env.production]
+routes = [{ pattern = "khepraexperts.com/*", zone_name = "khepraexperts.com" }, { pattern = "app.khepraexperts.com/*", zone_name = "khepraexperts.com" }]
