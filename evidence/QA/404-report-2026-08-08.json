@@ -1,0 +1,296 @@
+[
+  {
+    "domain": "khepraexperts.com",
+    "url": "https://khepraexperts.com/",
+    "status": 200,
+    "hsts": "MANQUANT",
+    "gateway": "-"
+  },
+  {
+    "domain": "khepraexperts.com",
+    "url": "https://khepraexperts.com/about",
+    "status": 200,
+    "hsts": "MANQUANT",
+    "gateway": "-"
+  },
+  {
+    "domain": "khepraexperts.com",
+    "url": "https://khepraexperts.com/services",
+    "status": 200,
+    "hsts": "MANQUANT",
+    "gateway": "-"
+  },
+  {
+    "domain": "khepraexperts.com",
+    "url": "https://khepraexperts.com/contact",
+    "status": 200,
+    "hsts": "MANQUANT",
+    "gateway": "-"
+  },
+  {
+    "domain": "khepraexperts.com",
+    "url": "https://khepraexperts.com/legal",
+    "status": 200,
+    "hsts": "MANQUANT",
+    "gateway": "-"
+  },
+  {
+    "domain": "khepraexperts.com",
+    "url": "https://khepraexperts.com/privacy",
+    "status": 200,
+    "hsts": "MANQUANT",
+    "gateway": "-"
+  },
+  {
+    "domain": "khepraexperts.com",
+    "url": "https://khepraexperts.com/rag",
+    "status": 200,
+    "hsts": "MANQUANT",
+    "gateway": "-"
+  },
+  {
+    "domain": "khepraexperts.com",
+    "url": "https://khepraexperts.com/rag/query",
+    "status": 200,
+    "hsts": "MANQUANT",
+    "gateway": "-"
+  },
+  {
+    "domain": "www.khepraexperts.com",
+    "url": "https://www.khepraexperts.com/",
+    "status": 200,
+    "hsts": "MANQUANT",
+    "gateway": "-"
+  },
+  {
+    "domain": "www.khepraexperts.com",
+    "url": "https://www.khepraexperts.com/about",
+    "status": 200,
+    "hsts": "MANQUANT",
+    "gateway": "-"
+  },
+  {
+    "domain": "www.khepraexperts.com",
+    "url": "https://www.khepraexperts.com/services",
+    "status": 200,
+    "hsts": "MANQUANT",
+    "gateway": "-"
+  },
+  {
+    "domain": "www.khepraexperts.com",
+    "url": "https://www.khepraexperts.com/contact",
+    "status": 200,
+    "hsts": "MANQUANT",
+    "gateway": "-"
+  },
+  {
+    "domain": "www.khepraexperts.com",
+    "url": "https://www.khepraexperts.com/legal",
+    "status": 200,
+    "hsts": "MANQUANT",
+    "gateway": "-"
+  },
+  {
+    "domain": "www.khepraexperts.com",
+    "url": "https://www.khepraexperts.com/privacy",
+    "status": 200,
+    "hsts": "MANQUANT",
+    "gateway": "-"
+  },
+  {
+    "domain": "www.khepraexperts.com",
+    "url": "https://www.khepraexperts.com/rag",
+    "status": 200,
+    "hsts": "MANQUANT",
+    "gateway": "-"
+  },
+  {
+    "domain": "www.khepraexperts.com",
+    "url": "https://www.khepraexperts.com/rag/query",
+    "status": 200,
+    "hsts": "MANQUANT",
+    "gateway": "-"
+  },
+  {
+    "domain": "app.khepraexperts.com",
+    "url": "https://app.khepraexperts.com/",
+    "status": 200,
+    "hsts": "MANQUANT",
+    "gateway": "-"
+  },
+  {
+    "domain": "app.khepraexperts.com",
+    "url": "https://app.khepraexperts.com/dashboard",
+    "status": 200,
+    "hsts": "MANQUANT",
+    "gateway": "-"
+  },
+  {
+    "domain": "app.khepraexperts.com",
+    "url": "https://app.khepraexperts.com/login",
+    "status": 200,
+    "hsts": "MANQUANT",
+    "gateway": "-"
+  },
+  {
+    "domain": "app.khepraexperts.com",
+    "url": "https://app.khepraexperts.com/register",
+    "status": 200,
+    "hsts": "MANQUANT",
+    "gateway": "-"
+  },
+  {
+    "domain": "app.khepraexperts.com",
+    "url": "https://app.khepraexperts.com/onboarding",
+    "status": 200,
+    "hsts": "MANQUANT",
+    "gateway": "-"
+  },
+  {
+    "domain": "app.khepraexperts.com",
+    "url": "https://app.khepraexperts.com/compliance",
+    "status": 200,
+    "hsts": "MANQUANT",
+    "gateway": "-"
+  },
+  {
+    "domain": "app.khepraexperts.com",
+    "url": "https://app.khepraexperts.com/bceao",
+    "status": 200,
+    "hsts": "MANQUANT",
+    "gateway": "-"
+  },
+  {
+    "domain": "app.khepraexperts.com",
+    "url": "https://app.khepraexperts.com/uemoa",
+    "status": 200,
+    "hsts": "MANQUANT",
+    "gateway": "-"
+  },
+  {
+    "domain": "app.khepraexperts.com",
+    "url": "https://app.khepraexperts.com/reports",
+    "status": 200,
+    "hsts": "MANQUANT",
+    "gateway": "-"
+  },
+  {
+    "domain": "api.khepraexperts.com",
+    "url": "https://api.khepraexperts.com/",
+    "status": 200,
+    "hsts": "OK",
+    "gateway": "-"
+  },
+  {
+    "domain": "api.khepraexperts.com",
+    "url": "https://api.khepraexperts.com/health",
+    "status": 404,
+    "hsts": "OK",
+    "gateway": "-"
+  },
+  {
+    "domain": "api.khepraexperts.com",
+    "url": "https://api.khepraexperts.com/docs",
+    "status": 200,
+    "hsts": "OK",
+    "gateway": "-"
+  },
+  {
+    "domain": "api.khepraexperts.com",
+    "url": "https://api.khepraexperts.com/openapi.json",
+    "status": 404,
+    "hsts": "OK",
+    "gateway": "-"
+  },
+  {
+    "domain": "api.khepraexperts.com",
+    "url": "https://api.khepraexperts.com/rag/query",
+    "status": 404,
+    "hsts": "OK",
+    "gateway": "-"
+  },
+  {
+    "domain": "api.khepraexperts.com",
+    "url": "https://api.khepraexperts.com/rag/health",
+    "status": 404,
+    "hsts": "OK",
+    "gateway": "-"
+  },
+  {
+    "domain": "api.khepraexperts.com",
+    "url": "https://api.khepraexperts.com/rag/search",
+    "status": 404,
+    "hsts": "OK",
+    "gateway": "-"
+  },
+  {
+    "domain": "api.khepraexperts.com",
+    "url": "https://api.khepraexperts.com/compliance/check",
+    "status": 404,
+    "hsts": "OK",
+    "gateway": "-"
+  },
+  {
+    "domain": "api.khepraexperts.com",
+    "url": "https://api.khepraexperts.com/bceao/ask",
+    "status": 404,
+    "hsts": "OK",
+    "gateway": "-"
+  },
+  {
+    "domain": "api.khepraexperts.com",
+    "url": "https://api.khepraexperts.com/auth/me",
+    "status": 404,
+    "hsts": "OK",
+    "gateway": "-"
+  },
+  {
+    "domain": "api.khepraexperts.com",
+    "url": "https://api.khepraexperts.com/v1/tenants",
+    "status": 404,
+    "hsts": "OK",
+    "gateway": "-"
+  },
+  {
+    "domain": "api.khepraexperts.com",
+    "url": "https://api.khepraexperts.com/v1/audit",
+    "status": 404,
+    "hsts": "OK",
+    "gateway": "-"
+  },
+  {
+    "domain": "kos.khepraexperts.com",
+    "url": "https://kos.khepraexperts.com/",
+    "status": 200,
+    "hsts": "OK",
+    "gateway": "-"
+  },
+  {
+    "domain": "kos.khepraexperts.com",
+    "url": "https://kos.khepraexperts.com/health",
+    "status": 404,
+    "hsts": "OK",
+    "gateway": "-"
+  },
+  {
+    "domain": "kos.khepraexperts.com",
+    "url": "https://kos.khepraexperts.com/status",
+    "status": 404,
+    "hsts": "OK",
+    "gateway": "-"
+  },
+  {
+    "domain": "kos.khepraexperts.com",
+    "url": "https://kos.khepraexperts.com/metrics",
+    "status": 404,
+    "hsts": "OK",
+    "gateway": "-"
+  },
+  {
+    "domain": "KOS-Gateway",
+    "url": "https://kos-gateway-hsts.khepra-experts.workers.dev/",
+    "status": 200,
+    "hsts": "OK",
+    "gateway": "BigFour-Compliant-v2"
+  }
+]
