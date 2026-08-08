@@ -11,3 +11,5 @@ __pycache__/
 data/raw/
 frontend/.next/
 .env.local
+.next/
+frontend/.next/
