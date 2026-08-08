@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-
 export function middleware(request: NextRequest) {
+  if (request.nextUrl.pathname.startsWith('/api/cron')) {
+    return NextResponse.next();
+  }
   const response = NextResponse.next();
   response.headers.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
   response.headers.set('Content-Security-Policy', "default-src 'self' https://*.supabase.co https://*.khepraexperts.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co https: wss:; frame-ancestors 'none'");
@@ -13,7 +15,4 @@ export function middleware(request: NextRequest) {
   response.headers.set('X-KOS-Evidence-ID', 'EV-SEC-LIVE-NEXTJS-MW');
   return response;
 }
-
-export const config = {
-  matcher: ['/((?!api/cron|_next/static|_next/image|favicon.ico).*)'],
-};
+export const config = { matcher: '/((?!_next/static|_next/image|favicon.ico).*)' };
