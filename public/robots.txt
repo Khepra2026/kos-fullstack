@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /$
+Allow: /diagnostics
+Allow: /veille
+Allow: /observatoires
+Allow: /trust-center
+Allow: /pillars/
+Disallow: /admin/
+Disallow: /dashboard/
+Sitemap: https://app.khepraexperts.com/sitemap.xml
+
+User-agent: GPTBot
+Allow: /veille
+Allow: /trust-center
