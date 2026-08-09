@@ -1,14 +1,19 @@
 {
-  \"name\": \"kos-fullstack\",
-  \"private\": true,
-  \"scripts\": {
-    \"dev\": \"next dev\",
-    \"build\": \"next build\",
-    \"start\": \"next start\"
+  "name": "kos-fullstack",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
   },
-  \"dependencies\": {
-    \"next\": \"14.2.5\",
-    \"react\": \"18.3.1\",
-    \"react-dom\": \"18.3.1\"
+  "dependencies": {
+    "next": "14.2.35",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "26.2.0",
+    "@types/react": "19.2.18",
+    "typescript": "7.0.2"
   }
 }
