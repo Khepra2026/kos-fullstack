@@ -1,2 +1,16 @@
 /** @type {import('next').NextConfig} */
-module.exports = { async rewrites(){ return [{source:'/v1/:path*',destination:'https://kos-khepra-api.fly.dev/v1/:path*'},{source:'/health',destination:'https://kos-khepra-api.fly.dev/health'},{source:'/ready',destination:'https://kos-khepra-api.fly.dev/ready'},{source:'/docs/:path*',destination:'https://kos-khepra-api.fly.dev/docs/:path*'},{source:'/openapi.json',destination:'https://kos-khepra-api.fly.dev/openapi.json'}] } }
+module.exports = {
+  async rewrites(){
+    return [
+      {source:'/v1/:path*',destination:'https://kos-khepra-api.fly.dev/v1/:path*'},
+      {source:'/health',destination:'https://kos-khepra-api.fly.dev/health'},
+      {source:'/ready',destination:'https://kos-khepra-api.fly.dev/ready'},
+      {source:'/v1',destination:'https://kos-khepra-api.fly.dev/v1'},
+      {source:'/docs/:path*',destination:'https://kos-khepra-api.fly.dev/docs/:path*'},
+      {source:'/docs',destination:'https://kos-khepra-api.fly.dev/docs'},
+      {source:'/openapi.json',destination:'https://kos-khepra-api.fly.dev/openapi.json'},
+      {source:'/redoc',destination:'https://kos-khepra-api.fly.dev/redoc'},
+      {source:'/ping',destination:'https://kos-khepra-api.fly.dev/ping'}
+    ]
+  }
+}
