@@ -1,1 +1,1 @@
-export default function Home(){return <main style={{padding:40}}><h1>KOS API Proxy LIVE</h1><a href="/v1/kos/query?q=OHADA">TEST RAG</a> | <a href="/health">HEALTH</a> | <a href="/ready">READY</a> | <a href="/docs">DOCS</a></main>}
+export default function Home(){return <main style={{padding:40,fontFamily:'system-ui'}}><h1>KOS API Proxy LIVE ✅</h1><a href="/health">HEALTH</a> | <a href="/ready">READY</a> | <a href="/v1">V1</a> | <a href="/docs">DOCS</a> | <a href="/v1/kos/query?q=OHADA">TEST OHADA</a></main>}
