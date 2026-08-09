@@ -1,11 +1,16 @@
 {
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
   "rewrites": [
     { "source": "/health", "destination": "https://kos-khepra-api.fly.dev/health" },
     { "source": "/ready", "destination": "https://kos-khepra-api.fly.dev/ready" },
     { "source": "/v1", "destination": "https://kos-khepra-api.fly.dev/v1" },
+    { "source": "/v1/status", "destination": "https://kos-khepra-api.fly.dev/v1/status" },
     { "source": "/v1/:path*", "destination": "https://kos-khepra-api.fly.dev/v1/:path*" },
     { "source": "/docs", "destination": "https://kos-khepra-api.fly.dev/docs" },
     { "source": "/docs/:path*", "destination": "https://kos-khepra-api.fly.dev/docs/:path*" },
-    { "source": "/openapi.json", "destination": "https://kos-khepra-api.fly.dev/openapi.json" }
+    { "source": "/openapi.json", "destination": "https://kos-khepra-api.fly.dev/openapi.json" },
+    { "source": "/redoc", "destination": "https://kos-khepra-api.fly.dev/redoc" },
+    { "source": "/ping", "destination": "https://kos-khepra-api.fly.dev/ping" }
   ]
 }
