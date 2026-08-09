@@ -13,3 +13,6 @@ frontend/.next/
 .env.local
 .next/
 frontend/.next/
+
+# Local Netlify folder
+.netlify
