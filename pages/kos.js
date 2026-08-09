@@ -1,10 +1,9 @@
-'use client'
 import { useState } from 'react'
-export default function KosPage(){
+export default function Kos(){
   const [q,setQ]=useState('OHADA')
-  const [data,setData]=useState<any>(null)
+  const [data,setData]=useState(null)
   const search=async()=>{
-    const r=await fetch(`/v1/kos/query?q=${encodeURIComponent(q)}`)
+    const r=await fetch('/v1/kos/query?q='+encodeURIComponent(q))
     setData(await r.json())
   }
   return (
@@ -14,7 +13,7 @@ export default function KosPage(){
         <input value={q} onChange={e=>setQ(e.target.value)} style={{flex:1,padding:12,border:'1px solid #ccc',borderRadius:8}} />
         <button onClick={search} style={{padding:'12px 24px',background:'#D4AF37',border:'none',borderRadius:8,cursor:'pointer'}}>Search</button>
       </div>
-      <pre style={{background:'#111',color:'#0f0',padding:15,marginTop:20,borderRadius:8,overflow:'auto'}}>{data?JSON.stringify(data,null,2):'Clique Search'}</pre>
+      <pre style={{background:'#111',color:'#0f0',padding:15,marginTop:20,borderRadius:8,overflow:'auto',minHeight:300}}>{data?JSON.stringify(data,null,2):'Clique Search'}</pre>
     </div>
   )
 }
