@@ -1,7 +1,0 @@
-[INFO] === MASTER CD FINAL v4 - PWD: C:\Users\essoc\Downloads\kos-fullstack\frontend ===
-[PASS] next.config.js FIXED
-[PASS] vercel.json FIXED
-[PASS] robots.txt + llms.txt FIXED
-[PASS] Migration creee: ./supabase/migrations/20260731_135634_bigfour_hardening.sql
-[PASS] khepraexperts.com UP
-[FIX] === FIN - Copie ces 3 fichiers vers tes 2 projets frontend + supabase db push ===
