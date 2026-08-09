@@ -2,6 +2,7 @@
   "framework": "nextjs",
   "buildCommand": "npm run build",
   "rewrites": [
+    { "source": "/", "destination": "https://kos-khepra-api.fly.dev/" },
     { "source": "/health", "destination": "https://kos-khepra-api.fly.dev/health" },
     { "source": "/ready", "destination": "https://kos-khepra-api.fly.dev/ready" },
     { "source": "/v1", "destination": "https://kos-khepra-api.fly.dev/v1" },
