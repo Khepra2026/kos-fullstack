@@ -1,11 +1,2 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {
-  reactStrictMode: true,
-  async rewrites(){
-    return [
-      {source:'/v1/:path*',destination:'https://kos-khepra-api.fly.dev/v1/:path*'},
-      {source:'/health',destination:'https://kos-khepra-api.fly.dev/health'}
-    ]
-  }
-}
-module.exports = nextConfig
+module.exports = { async rewrites(){ return [{source:'/v1/:path*',destination:'https://kos-khepra-api.fly.dev/v1/:path*'},{source:'/health',destination:'https://kos-khepra-api.fly.dev/health'},{source:'/ready',destination:'https://kos-khepra-api.fly.dev/ready'},{source:'/docs/:path*',destination:'https://kos-khepra-api.fly.dev/docs/:path*'},{source:'/openapi.json',destination:'https://kos-khepra-api.fly.dev/openapi.json'}] } }
