@@ -1,0 +1,13 @@
+fastapi
+uvicorn[standard]
+sqlalchemy[asyncio]
+asyncpg
+pgvector
+supabase
+python-dotenv
+fastembed==0.4.1
+onnxruntime
+structlog
+
+pydantic-settings
+
