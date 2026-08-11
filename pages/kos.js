@@ -1,2 +1,0 @@
-import {useState} from 'react'
-export default function Kos(){const [q,setQ]=useState('OHADA');const [d,setD]=useState(null);return <div style={{padding:20}}><h1>KOS Brain</h1><input value={q} onChange={e=>setQ(e.target.value)}/><button onClick={async()=>{const r=await fetch('/v1/kos/query?q='+encodeURIComponent(q)); setD(await r.json())}}>Search</button><pre>{JSON.stringify(d,null,2)}</pre></div>}

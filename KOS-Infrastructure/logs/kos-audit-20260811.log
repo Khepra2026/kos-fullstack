@@ -3,3 +3,43 @@
 2026-08-11 09:13:31 | Healthcheck terminé. Rapport exporté vers : C:\Users\essoc\KOS-Infrastructure\logs\healthcheck-20260811-0913.csv
 2026-08-11 09:34:24 | === TRACE VERSION API ===
 2026-08-11 09:34:25 | [PASS] Version API: 6.0
+2026-08-11 09:49:49 | === TEST TRAÇABILITÉ RAG (simulation & validation) ===
+2026-08-11 09:49:49 | Exécution de la requête RAG : Circulaire BCEAO résilience SFD 2026
+2026-08-11 09:49:50 | ERROR - Échec API pour 'Circulaire BCEAO résilience SFD 2026' : 
+
+
+
+Error
+
+
+Cannot POST /rag/query
+
+
+
+2026-08-11 09:49:50 | Exécution de la requête RAG : Ratio LCR COBAC Bâle III
+2026-08-11 09:49:51 | ERROR - Échec API pour 'Ratio LCR COBAC Bâle III' : 
+
+
+
+Error
+
+
+Cannot POST /rag/query
+
+
+
+2026-08-11 09:49:51 | Exécution de la requête RAG : Normes ISSB S1 S2 UEMOA
+2026-08-11 09:49:52 | ERROR - Échec API pour 'Normes ISSB S1 S2 UEMOA' : 
+
+
+
+Error
+
+
+Cannot POST /rag/query
+
+
+
+2026-08-11 09:51:40 | Exécution de la requête RAG : Circulaire BCEAO résilience SFD 2026
+2026-08-11 09:51:40 | Exécution de la requête RAG : Ratio LCR COBAC Bâle III
+2026-08-11 09:51:41 | Exécution de la requête RAG : Normes ISSB S1 S2 UEMOA

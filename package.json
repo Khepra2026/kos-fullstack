@@ -7,9 +7,32 @@
     "start": "next start"
   },
   "dependencies": {
+    "express": "^5.2.1",
     "next": "14.2.5",
     "react": "18.3.1",
     "react-dom": "18.3.1"
+  },
+  "version": "1.0.0",
+  "description": "",
+  "main": "next.config.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Khepra2026/kos-fullstack.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Khepra2026/kos-fullstack/issues"
+  },
+  "homepage": "https://github.com/Khepra2026/kos-fullstack#readme",
+  "devDependencies": {
+    "@types/node": "^26.2.0",
+    "@types/react": "^19.2.18",
+    "typescript": "7.0.2"
   }
 }
-
