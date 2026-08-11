@@ -1,0 +1,26 @@
+# Fly - ignore gros dossiers
+.git
+.gitignore
+node_modules
+.next
+dist
+build
+coverage
+
+# KOS local
+KOS-Infrastructure/logs
+KOS-Infrastructure/*.zip
+KOS-Infrastructure/*.csv
+KOS-Infrastructure/*.log
+logs
+*.zip
+*.log
+
+# Env / OS
+.env.local
+.env.development
+.DS_Store
+Thumbs.db
+
+# Vercel restes
+.vercel
