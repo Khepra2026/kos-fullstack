@@ -1,31 +1,85 @@
 import { NextResponse } from 'next/server'
 
-export async function GET(){
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
+export async function GET() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  
-  if(!url || !key){
-    return NextResponse.json({sources: []}, {status: 200})
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+
+  if (!url || !key) {
+    return NextResponse.json(
+      {
+        status: 'configuration_error',
+        sources: [],
+        error: 'Supabase server configuration is missing'
+      },
+      { status: 503 }
+    )
   }
 
+  const endpoint =
+    `${url}/rest/v1/kos_regulatory_sources` +
+    `?is_active=eq.true` +
+    `&order=authority.asc` +
+    `&select=source_id,authority,country_jurisdiction,official_url,is_active,crawl_frequency`
+
   try {
-    const res = await fetch(`${url}/rest/v1/kos_regulatory_sources?is_active=eq.true&order=authority.asc&select=source_id,authority,country_jurisdiction,official_url,is_active,crawl_frequency`, {
+    const response = await fetch(endpoint, {
+      method: 'GET',
       headers: {
         apikey: key,
         Authorization: `Bearer ${key}`,
+        Accept: 'application/json'
       },
       cache: 'no-store'
     })
-    const data = await res.json()
-    if(!res.ok) throw new Error(JSON.stringify(data))
-    return NextResponse.json({sources: data})
-  } catch(e:any){
-    return NextResponse.json({error: e.message, sources: [
-      {authority:'BCEAO', official_url:'https://www.bceao.int', country_jurisdiction:'UEMOA', is_active:true},
-      {authority:'COBAC', official_url:'https://www.beac.int', country_jurisdiction:'CEMAC', is_active:true},
-      {authority:'OHADA', official_url:'https://www.ohada.org', country_jurisdiction:'OHADA', is_active:true},
-      {authority:'GAFI', official_url:'https://www.fatf-gafi.org', country_jurisdiction:'International', is_active:true},
-      {authority:'ISSB', official_url:'https://www.ifrs.org', country_jurisdiction:'International', is_active:true},
-    ]})
+
+    const text = await response.text()
+
+    let data: unknown
+
+    try {
+      data = text ? JSON.parse(text) : []
+    } catch {
+      return NextResponse.json(
+        {
+          status: 'upstream_error',
+          sources: [],
+          error: 'Supabase returned invalid JSON'
+        },
+        { status: 502 }
+      )
+    }
+
+    if (!response.ok) {
+      return NextResponse.json(
+        {
+          status: 'upstream_error',
+          sources: [],
+          error: 'Supabase REST request failed',
+          upstream_status: response.status
+        },
+        { status: 502 }
+      )
+    }
+
+    return NextResponse.json(
+      {
+        status: 'ok',
+        count: Array.isArray(data) ? data.length : 0,
+        sources: Array.isArray(data) ? data : []
+      },
+      { status: 200 }
+    )
+  } catch {
+    return NextResponse.json(
+      {
+        status: 'upstream_unavailable',
+        sources: [],
+        error: 'Supabase is temporarily unavailable'
+      },
+      { status: 502 }
+    )
   }
 }
