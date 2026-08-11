@@ -1,3 +1,5 @@
 [2026-08-11 09:11:58] [INFO] [KOS-CORE] Initialisation et test d'écriture du journal de bord validés.
 2026-08-11 09:13:24 | === HEALTHCHECK DOMAINES ===
 2026-08-11 09:13:31 | Healthcheck terminé. Rapport exporté vers : C:\Users\essoc\KOS-Infrastructure\logs\healthcheck-20260811-0913.csv
+2026-08-11 09:34:24 | === TRACE VERSION API ===
+2026-08-11 09:34:25 | [PASS] Version API: 6.0
