@@ -31,8 +31,8 @@
   },
   "homepage": "https://github.com/Khepra2026/kos-fullstack#readme",
   "devDependencies": {
-    "@types/node": "^26.2.0",
-    "@types/react": "^19.2.18",
-    "typescript": "7.0.2"
+    "@types/node": "26.2.0",
+    "@types/react": "19.2.18",
+    "typescript": "5.4.5"
   }
 }
