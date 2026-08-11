@@ -1,8 +1,12 @@
 .git
 node_modules
 .next
+out
 .env.local
+frontend
+evidence
 KOS-Infrastructure/logs
 KOS-Infrastructure/*.zip
 *.log
 .vercel
+coverage
