@@ -1,0 +1,6 @@
+"Url","StatusCode","Server","FlyDetected","Result","Error"
+"https://khepraexperts.com","200","N/A","False","PASS",""
+"https://www.khepraexperts.com","200","N/A","False","PASS",""
+"https://app.khepraexperts.com","200","N/A","False","PASS",""
+"https://kos.khepraexperts.com","200","Fly/550c97355 (2026-08-11)","False","PASS",""
+"https://api.khepraexperts.com","200","Fly/550c97355 (2026-08-11)","False","PASS",""
