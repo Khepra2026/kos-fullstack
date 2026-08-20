@@ -1,0 +1,6 @@
+Contact: security@khepraexperts.com
+Contact: dpo@khepraexperts.com
+Expires: 2027-08-11T23:59:59.000Z
+Canonical: https://khepraexperts.com/.well-known/security.txt
+Policy: https://khepraexperts.com/security
+Preferred-Languages: fr, en
