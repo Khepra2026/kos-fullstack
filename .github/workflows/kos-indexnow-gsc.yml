@@ -9,13 +9,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - name: Submit sitemaps
+
+      - name: Submit to IndexNow
         env:
-          GSC_TOKEN: ${{ secrets.GSC_TOKEN }}
           INDEXNOW_KEY: ${{ secrets.INDEXNOW_KEY }}
         run: |
-          node --version
-          if (Test-Path "scripts/submit-indexnow-gsc.mjs") { node scripts/submit-indexnow-gsc.mjs } else { echo "No submit script found, skipping" }
+          echo "Key exists: no" -replace "yes","yes (hidden)"
+          # Exemple Bing/Yandex IndexNow
+          curl -X POST "https://api.indexnow.org/indexnow?url=https://kos.tg/&key=&keyLocation=https://kos.tg/.txt" -v
