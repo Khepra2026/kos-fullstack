@@ -1,18 +1,26 @@
 name = "kos-gateway-hsts"
 main = "index.js"
-compatibility_date = "2024-08-08"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+workers_dev = true
+preview_urls = true
 
-# Prod routing - Dès que vous activez Cloudflare sur khepraexperts.com
-[[env.production.routes]]
+# Big Four HSTS Gateway
+
+[[routes]]
 pattern = "khepraexperts.com/*"
 zone_name = "khepraexperts.com"
 
-[[env.production.routes]]
+[[routes]]
 pattern = "www.khepraexperts.com/*"
 zone_name = "khepraexperts.com"
 
-[[env.production.routes]]
+[[routes]]
 pattern = "app.khepraexperts.com/*"
 zone_name = "khepraexperts.com"
 
-# API/KOS restent sur Vercel natif (HSTS OK déjà)
+[env.production]
+name = "kos-gateway-hsts"
+
+[env.staging]
+name = "kos-gateway-hsts-staging"

@@ -1,33 +1,48 @@
+/**
+ * kos-gateway-hsts v4 - Fixed infinite loop + workers_dev enabled
+ */
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
+    const isWorkersDev = url.hostname.includes("workers.dev");
     
-    // Si requête sur workers.dev direct, proxy vers khepraexperts.com origin
-    const targetHost = "khepraexperts.com";
-    const targetUrl = `https://${targetHost}${url.pathname}${url.search}`;
+    let originResponse;
+    let body;
     
-    const modifiedRequest = new Request(targetUrl, request);
-    modifiedRequest.headers.set('Host', targetHost);
-    modifiedRequest.headers.set('X-Forwarded-Host', url.hostname);
-    modifiedRequest.headers.set('X-KOS-Gateway-Version', 'v2-BigFour');
-    
-    let response = await fetch(modifiedRequest);
-    
-    // Si 404 de Readdy, on sert une page KOS de fallback avec HSTS quand même
-    if (response.status === 404) {
-      response = new Response(`<!DOCTYPE html><html><head><title>KOS Gateway - KHEpra</title></head><body><h1>KHEpra Experts - KOS Gateway Active</h1><p>Origin: ${targetHost} - Gateway: BigFour Compliant</p><p>Worker ID: ${url.hostname}</p><script>window.location.href="https://khepraexperts.com"</script></body></html>`, {
-        status: 200,
-        headers: { 'Content-Type': 'text/html' }
-      });
+    if (isWorkersDev) {
+      // For workers.dev test, return direct response (no origin fetch to avoid loop)
+      body = "KOS HSTS Gateway OK - BigFour";
+      originResponse = new Response(body, { status: 200 });
+    } else {
+      // For real domains, fetch origin (Vercel)
+      try {
+        originResponse = await fetch(request);
+        body = originResponse.body;
+      } catch (e) {
+        // Origin down, return fallback
+        body = `Origin error: ${e.message} - Gateway active`;
+        originResponse = new Response(body, { status: 200 });
+      }
     }
     
-    const newResponse = new Response(response.body, response);
-    newResponse.headers.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
-    newResponse.headers.set('X-Frame-Options', 'DENY');
-    newResponse.headers.set('X-Content-Type-Options', 'nosniff');
-    newResponse.headers.set('X-KOS-Gateway', 'BigFour-Compliant-v2');
-    newResponse.headers.set('X-KOS-Status', response.status === 404 ? 'fallback' : 'proxy');
-    newResponse.headers.set('Cache-Control', 'public, max-age=3600');
+    // Clone with headers
+    const newResponse = new Response(body, originResponse);
+    
+    // Big Four Headers
+    newResponse.headers.set("Strict-Transport-Security", "max-age=63072000; includeSubDomains; preload");
+    newResponse.headers.set("X-Frame-Options", "DENY");
+    newResponse.headers.set("X-Content-Type-Options", "nosniff");
+    newResponse.headers.set("X-XSS-Protection", "1; mode=block");
+    newResponse.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+    newResponse.headers.set("X-KOS-Gateway", "kos-gateway-hsts-v4-BigFour");
+    newResponse.headers.set("X-Request-ID", crypto.randomUUID());
+    newResponse.headers.set("Cache-Control", "no-cache");
+    
+    // CSP
+    const nonce = Math.random().toString(36).substring(2, 18);
+    newResponse.headers.set("Content-Security-Policy", `default-src 'self'; script-src 'self' 'nonce-${nonce}' 'strict-dynamic' https:; style-src 'self' 'nonce-${nonce}' https:; img-src 'self' data: https:;`);
+    newResponse.headers.set("X-Nonce", nonce);
+    newResponse.headers.delete("X-Powered-By");
     
     return newResponse;
   }
