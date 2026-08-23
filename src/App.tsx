@@ -1,63 +1,20 @@
-import { lazy, Suspense } from 'react';
-import { BrowserRouter, useLocation } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { I18nextProvider } from 'react-i18next';
-import { useEffect } from 'react';
+import FinancialDiagnosticForm from './components/FinancialDiagnosticForm';
 
-// --- IMPORTS ---
-import { AppRoutes } from './routes/AppRoutes'; 
-import i18n from './i18n'; 
-import { LegacyRedirects, ServiceLegacyRedirects } from './components/layout/LegacyRedirects';
-import ToastProvider from '@/components/ui/ToastProvider';
-import { initAllAnalytics, trackPageView } from './utils/analytics';
-import GlobalErrorBoundary from './core/GlobalErrorBoundary';
-import { logger } from './core/logger';
-import { useI18nDetector } from './hooks/useI18nDetector';
-
-// --- COMPOSANTS LAZY ---
-const FloatingExpertButton = lazy(() => import('./components/feature/FloatingExpertButton'));
-const CookieConsent = lazy(() => import('./components/feature/CookieConsent'));
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: { staleTime: 5 * 60 * 1000, gcTime: 30 * 60 * 1000, refetchOnWindowFocus: false, retry: 2 },
-    mutations: { retry: 1 },
-  },
-});
-
-function AnalyticsRouter() {
-  const location = useLocation();
-  useI18nDetector();
-
-  useEffect(() => { initAllAnalytics(); }, []);
-  useEffect(() => { trackPageView(location.pathname + location.search); }, [location.pathname, location.search]);
-
-  return (
-    <>
-      <LegacyRedirects />
-      <ServiceLegacyRedirects />
-      <AppRoutes />
-      <Suspense fallback={null}><FloatingExpertButton /></Suspense>
-      <Suspense fallback={null}><CookieConsent /></Suspense>
-    </>
-  );
-}
-
-// --- COMPOSANT PRINCIPAL ---
 export default function App() {
   return (
-    <GlobalErrorBoundary boundaryName="app-root">
-      <I18nextProvider i18n={i18n}>
-        <ToastProvider>
-          <BrowserRouter>
-            <QueryClientProvider client={queryClient}>
-              <GlobalErrorBoundary boundaryName="content-routes">
-                <AnalyticsRouter />
-              </GlobalErrorBoundary>
-            </QueryClientProvider>
-          </BrowserRouter>
-        </ToastProvider>
-      </I18nextProvider>
-    </GlobalErrorBoundary>
+    <main className="min-h-screen bg-slate-950 p-8 flex flex-col items-center justify-center">
+      <div className="w-full max-w-4xl">
+        <header className="mb-8 text-center">
+          <h1 className="text-3xl font-extrabold text-amber-400">
+            Khepra RegTech Hub
+          </h1>
+          <p className="text-slate-400 mt-2">
+            Plateforme de Conseil Stratégique, d'Ingénierie Financière & Conformité
+          </p>
+        </header>
+        
+        <FinancialDiagnosticForm />
+      </div>
+    </main>
   );
 }

@@ -1,17 +1,13 @@
 import { createRoot } from 'react-dom/client'
 import './index.css'
-import App from './App'
+import App from './App.tsx'
 
-// Anti-SW : désenregistre tout Service Worker résiduel au boot
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.getRegistrations().then(function(regs) {
-    regs.forEach(function(reg) { reg.unregister(); });
-  });
-}
+console.log('🚀 main.tsx démarré');
 
-const rootEl = document.getElementById('root');
-if (rootEl) {
-  createRoot(rootEl).render(<App />);
+const el = document.getElementById('root');
+if(!el){ 
+  document.body.innerHTML = 'PAS DE #root';
 } else {
-  document.body.innerHTML = '<h1 style="color:#c00;padding:40px;text-align:center;font-family:sans-serif">ERREUR CRITIQUE: conteneur #root introuvable</h1>';
+  console.log('✅ #root trouvé, montage App');
+  createRoot(el).render(<App />);
 }
