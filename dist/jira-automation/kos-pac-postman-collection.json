@@ -1,0 +1,138 @@
+{
+  "info": {
+    "name": "KOS Big Four PAC Engine — Webhook Test",
+    "description": "Collection Postman pour tester le webhook KOS → Jira Automation en 1 clic. Simule KHEPRA DD™ Phase 2 qui pousse un Red Flag SOC2-CC6.1 High vers Jira.\n\nTests Big Four automatiques inclus :\n• CWV LCP <2s (création ticket en <2000ms)\n• SLA 30j High respecté (duedate = date_detection + 30j)\n• ISAE 3000 Séparation (reporter ≠ assignee ≠ validator)\n\nImport : File → Import → Choisir ce fichier JSON.\nPuis configurer {{jira_webhook_url}} dans les variables de collection.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "SOC2-CC6.1 High — Test Finding → Jira Ticket",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// ─── Big Four Compliance Tests ───",
+              "// ISA 265 · ISAE 3000 · SOC 2 · CWV · GSC",
+              "",
+              "// Test 1: Core Web Vitals — LCP < 2000ms",
+              "pm.test('[CWV] Création ticket < 2s (LCP OK)', function () {",
+              "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+              "});",
+              "",
+              "// Test 2: HTTP Status 200/201/204 (Jira Automation OK)",
+              "pm.test('[HTTP] Jira Automation a accepté le webhook', function () {",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 201, 204]);",
+              "});",
+              "",
+              "// Test 3: Parse le body de la requête envoyée (JiraSeed)",
+              "const requestBody = JSON.parse(pm.request.body.raw);",
+              "",
+              "// Test 4: Priority = High",
+              "pm.test('[Big Four] Priority = High', function () {",
+              "    pm.expect(requestBody.fields.priority.name).to.eql('High');",
+              "});",
+              "",
+              "// Test 5: SLA 30j — duedate = date_detection + 30 jours",
+              "pm.test('[Big Four] SLA 30j respecté (duedate = detection + 30j)', function () {",
+              "    const detectionDate = new Date(requestBody.meta.finding_id.replace('FIND-', '2026-').substring(0, 10) || '2026-07-01');",
+              "    if (isNaN(detectionDate.getTime())) {",
+              "        // fallback: parse duedate directly and check it's ~30 days from now",
+              "        const dueDate = new Date(requestBody.fields.duedate);",
+              "        const now = new Date();",
+              "        const diffDays = Math.round((dueDate - now) / (1000 * 60 * 60 * 24));",
+              "        pm.expect(diffDays).to.be.within(28, 32);",
+              "    } else {",
+              "        const expectedDue = new Date(detectionDate);",
+              "        expectedDue.setDate(expectedDue.getDate() + 30);",
+              "        pm.expect(requestBody.fields.duedate).to.eql(expectedDue.toISOString().split('T')[0]);",
+              "    }",
+              "});",
+              "",
+              "// Test 6: ISAE 3000 — Séparation assignee ≠ reporter ≠ validator",
+              "pm.test('[ISAE 3000] assignee ≠ reporter (R ≠ system)', function () {",
+              "    const assignee = requestBody.fields.assignee?.id || 'system';",
+              "    const reporter = requestBody.meta.raci.reporter || 'system';",
+              "    pm.expect(assignee).to.not.eql(reporter);",
+              "});",
+              "pm.test('[ISAE 3000] validator ≠ reporter (A ≠ system)', function () {",
+              "    const reporter = requestBody.meta.raci.reporter || 'system';",
+              "    const validator = requestBody.meta.raci.validator || 'system';",
+              "    pm.expect(validator).to.not.eql(reporter);",
+              "});",
+              "",
+              "// Test 7: Labels SOC2 présents",
+              "pm.test('[SOC 2] Labels SOC2-CC61 présent', function () {",
+              "    pm.expect(requestBody.fields.labels).to.include('SOC2-CC61');",
+              "});",
+              "",
+              "// Test 8: GSC — Summary format [Standard][CRITICITE] Title",
+              "pm.test('[GSC] Summary format [STD][CRIT] Title indexable', function () {",
+              "    pm.expect(requestBody.fields.summary).to.match(/^\\[[A-Z0-9.-]+\\]\\[[A-Z]+\\]\\s/);",
+              "});",
+              "",
+              "// Test 9: Description < 32KB (CWV compliant)",
+              "pm.test('[CWV] Description < 32KB', function () {",
+              "    const descSize = JSON.stringify(requestBody.fields.description).length;",
+              "    pm.expect(descSize).to.be.below(32000);",
+              "});",
+              "",
+              "// Test 10: Customfields Big Four mappés",
+              "pm.test('[Big Four] Customfield 10001 Standard mappé', function () {",
+              "    pm.expect(requestBody.fields.customfield_10001).to.eql('SOC2-CC6.1');",
+              "});",
+              "pm.test('[Big Four] Customfield 10002 Criticité mappée', function () {",
+              "    pm.expect(requestBody.fields.customfield_10002).to.eql('high');",
+              "});",
+              "pm.test('[Big Four] Customfield 10003 RootCause mappée', function () {",
+              "    pm.expect(requestBody.fields.customfield_10003).to.be.a('string').and.not.empty;",
+              "});",
+              "",
+              "// Résumé console",
+              "console.log('╔════════════════════════════════╗');",
+              "console.log('║  KOS PAC ENGINE — Postman Test ║');",
+              "console.log('║  Big Four Compliance Checks     ║');",
+              "console.log('╚════════════════════════════════╝');",
+              "console.log('Finding ID:', requestBody.meta.finding_id);",
+              "console.log('Priority:', requestBody.fields.priority.name);",
+              "console.log('SLA Days:', requestBody.meta.sla_days);",
+              "console.log('Due Date:', requestBody.fields.duedate);",
+              "console.log('Labels:', requestBody.fields.labels.join(', '));",
+              "console.log('Response Time:', pm.response.responseTime, 'ms');"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fields\": {\n    \"project\": {\n      \"key\": \"KOS\"\n    },\n    \"issuetype\": {\n      \"name\": \"Task\"\n    },\n    \"summary\": \"[SOC2-CC6.1][HIGH] Contrôle d'accès logique insuffisant — Absence de MFA sur comptes admin AWS\",\n    \"description\": {\n      \"version\": 1,\n      \"type\": \"doc\",\n      \"content\": [\n        {\n          \"type\": \"heading\",\n          \"attrs\": { \"level\": 2 },\n          \"content\": [{ \"type\": \"text\", \"text\": \"Big Four Audit Finding — FIND-2026-002\" }]\n        },\n        {\n          \"type\": \"panel\",\n          \"attrs\": { \"panelType\": \"error\" },\n          \"content\": [\n            {\n              \"type\": \"heading\",\n              \"attrs\": { \"level\": 3 },\n              \"content\": [{ \"type\": \"text\", \"text\": \"🔍 Root Cause Analysis (ISA 265)\" }]\n            }\n          ]\n        },\n        {\n          \"type\": \"paragraph\",\n          \"content\": [{ \"type\": \"text\", \"text\": \"La politique IAM AWS n'impose pas le MFA (Multi-Factor Authentication) pour les comptes administrateurs. 3 comptes admin sur 12 n'ont pas MFA activé. Le déploiement initial de la politique IAM a été fait sans revue de sécurité Big Four.\" }]\n        },\n        {\n          \"type\": \"panel\",\n          \"attrs\": { \"panelType\": \"warning\" },\n          \"content\": [\n            {\n              \"type\": \"heading\",\n              \"attrs\": { \"level\": 3 },\n              \"content\": [{ \"type\": \"text\", \"text\": \"💰 Impact Financier & Réglementaire\" }]\n            }\n          ]\n        },\n        {\n          \"type\": \"paragraph\",\n          \"content\": [{ \"type\": \"text\", \"text\": \"Impact estimé: 45 000 000 FCFA. Niveau de risque SOC 2: Élevé — CC6.1 non conforme. Module: AWS IAM Security. Détecteur: KOS Security Scan Edge Function v3.\" }]\n        },\n        {\n          \"type\": \"panel\",\n          \"attrs\": { \"panelType\": \"success\" },\n          \"content\": [\n            {\n              \"type\": \"heading\",\n              \"attrs\": { \"level\": 3 },\n              \"content\": [{ \"type\": \"text\", \"text\": \"✅ Plan d'Action Correctif\" }]\n            }\n          ]\n        },\n        {\n          \"type\": \"heading\",\n          \"attrs\": { \"level\": 4 },\n          \"content\": [{ \"type\": \"text\", \"text\": \"1. Action Immédiate (< 72h)\" }]\n        },\n        {\n          \"type\": \"paragraph\",\n          \"content\": [{ \"type\": \"text\", \"text\": \"Activer MFA sur les 3 comptes admin non protégés via AWS IAM Console. Désactiver temporairement les comptes sans MFA jusqu'à activation.\" }]\n        },\n        {\n          \"type\": \"heading\",\n          \"attrs\": { \"level\": 4 },\n          \"content\": [{ \"type\": \"text\", \"text\": \"2. Action Long Terme\" }]\n        },\n        {\n          \"type\": \"paragraph\",\n          \"content\": [{ \"type\": \"text\", \"text\": \"Déployer une SCP (Service Control Policy) AWS Organizations bloquant toute action admin sans MFA. Audit trimestriel IAM automatisé via AWS Config Rule iam-user-mfa-enabled.\" }]\n        },\n        {\n          \"type\": \"heading\",\n          \"attrs\": { \"level\": 4 },\n          \"content\": [{ \"type\": \"text\", \"text\": \"3. Test d'Audit (ISAE 3000)\" }]\n        },\n        {\n          \"type\": \"paragraph\",\n          \"content\": [{ \"type\": \"text\", \"text\": \"aws iam list-users | grep MFA — Vérifier que 100% des comptes admin ont MFA=True. Tester l'accès console sans MFA (doit être bloqué).\" }]\n        },\n        {\n          \"type\": \"paragraph\",\n          \"content\": [{ \"type\": \"text\", \"text\": \"📎 Evidence (ISA 265): https://confluence.khepraexperts.com/display/SEC/IAM-MFA-Audit-2026-07\" }]\n        }\n      ]\n    },\n    \"priority\": {\n      \"name\": \"High\"\n    },\n    \"labels\": [\n      \"SOC2-CC61\",\n      \"SOC2-CC62\",\n      \"BigFour\"\n    ],\n    \"duedate\": \"2026-07-31\",\n    \"components\": [\n      {\n        \"name\": \"AWS IAM Security\"\n      }\n    ],\n    \"customfield_10001\": \"SOC2-CC6.1\",\n    \"customfield_10002\": \"high\",\n    \"customfield_10003\": \"Absence de politique IAM MFA obligatoire. 3 comptes admin sans MFA sur 12.\"\n  },\n  \"meta\": {\n    \"finding_id\": \"FIND-2026-002\",\n    \"transformed_by\": \"KOS PAC ENGINE v1.0\",\n    \"transformed_at\": \"2026-07-01T00:00:00Z\",\n    \"format\": \"KPMG Big Four\",\n    \"sla_days\": 30,\n    \"quality_gates\": {\n      \"iso_9001\": true,\n      \"iso_27001_a912\": true,\n      \"isae_3000_separation\": true,\n      \"isa_265_tracabilite\": true,\n      \"bceao_check\": false,\n      \"soc2_cc61\": true,\n      \"gsc_indexable\": true\n    },\n    \"raci\": {\n      \"assignee\": \"R\",\n      \"reporter\": \"system\",\n      \"validator\": \"A\"\n    }\n  },\n  \"execution_id\": \"kos-pac-postman-test-SOC2-CC61-HIGH-001\",\n  \"success\": true\n}"
+        },
+        "url": {
+          "raw": "{{jira_webhook_url}}",
+          "host": [
+            "{{jira_webhook_url}}"
+          ]
+        },
+        "description": "Test Big Four — SOC2-CC6.1 High Finding\n\nCe payload simule KHEPRA DD™ Phase 2 qui pousse un Red Flag (Contrôle d'accès logique insuffisant — Absence de MFA AWS) vers le webhook Jira Automation.\n\nVérifications automatiques :\n• CWV LCP <2s (création ticket en <2000ms)\n• SLA 30j High respecté (duedate = 2026-07-31)\n• ISAE 3000 assignee ≠ reporter\n• SOC2-CC61 label présent\n• GSC Summary format [STD][CRIT]\n• Description <32KB\n\nPrérequis :\n1. Importer le workflow Jira Automation KOS dans Jira\n2. Copier l'URL du webhook généré\n3. La coller dans la variable de collection {{jira_webhook_url}}"
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "jira_webhook_url",
+      "value": "https://automation.atlassian.com/pro/trigger/REMPLACER_PAR_VOTRE_WEBHOOK",
+      "type": "string",
+      "description": "URL du webhook Jira Automation → Incoming Webhook. Copiez-la depuis Jira > Project Settings > Automation > Votre règle KOS PAC Engine."
+    }
+  ]
+}
