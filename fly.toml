@@ -1,4 +1,3 @@
-# fly.toml app configuration file generated for kos-fullstack on 2026
 app = "kos-fullstack"
 primary_region = "cdg"
 
@@ -8,14 +7,17 @@ primary_region = "cdg"
 [http_service]
   internal_port = 4000
   force_https = true
-  auto_stop_machines = true
+  auto_stop_machines = false
   auto_start_machines = true
-  min_machines_running = 0
+  min_machines_running = 1
   processes = ["app"]
+
+[http_service.checks]
+  grace_period = "10s"
+  interval = "30s"
+  method = "GET"
+  timeout = "5s"
+  path = "/health"
 
 [env]
   NODE_ENV = "production"
-
-[[metrics]]
-  port = 4000
-  path = "/metrics"
