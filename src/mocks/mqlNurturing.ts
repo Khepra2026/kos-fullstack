@@ -1,0 +1,382 @@
+export interface MQLNurturingLead {
+  id: string;
+  full_name: string;
+  email: string;
+  organization: string;
+  position: string;
+  sector: string;
+  country: string;
+  lead_score: number;
+  pipeline_stage: string;
+  source_page: string;
+  form_type: string;
+  last_activity_at: string;
+  days_since_last_activity: number;
+  nurturing_sequence: string;
+  nurturing_step: number;
+  nurturing_status: 'active' | 'completed' | 'paused' | 'not_started';
+  email_opens: number;
+  email_clicks: number;
+  deal_value: number;
+  next_best_action: string;
+  priority: 'P0' | 'P1' | 'P2' | 'P3';
+}
+
+export const mqlNurturingStats = {
+  totalMQLWithoutFollowUp: 442,
+  inEducationalSequence: 187,
+  inCaseStudySequence: 98,
+  inProposalSequence: 87,
+  inRelanceSequence: 70,
+  avgDaysSinceLastContact: 23,
+  totalPipelineValue: 12845000,
+  emailOpenRate: 34.2,
+  emailClickRate: 12.8,
+  conversionToMeeting: 8.4,
+  hotLeadsDetected: 34,
+};
+
+export const nurturingSequences = [
+  {
+    id: 'educational',
+    name: 'Éducatif',
+    description: 'Séquence de contenu éducatif pour MQL froids (score 35–50)',
+    icon: 'ri-book-open-line',
+    color: '#3b82f6',
+    bgColor: 'bg-blue-50',
+    textColor: 'text-blue-700',
+    targetScoreRange: '35–50',
+    steps: [
+      { step: 1, name: 'Bienvenue + Guide', delayHours: 0, subject: 'Votre guide stratégique est prêt', type: 'educational' },
+      { step: 2, name: 'Contenu Sectoriel', delayHours: 72, subject: 'Ce qui change dans votre secteur en 2026', type: 'educational' },
+      { step: 3, name: 'Framework Méthodo', delayHours: 168, subject: 'Le framework utilisé par les leaders du secteur', type: 'educational' },
+      { step: 4, name: 'Vidéo Explicative', delayHours: 240, subject: '5 min pour comprendre l\'enjeu', type: 'educational' },
+      { step: 5, name: 'Checklist Actionnable', delayHours: 336, subject: 'Votre checklist de conformité personnalisée', type: 'educational' },
+    ],
+  },
+  {
+    id: 'case_study',
+    name: 'Cas Clients',
+    description: 'Séquence de preuve sociale pour MQL tièdes (score 50–65)',
+    icon: 'ri-building-line',
+    color: '#f59e0b',
+    bgColor: 'bg-amber-50',
+    textColor: 'text-amber-700',
+    targetScoreRange: '50–65',
+    steps: [
+      { step: 1, name: 'Témoignage Clé', delayHours: 0, subject: 'Comment une banque UEMOA a transformé sa conformité', type: 'case_study' },
+      { step: 2, name: 'Case Study Détaillé', delayHours: 72, subject: 'Résultats concrets : +40% de performance', type: 'case_study' },
+      { step: 3, name: 'ROI Démontré', delayHours: 168, subject: 'Le ROI de l\'accompagnement Big Four en Afrique', type: 'case_study' },
+      { step: 4, name: 'Avant/Après', delayHours: 240, subject: 'Avant et après : 3 transformations réussies', type: 'case_study' },
+    ],
+  },
+  {
+    id: 'proposition',
+    name: 'Proposition',
+    description: 'Séquence de proposition commerciale pour MQL chauds (score 65–80)',
+    icon: 'ri-hand-coin-line',
+    color: '#10b981',
+    bgColor: 'bg-emerald-50',
+    textColor: 'text-emerald-700',
+    targetScoreRange: '65–80',
+    steps: [
+      { step: 1, name: 'Diagnostic Offert', delayHours: 0, subject: 'Diagnostic Flash gratuit — 48h de réponse', type: 'proposition' },
+      { step: 2, name: 'Entretien Stratégique', delayHours: 48, subject: 'Votre entretien stratégique avec un senior partner', type: 'proposition' },
+      { step: 3, name: 'Offre Personnalisée', delayHours: 120, subject: 'Votre proposition sur mesure', type: 'proposition' },
+      { step: 4, name: 'FAQ + Objections', delayHours: 168, subject: 'Les 5 questions les plus fréquentes (et nos réponses)', type: 'proposition' },
+    ],
+  },
+  {
+    id: 'relance',
+    name: 'Relance',
+    description: 'Séquence de relance pour MQL dormants (score > 50, sans activité > 21j)',
+    icon: 'ri-notification-3-line',
+    color: '#ef4444',
+    bgColor: 'bg-red-50',
+    textColor: 'text-red-700',
+    targetScoreRange: '> 50, dormant',
+    steps: [
+      { step: 1, name: 'Dernier Rappel', delayHours: 0, subject: 'On ne se connaît pas encore — voici pourquoi c\'est le moment', type: 'relance' },
+      { step: 2, name: 'Offre Limitée', delayHours: 72, subject: 'Offre de lancement : -20% sur le premier diagnostic', type: 'relance' },
+      { step: 3, name: 'Break-Up', delayHours: 168, subject: 'Dernière ligne — avant de vous désinscrire de cette séquence', type: 'relance' },
+    ],
+  },
+];
+
+export const mqlNurturingLeads: MQLNurturingLead[] = [
+  {
+    id: 'mql-001', full_name: 'Abdoulaye Koné', email: 'abdoulaye.kone@banqueuemoa.bf', organization: 'Banque UEMOA',
+    position: 'Directeur des Risques', sector: 'Banque', country: 'Burkina Faso',
+    lead_score: 48, pipeline_stage: 'contact_engaged', source_page: '/lead-magnets/checklist-conformite-bceao-cobac',
+    form_type: 'lead_magnet', last_activity_at: '2026-05-20T10:00:00Z', days_since_last_activity: 25,
+    nurturing_sequence: 'educational', nurturing_step: 3, nurturing_status: 'active',
+    email_opens: 4, email_clicks: 1, deal_value: 45000, next_best_action: 'Envoyer le framework méthodologique',
+    priority: 'P2',
+  },
+  {
+    id: 'mql-002', full_name: 'Mariam Diallo', email: 'mariam.diallo@sfdmali.ml', organization: 'SFD Mali',
+    position: 'Responsable Conformité', sector: 'Microfinance', country: 'Mali',
+    lead_score: 42, pipeline_stage: 'contact_engaged', source_page: '/lead-magnets/diagnostic-esg-maturite',
+    form_type: 'lead_magnet', last_activity_at: '2026-05-18T14:00:00Z', days_since_last_activity: 27,
+    nurturing_sequence: 'educational', nurturing_step: 2, nurturing_status: 'active',
+    email_opens: 2, email_clicks: 0, deal_value: 22000, next_best_action: 'Partager contenu sectoriel microfinance',
+    priority: 'P3',
+  },
+  {
+    id: 'mql-003', full_name: 'Jean-Pierre Nguessan', email: 'jp.nguessan@fintechci.ci', organization: 'FinTech Côte d\'Ivoire',
+    position: 'CEO', sector: 'FinTech', country: 'Côte d\'Ivoire',
+    lead_score: 72, pipeline_stage: 'contact_engaged', source_page: '/lead-magnets/guide-levee-fonds-afrique',
+    form_type: 'lead_magnet', last_activity_at: '2026-05-25T09:00:00Z', days_since_last_activity: 20,
+    nurturing_sequence: 'proposition', nurturing_step: 1, nurturing_status: 'active',
+    email_opens: 6, email_clicks: 3, deal_value: 85000, next_best_action: 'Proposer diagnostic flash gratuit',
+    priority: 'P0',
+  },
+  {
+    id: 'mql-004', full_name: 'Fatou Bensouda', email: 'fatou.bensouda@banquesenegal.sn', organization: 'Banque Sénégal',
+    position: 'DG Adjointe', sector: 'Banque', country: 'Sénégal',
+    lead_score: 68, pipeline_stage: 'lead_hot', source_page: '/services/conseil-strategique',
+    form_type: 'contact_form', last_activity_at: '2026-05-28T11:00:00Z', days_since_last_activity: 17,
+    nurturing_sequence: 'proposition', nurturing_step: 2, nurturing_status: 'active',
+    email_opens: 5, email_clicks: 2, deal_value: 62000, next_best_action: 'Planifier entretien senior partner',
+    priority: 'P1',
+  },
+  {
+    id: 'mql-005', full_name: 'Koffi Mensah', email: 'koffi.mensah@esgbenin.bj', organization: 'ESG Bénin',
+    position: 'Directeur ESG', sector: 'ESG', country: 'Bénin',
+    lead_score: 55, pipeline_stage: 'contact_engaged', source_page: '/lead-magnets/diagnostic-esg-maturite',
+    form_type: 'lead_magnet', last_activity_at: '2026-05-22T16:00:00Z', days_since_last_activity: 23,
+    nurturing_sequence: 'case_study', nurturing_step: 1, nurturing_status: 'active',
+    email_opens: 3, email_clicks: 1, deal_value: 35000, next_best_action: 'Envoyer témoignage clé ESG',
+    priority: 'P2',
+  },
+  {
+    id: 'mql-006', full_name: 'Aïcha Traoré', email: 'aicha.traore@pmemali.ml', organization: 'PME Mali',
+    position: 'Fondatrice', sector: 'PME', country: 'Mali',
+    lead_score: 58, pipeline_stage: 'contact_engaged', source_page: '/lead-magnets/simulation-risque-reglementaire',
+    form_type: 'lead_magnet', last_activity_at: '2026-05-15T10:00:00Z', days_since_last_activity: 30,
+    nurturing_sequence: 'case_study', nurturing_step: 2, nurturing_status: 'active',
+    email_opens: 3, email_clicks: 1, deal_value: 18000, next_best_action: 'Partager case study PME',
+    priority: 'P2',
+  },
+  {
+    id: 'mql-007', full_name: 'Paul Ouedraogo', email: 'paul.ouedraogo@investbf.bf', organization: 'InvestBurkina',
+    position: 'DG', sector: 'Investissement', country: 'Burkina Faso',
+    lead_score: 75, pipeline_stage: 'lead_hot', source_page: '/services/due-diligence-acquisition',
+    form_type: 'contact_form', last_activity_at: '2026-05-30T08:00:00Z', days_since_last_activity: 15,
+    nurturing_sequence: 'proposition', nurturing_step: 3, nurturing_status: 'active',
+    email_opens: 7, email_clicks: 4, deal_value: 95000, next_best_action: 'Envoyer offre personnalisée',
+    priority: 'P0',
+  },
+  {
+    id: 'mql-008', full_name: 'Sophie Kaboré', email: 'sophie.kabore@microfinance.bf', organization: 'Microfinance Burkina',
+    position: 'Responsable RH', sector: 'Microfinance', country: 'Burkina Faso',
+    lead_score: 38, pipeline_stage: 'new_lead', source_page: '/lead-magnets/simulation-risque-reglementaire',
+    form_type: 'lead_magnet', last_activity_at: '2026-05-10T14:00:00Z', days_since_last_activity: 35,
+    nurturing_sequence: 'educational', nurturing_step: 1, nurturing_status: 'active',
+    email_opens: 1, email_clicks: 0, deal_value: 12000, next_best_action: 'Envoyer guide de bienvenue',
+    priority: 'P3',
+  },
+  {
+    id: 'mql-009', full_name: 'Ibrahim Touré', email: 'ibrahim.toure@pmecameroun.cm', organization: 'PME Cameroun',
+    position: 'DAF', sector: 'PME', country: 'Cameroun',
+    lead_score: 52, pipeline_stage: 'contact_engaged', source_page: '/services/conseil-strategique',
+    form_type: 'contact_form', last_activity_at: '2026-05-24T09:00:00Z', days_since_last_activity: 21,
+    nurturing_sequence: 'case_study', nurturing_step: 1, nurturing_status: 'active',
+    email_opens: 4, email_clicks: 2, deal_value: 28000, next_best_action: 'Envoyer témoignage secteur PME',
+    priority: 'P2',
+  },
+  {
+    id: 'mql-010', full_name: 'Esther Koffi', email: 'esther.koffi@fintechci.ci', organization: 'Fintech Côte d\'Ivoire',
+    position: 'CTO', sector: 'FinTech', country: 'Côte d\'Ivoire',
+    lead_score: 61, pipeline_stage: 'contact_engaged', source_page: '/lead-magnets/guide-levee-fonds-afrique',
+    form_type: 'lead_magnet', last_activity_at: '2026-05-26T13:00:00Z', days_since_last_activity: 19,
+    nurturing_sequence: 'case_study', nurturing_step: 3, nurturing_status: 'active',
+    email_opens: 5, email_clicks: 2, deal_value: 55000, next_best_action: 'Partager ROI démontré',
+    priority: 'P1',
+  },
+  {
+    id: 'mql-011', full_name: 'Moussa Diakité', email: 'moussa.diakite@banquecemac.cg', organization: 'Banque CEMAC',
+    position: 'Directeur Audit', sector: 'Banque', country: 'Congo',
+    lead_score: 80, pipeline_stage: 'lead_hot', source_page: '/services/audit-pre-inspection-bceao',
+    form_type: 'contact_form', last_activity_at: '2026-06-01T10:00:00Z', days_since_last_activity: 13,
+    nurturing_sequence: 'proposition', nurturing_step: 4, nurturing_status: 'active',
+    email_opens: 8, email_clicks: 5, deal_value: 78000, next_best_action: 'Envoyer FAQ + lever objections',
+    priority: 'P0',
+  },
+  {
+    id: 'mql-012', full_name: 'Aminata Keita', email: 'aminata.keita@esgabidjan.ci', organization: 'ESG Abidjan',
+    position: 'Responsable RSE', sector: 'ESG', country: 'Côte d\'Ivoire',
+    lead_score: 45, pipeline_stage: 'contact_engaged', source_page: '/lead-magnets/diagnostic-esg-maturite',
+    form_type: 'lead_magnet', last_activity_at: '2026-05-12T08:00:00Z', days_since_last_activity: 33,
+    nurturing_sequence: 'educational', nurturing_step: 2, nurturing_status: 'active',
+    email_opens: 2, email_clicks: 0, deal_value: 25000, next_best_action: 'Partager contenu sectoriel ESG',
+    priority: 'P3',
+  },
+  {
+    id: 'mql-013', full_name: 'Lucien Bamba', email: 'lucien.bamba@fintechgh.gh', organization: 'FinTech Ghana',
+    position: 'CEO', sector: 'FinTech', country: 'Ghana',
+    lead_score: 70, pipeline_stage: 'contact_engaged', source_page: '/lead-magnets/guide-levee-fonds-afrique',
+    form_type: 'lead_magnet', last_activity_at: '2026-05-29T11:00:00Z', days_since_last_activity: 16,
+    nurturing_sequence: 'proposition', nurturing_step: 1, nurturing_status: 'active',
+    email_opens: 6, email_clicks: 3, deal_value: 72000, next_best_action: 'Proposer diagnostic flash',
+    priority: 'P1',
+  },
+  {
+    id: 'mql-014', full_name: 'Nadia Zinsou', email: 'nadia.zinsou@banqueuemoa.bf', organization: 'Banque UEMOA',
+    position: 'Responsable Conformité', sector: 'Banque', country: 'Burkina Faso',
+    lead_score: 56, pipeline_stage: 'contact_engaged', source_page: '/lead-magnets/checklist-conformite-bceao-cobac',
+    form_type: 'lead_magnet', last_activity_at: '2026-05-19T15:00:00Z', days_since_last_activity: 26,
+    nurturing_sequence: 'case_study', nurturing_step: 2, nurturing_status: 'active',
+    email_opens: 3, email_clicks: 1, deal_value: 42000, next_best_action: 'Partager case study banque',
+    priority: 'P2',
+  },
+  {
+    id: 'mql-015', full_name: 'Kofi Anan', email: 'kofi.anan@pmeghana.gh', organization: 'PME Ghana',
+    position: 'DG', sector: 'PME', country: 'Ghana',
+    lead_score: 49, pipeline_stage: 'contact_engaged', source_page: '/lead-magnets/template-audit-gouvernance',
+    form_type: 'lead_magnet', last_activity_at: '2026-05-21T09:00:00Z', days_since_last_activity: 24,
+    nurturing_sequence: 'educational', nurturing_step: 3, nurturing_status: 'active',
+    email_opens: 3, email_clicks: 1, deal_value: 20000, next_best_action: 'Envoyer framework méthodologique',
+    priority: 'P2',
+  },
+  {
+    id: 'mql-016', full_name: 'Marie-Claire Ndiaye', email: 'mc.ndiaye@sfdsenegal.sn', organization: 'SFD Sénégal',
+    position: 'Directrice Technique', sector: 'Microfinance', country: 'Sénégal',
+    lead_score: 63, pipeline_stage: 'lead_hot', source_page: '/services/transformation-digitale',
+    form_type: 'contact_form', last_activity_at: '2026-05-27T10:00:00Z', days_since_last_activity: 18,
+    nurturing_sequence: 'proposition', nurturing_step: 2, nurturing_status: 'active',
+    email_opens: 5, email_clicks: 2, deal_value: 48000, next_best_action: 'Planifier entretien stratégique',
+    priority: 'P1',
+  },
+  {
+    id: 'mql-017', full_name: 'Olivier Kone', email: 'olivier.kone@banquecemac.cg', organization: 'Banque CEMAC',
+    position: 'CFO', sector: 'Banque', country: 'Congo',
+    lead_score: 74, pipeline_stage: 'contact_engaged', source_page: '/services/gouvernance-fiscalite-internationale',
+    form_type: 'contact_form', last_activity_at: '2026-05-31T08:00:00Z', days_since_last_activity: 14,
+    nurturing_sequence: 'proposition', nurturing_step: 1, nurturing_status: 'active',
+    email_opens: 7, email_clicks: 3, deal_value: 65000, next_best_action: 'Proposer diagnostic flash',
+    priority: 'P0',
+  },
+  {
+    id: 'mql-018', full_name: 'Grace Amani', email: 'grace.amani@esgbenin.bj', organization: 'ESG Bénin',
+    position: 'Consultante', sector: 'ESG', country: 'Bénin',
+    lead_score: 41, pipeline_stage: 'new_lead', source_page: '/lead-magnets/diagnostic-esg-maturite',
+    form_type: 'lead_magnet', last_activity_at: '2026-05-14T11:00:00Z', days_since_last_activity: 31,
+    nurturing_sequence: 'educational', nurturing_step: 1, nurturing_status: 'active',
+    email_opens: 1, email_clicks: 0, deal_value: 15000, next_best_action: 'Envoyer guide de bienvenue',
+    priority: 'P3',
+  },
+  {
+    id: 'mql-019', full_name: 'Pierre Yao', email: 'pierre.yao@fintechci.ci', organization: 'FinTech Côte d\'Ivoire',
+    position: 'Co-fondateur', sector: 'FinTech', country: 'Côte d\'Ivoire',
+    lead_score: 67, pipeline_stage: 'lead_hot', source_page: '/lead-magnets/guide-levee-fonds-afrique',
+    form_type: 'lead_magnet', last_activity_at: '2026-05-28T14:00:00Z', days_since_last_activity: 17,
+    nurturing_sequence: 'proposition', nurturing_step: 2, nurturing_status: 'active',
+    email_opens: 6, email_clicks: 2, deal_value: 90000, next_best_action: 'Planifier entretien stratégique',
+    priority: 'P1',
+  },
+  {
+    id: 'mql-020', full_name: 'Yasmine Bamba', email: 'yasmine.bamba@pmemali.ml', organization: 'PME Mali',
+    position: 'DAF', sector: 'PME', country: 'Mali',
+    lead_score: 44, pipeline_stage: 'contact_engaged', source_page: '/lead-magnets/simulation-risque-reglementaire',
+    form_type: 'lead_magnet', last_activity_at: '2026-05-17T10:00:00Z', days_since_last_activity: 28,
+    nurturing_sequence: 'educational', nurturing_step: 2, nurturing_status: 'active',
+    email_opens: 2, email_clicks: 0, deal_value: 16000, next_best_action: 'Partager contenu sectoriel',
+    priority: 'P3',
+  },
+  {
+    id: 'mql-021', full_name: 'Serge Koffi', email: 'serge.koffi@banquesenegal.sn', organization: 'Banque Sénégal',
+    position: 'Directeur des Opérations', sector: 'Banque', country: 'Sénégal',
+    lead_score: 77, pipeline_stage: 'lead_hot', source_page: '/services/controle-interne-bancaire',
+    form_type: 'contact_form', last_activity_at: '2026-06-02T09:00:00Z', days_since_last_activity: 12,
+    nurturing_sequence: 'proposition', nurturing_step: 3, nurturing_status: 'active',
+    email_opens: 8, email_clicks: 4, deal_value: 82000, next_best_action: 'Envoyer offre personnalisée',
+    priority: 'P0',
+  },
+  {
+    id: 'mql-022', full_name: 'Awa Diop', email: 'awa.diop@microfinance.bf', organization: 'Microfinance Burkina',
+    position: 'Responsable Conformité', sector: 'Microfinance', country: 'Burkina Faso',
+    lead_score: 50, pipeline_stage: 'contact_engaged', source_page: '/lead-magnets/checklist-conformite-bceao-cobac',
+    form_type: 'lead_magnet', last_activity_at: '2026-05-23T11:00:00Z', days_since_last_activity: 22,
+    nurturing_sequence: 'case_study', nurturing_step: 1, nurturing_status: 'active',
+    email_opens: 3, email_clicks: 1, deal_value: 30000, next_best_action: 'Envoyer témoignage clé',
+    priority: 'P2',
+  },
+  {
+    id: 'mql-023', full_name: 'François Mensah', email: 'francois.mensah@fintechci.ci', organization: 'FinTech Côte d\'Ivoire',
+    position: 'CEO', sector: 'FinTech', country: 'Côte d\'Ivoire',
+    lead_score: 69, pipeline_stage: 'contact_engaged', source_page: '/lead-magnets/guide-levee-fonds-afrique',
+    form_type: 'lead_magnet', last_activity_at: '2026-05-30T10:00:00Z', days_since_last_activity: 15,
+    nurturing_sequence: 'proposition', nurturing_step: 1, nurturing_status: 'active',
+    email_opens: 6, email_clicks: 3, deal_value: 68000, next_best_action: 'Proposer diagnostic flash',
+    priority: 'P1',
+  },
+  {
+    id: 'mql-024', full_name: 'Rachel Kouamé', email: 'rachel.kouame@esgabidjan.ci', organization: 'ESG Abidjan',
+    position: 'Responsable RSE', sector: 'ESG', country: 'Côte d\'Ivoire',
+    lead_score: 53, pipeline_stage: 'contact_engaged', source_page: '/lead-magnets/diagnostic-esg-maturite',
+    form_type: 'lead_magnet', last_activity_at: '2026-05-20T08:00:00Z', days_since_last_activity: 25,
+    nurturing_sequence: 'case_study', nurturing_step: 2, nurturing_status: 'active',
+    email_opens: 3, email_clicks: 1, deal_value: 32000, next_best_action: 'Partager case study ESG',
+    priority: 'P2',
+  },
+  {
+    id: 'mql-025', full_name: 'Thomas Ouedraogo', email: 'thomas.ouedraogo@investbf.bf', organization: 'InvestBurkina',
+    position: 'DG', sector: 'Investissement', country: 'Burkina Faso',
+    lead_score: 82, pipeline_stage: 'lead_hot', source_page: '/services/due-diligence-acquisition',
+    form_type: 'contact_form', last_activity_at: '2026-06-03T08:00:00Z', days_since_last_activity: 11,
+    nurturing_sequence: 'proposition', nurturing_step: 4, nurturing_status: 'active',
+    email_opens: 9, email_clicks: 5, deal_value: 110000, next_best_action: 'Envoyer FAQ + lever objections',
+    priority: 'P0',
+  },
+  {
+    id: 'mql-026', full_name: 'Aïssatou Diallo', email: 'aissatou.diallo@banqueuemoa.bf', organization: 'Banque UEMOA',
+    position: 'Responsable Risques', sector: 'Banque', country: 'Burkina Faso',
+    lead_score: 46, pipeline_stage: 'contact_engaged', source_page: '/lead-magnets/checklist-conformite-bceao-cobac',
+    form_type: 'lead_magnet', last_activity_at: '2026-05-16T14:00:00Z', days_since_last_activity: 29,
+    nurturing_sequence: 'educational', nurturing_step: 2, nurturing_status: 'active',
+    email_opens: 2, email_clicks: 0, deal_value: 28000, next_best_action: 'Partager contenu sectoriel',
+    priority: 'P3',
+  },
+  {
+    id: 'mql-027', full_name: 'Michel Kone', email: 'michel.kone@fintechgh.gh', organization: 'FinTech Ghana',
+    position: 'CTO', sector: 'FinTech', country: 'Ghana',
+    lead_score: 64, pipeline_stage: 'contact_engaged', source_page: '/lead-magnets/guide-levee-fonds-afrique',
+    form_type: 'lead_magnet', last_activity_at: '2026-05-26T09:00:00Z', days_since_last_activity: 19,
+    nurturing_sequence: 'case_study', nurturing_step: 3, nurturing_status: 'active',
+    email_opens: 4, email_clicks: 2, deal_value: 58000, next_best_action: 'Partager ROI démontré',
+    priority: 'P1',
+  },
+  {
+    id: 'mql-028', full_name: 'Linda Mensah', email: 'linda.mensah@pmecameroun.cm', organization: 'PME Cameroun',
+    position: 'DAF', sector: 'PME', country: 'Cameroun',
+    lead_score: 40, pipeline_stage: 'new_lead', source_page: '/lead-magnets/template-audit-gouvernance',
+    form_type: 'lead_magnet', last_activity_at: '2026-05-11T10:00:00Z', days_since_last_activity: 34,
+    nurturing_sequence: 'educational', nurturing_step: 1, nurturing_status: 'active',
+    email_opens: 1, email_clicks: 0, deal_value: 14000, next_best_action: 'Envoyer guide de bienvenue',
+    priority: 'P3',
+  },
+  {
+    id: 'mql-029', full_name: 'Brice Zinsou', email: 'brice.zinsou@banquecemac.cg', organization: 'Banque CEMAC',
+    position: 'Directeur des Opérations', sector: 'Banque', country: 'Congo',
+    lead_score: 71, pipeline_stage: 'lead_hot', source_page: '/services/audit-pre-inspection-bceao',
+    form_type: 'contact_form', last_activity_at: '2026-05-29T11:00:00Z', days_since_last_activity: 16,
+    nurturing_sequence: 'proposition', nurturing_step: 2, nurturing_status: 'active',
+    email_opens: 6, email_clicks: 3, deal_value: 75000, next_best_action: 'Planifier entretien stratégique',
+    priority: 'P1',
+  },
+  {
+    id: 'mql-030', full_name: 'Céline Bamba', email: 'celine.bamba@sfdmali.ml', organization: 'SFD Mali',
+    position: 'Responsable Conformité', sector: 'Microfinance', country: 'Mali',
+    lead_score: 47, pipeline_stage: 'contact_engaged', source_page: '/lead-magnets/checklist-conformite-bceao-cobac',
+    form_type: 'lead_magnet', last_activity_at: '2026-05-18T08:00:00Z', days_since_last_activity: 27,
+    nurturing_sequence: 'educational', nurturing_step: 2, nurturing_status: 'active',
+    email_opens: 2, email_clicks: 0, deal_value: 26000, next_best_action: 'Partager contenu sectoriel',
+    priority: 'P3',
+  },
+];
+
+
+
+
+

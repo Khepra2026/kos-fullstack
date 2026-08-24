@@ -1,0 +1,835 @@
+import { useState, useMemo } from 'react';
+import hubLayout from '@/components/feature/hubLayout';
+import { SeoHead } from '@/components/feature/SeoHead';
+import {
+  MULTI_STEP_WORKFLOWS,
+  INTEROPERABILITY_CONNECTIONS,
+  GOVERNANCE_POLICIES,
+  KOS_CONNECT_ARTIFACTS,
+  CDO_INNOVATION_STATS,
+  INITIAL_CDO_LOGS,
+  type CdoExecutionLog,
+} from '@/mocks/cdoInnovationCommand';
+
+type TabId = 'workflows' | 'interop' | 'governance' | 'auto_learning' | 'logs';
+
+const STATUS_MAP: Record<string, { label: string; bgClass: string; textClass: string; borderClass: string }> = {
+  active: { label: 'Actif', bgClass: 'bg-emerald-50', textClass: 'text-emerald-700', borderClass: 'border-emerald-200' },
+  testing: { label: 'En Test', bgClass: 'bg-amber-50', textClass: 'text-amber-700', borderClass: 'border-amber-200' },
+  configured: { label: 'Configuré', bgClass: 'bg-teal-50', textClass: 'text-teal-700', borderClass: 'border-teal-200' },
+  connected: { label: 'Connecté', bgClass: 'bg-emerald-50', textClass: 'text-emerald-700', borderClass: 'border-emerald-200' },
+  planned: { label: 'Planifié', bgClass: 'bg-gray-50', textClass: 'text-gray-500', borderClass: 'border-gray-200' },
+  implemented: { label: 'Implémenté', bgClass: 'bg-emerald-50', textClass: 'text-emerald-700', borderClass: 'border-emerald-200' },
+  in_progress: { label: 'En Cours', bgClass: 'bg-amber-50', textClass: 'text-amber-700', borderClass: 'border-amber-200' },
+  success: { label: 'Succès', bgClass: 'bg-emerald-50', textClass: 'text-emerald-600', borderClass: 'border-emerald-200' },
+  warning: { label: 'Attention', bgClass: 'bg-amber-50', textClass: 'text-amber-600', borderClass: 'border-amber-200' },
+  error: { label: 'Erreur', bgClass: 'bg-red-50', textClass: 'text-red-600', borderClass: 'border-red-200' },
+  info: { label: 'Info', bgClass: 'bg-cyan-50', textClass: 'text-cyan-600', borderClass: 'border-cyan-200' },
+};
+
+const RISK_MAP: Record<string, { label: string; hexColor: string; bgClass: string }> = {
+  critical: { label: 'CRITIQUE', hexColor: '#DC2626', bgClass: 'bg-red-50' },
+  high: { label: 'ÉLEVÉ', hexColor: '#EA580C', bgClass: 'bg-orange-50' },
+  medium: { label: 'MOYEN', hexColor: '#9B7B2C', bgClass: 'bg-amber-50' },
+  low: { label: 'FAIBLE', hexColor: '#86BC25', bgClass: 'bg-emerald-50' },
+};
+
+const TIER_MAP: Record<string, { label: string; icon: string; hexColor: string }> = {
+  crm: { label: 'CRM', icon: 'ri-contacts-line', hexColor: '#6366F1' },
+  erp: { label: 'ERP', icon: 'ri-settings-4-line', hexColor: '#0D9488' },
+  analytics: { label: 'Analytics', icon: 'ri-bar-chart-2-line', hexColor: '#EA580C' },
+  compliance: { label: 'Conformité', icon: 'ri-shield-check-line', hexColor: '#86BC25' },
+  communication: { label: 'Communication', icon: 'ri-mail-send-line', hexColor: '#7C3AED' },
+};
+
+const PILLAR_CONFIG: Record<string, { label: string; icon: string; hexColor: string }> = {
+  non_training: { label: 'Non-Entraînement', icon: 'ri-forbid-2-line', hexColor: '#DC2626' },
+  legal_framework: { label: 'Cadre Juridique', icon: 'ri-scales-line', hexColor: '#6366F1' },
+  kyc_identity: { label: 'KYC / Identité', icon: 'ri-fingerprint-line', hexColor: '#EA580C' },
+  data_sovereignty: { label: 'Souveraineté', icon: 'ri-earth-line', hexColor: '#0D7B5F' },
+  audit_trail: { label: 'Audit Trail', icon: 'ri-file-search-line', hexColor: '#0D9488' },
+};
+
+export default function cdoInnovationCommandPage() {
+  const [activeTab, setActiveTab] = useState<TabId>('workflows');
+  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
+  const [logs] = useState<CdoExecutionLog[]>(INITIAL_CDO_LOGS);
+
+  const toggleExpand = (id: string) => {
+    setExpandedItems(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const tabs: { id: TabId; label: string; icon: string; badge: string }[] = [
+    { id: 'workflows', label: 'Workflows Agentiques', icon: 'ri-git-branch-line', badge: String(MULTI_STEP_WORKFLOWS.length) },
+    { id: 'interop', label: 'Interopérabilité', icon: 'ri-plug-line', badge: String(INTEROPERABILITY_CONNECTIONS.length) },
+    { id: 'governance', label: 'Gouvernance & Trust', icon: 'ri-shield-check-line', badge: String(GOVERNANCE_POLICIES.length) },
+    { id: 'auto_learning', label: 'Auto-Apprentissage', icon: 'ri-loop-left-line', badge: String(KOS_CONNECT_ARTIFACTS.length) },
+    { id: 'logs', label: 'Logs Live', icon: 'ri-terminal-box-line', badge: String(logs.length) },
+  ];
+
+  const filteredLogs = useMemo(() => {
+    if (activeTab === 'logs') return logs;
+    return logs.filter(l => {
+      if (activeTab === 'workflows') return l.domain === 'Workflows';
+      if (activeTab === 'interop') return l.domain === 'Interopérabilité';
+      if (activeTab === 'governance') return l.domain === 'Gouvernance';
+      if (activeTab === 'auto_learning') return l.domain === 'Auto-Apprentissage' || l.domain === 'ETL Réglementaire';
+      return true;
+    });
+  }, [logs, activeTab]);
+
+  return (
+    <hubLayout hubId={999}>
+      <SeoHead
+        title="KOS CDO Innovation Command Center™ — Seeding Claude Agentique | KHEPRA EXPERTS"
+        description="Centre de commandement du Chief Data & Innovation Officer KOS. Workflows agentiques multi-étapes, interopérabilité sécurisée, gouvernance Big Four & Anthropic, auto-apprentissage [KOS-CONNECT]."
+        keywords="KOS CDO, Chief Data Officer, innovation technologique, workflows agentiques, interopérabilité, gouvernance IA, auto-apprentissage, KHEPRA EXPERTS"
+        canonicalPath="/kos-cdo-innovation-command"
+        ogType="website"
+      />
+
+      {/* ============ HERO ============ */}
+      <section className="relative bg-foreground-950 overflow-hidden">
+        <div className="absolute inset-0">
+          <img
+            src="https://readdy.ai/api/search-image?query=Abstract%20futuristic%20digital%20command%20center%20with%20four%20luminous%20vertical%20pillars%20each%20representing%20data%20governance%20innovation%20and%20AI%20ethics%2C%20floating%20holographic%20data%20flows%20in%20neon%20teal%20and%20amber%20connecting%20between%20pillars%2C%20transparent%20geometric%20crystalline%20structures%20with%20glowing%20edges%2C%20dark%20cosmic%20background%20with%20subtle%20particle%20streams%2C%20ultra%20detailed%20cinematic%208K%20render%2C%20high%20tech%20sanctuary%20aesthetic%2C%20no%20text%20no%20human%20figures%2C%20volumetric%20lighting%20with%20deep%20contrasts%20between%20dark%20void%20and%20neon%20light%20beams%2C%20sacred%20geometry%20patterns%20in%20the%20background&width=1920&height=700&seq=kos-cdo-innovation-hero&orientation=landscape"
+            alt=""
+            className="w-full h-full object-cover object-center opacity-25"
+            width="1920"
+            height="700"
+          />
+        </div>
+        <div className="absolute inset-0 bg-gradient-to-b from-foreground-950/50 via-foreground-950/75 to-foreground-950" />
+
+        <div className="max-w-7xl mx-auto px-4 md:px-6 py-14 md:py-18 relative z-10">
+          <div className="text-center max-w-4xl mx-auto">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-teal-500/20 border border-teal-400/30 backdrop-blur-sm mb-6">
+              <span className="w-2 h-2 rounded-full bg-teal-400 animate-pulse" />
+              <span className="text-sm font-semibold text-teal-300 uppercase tracking-wider">
+                CHIEF DATA & INNOVATION OFFICER — CLAUDE AGENTIC SEEDING
+              </span>
+            </div>
+            <h1 className="font-heading text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
+              CDO Innovation
+              <span className="block text-teal-400 mt-2">Command Center™</span>
+            </h1>
+            <p className="text-lg text-gray-300 leading-relaxed mb-8 max-w-3xl mx-auto">
+              Ancrage cognitif des capacités avancées Claude dans l'infrastructure KOS.{' '}
+              <strong className="text-white">{CDO_INNOVATION_STATS.totalWorkflows} workflows</strong> agentiques actifs,{' '}
+              <strong className="text-teal-300">{CDO_INNOVATION_STATS.totalConnections} connexions</strong> interopérables,{' '}
+              <strong className="text-amber-300">{CDO_INNOVATION_STATS.totalPolicies} politiques</strong> de gouvernance,{' '}
+              <strong className="text-violet-300">{CDO_INNOVATION_STATS.totalKosConnectArtifacts} artefacts</strong> [KOS-CONNECT].{' '}
+              <span className="block mt-2 text-teal-400 font-semibold">{CDO_INNOVATION_STATS.estimatedEfficiencyGain}</span>
+            </p>
+            <div className="flex flex-wrap justify-center gap-3">
+              {[
+                { label: 'Workflows Actifs', value: CDO_INNOVATION_STATS.activeWorkflows, icon: 'ri-git-branch-line', color: 'teal' },
+                { label: 'Taux Succès', value: `${CDO_INNOVATION_STATS.avgSuccessRate}%`, icon: 'ri-check-double-line', color: 'emerald' },
+                { label: 'Services Connectés', value: CDO_INNOVATION_STATS.connectedServices, icon: 'ri-plug-line', color: 'indigo' },
+                { label: 'Politiques Impl.', value: CDO_INNOVATION_STATS.policiesImplemented, icon: 'ri-shield-check-line', color: 'amber' },
+                { label: 'Contrôles Auto.', value: CDO_INNOVATION_STATS.controlsAutomated, icon: 'ri-cpu-line', color: 'violet' },
+                { label: 'Réutilisations', value: CDO_INNOVATION_STATS.totalReuses.toLocaleString('fr-FR'), icon: 'ri-loop-left-line', color: 'rose' },
+              ].map((stat) => (
+                <div key={stat.label} className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/8 border border-white/10 backdrop-blur-sm">
+                  <i className={`${stat.icon} text-${stat.color}-400 text-sm`} />
+                  <span className="text-xs text-gray-400">{stat.label}</span>
+                  <span className="text-sm font-bold text-white">{stat.value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ============ TAB NAVIGATION ============ */}
+      <div className="sticky top-0 z-30 bg-background-50 border-b border-background-200/70">
+        <div className="max-w-7xl mx-auto px-4 md:px-6">
+          <div className="flex gap-1 overflow-x-auto py-3">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-bold cursor-pointer transition-all whitespace-nowrap ${
+                  activeTab === tab.id
+                    ? 'bg-foreground-950 text-white'
+                    : 'text-foreground-600 hover:bg-background-100 hover:text-foreground-900'
+                }`}
+              >
+                <i className={`${tab.icon} text-base`} />
+                {tab.label}
+                <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${activeTab === tab.id ? 'bg-white/20' : 'bg-background-200'}`}>
+                  {tab.badge}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 md:px-6 py-8">
+
+        {/* ============ TAB: WORKFLOWS AGENTIQUES ============ */}
+        {activeTab === 'workflows' && (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-2">
+              <div className="rounded-2xl bg-white border border-teal-200 p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center">
+                    <i className="ri-git-branch-line text-teal-600 text-lg" />
+                  </div>
+                  <div>
+                    <h3 className="font-heading text-sm font-bold text-foreground-950">Architecture Agentique — Décomposition Systémique</h3>
+                    <p className="text-xs text-foreground-500">Chaque workflow = sous-étapes autonomes + auto-correction + boucle de rétroaction</p>
+                  </div>
+                </div>
+                <div className="space-y-2 text-xs text-foreground-600">
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-teal-400 flex-shrink-0" />
+                    <span><strong>Collecte & Filtrage</strong> — Scraping intelligent, extraction RAG, filtrage pertinence</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-indigo-400 flex-shrink-0" />
+                    <span><strong>Analyse Comparative</strong> — Benchmark ISO/Normatif, gap analysis, scoring de conformité</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-amber-400 flex-shrink-0" />
+                    <span><strong>Synthèse Stratégique</strong> — Méthode Minto, rédaction exécutive Big Four</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-emerald-400 flex-shrink-0" />
+                    <span><strong>Livrable KBR</strong> — QA final, validation citations, génération PDF signé</span>
+                  </div>
+                </div>
+              </div>
+              <div className="rounded-2xl bg-foreground-950 p-6 text-white">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-xl bg-teal-500/20 flex items-center justify-center">
+                    <i className="ri-bar-chart-2-line text-teal-400 text-lg" />
+                  </div>
+                  <div>
+                    <h3 className="font-heading text-sm font-bold">Performance Globale</h3>
+                    <p className="text-xs text-gray-400">{CDO_INNOVATION_STATS.totalExecutions.toLocaleString('fr-FR')} exécutions totales</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {[
+                    { label: 'Taux Succès', value: `${CDO_INNOVATION_STATS.avgSuccessRate}%`, icon: 'ri-check-double-line', color: 'emerald' },
+                    { label: 'Exécutions', value: CDO_INNOVATION_STATS.totalExecutions.toLocaleString('fr-FR'), icon: 'ri-play-circle-line', color: 'teal' },
+                    { label: 'Durée Moy.', value: '~32 min', icon: 'ri-timer-line', color: 'amber' },
+                    { label: 'Activés', value: `${CDO_INNOVATION_STATS.activeWorkflows}/${CDO_INNOVATION_STATS.totalWorkflows}`, icon: 'ri-flashlight-line', color: 'violet' },
+                  ].map((s) => (
+                    <div key={s.label} className="p-3 rounded-xl bg-white/8 border border-white/10 text-center">
+                      <i className={`${s.icon} text-${s.color}-400 text-lg mb-1 block`} />
+                      <span className="block text-lg font-bold font-heading">{s.value}</span>
+                      <span className="text-[10px] text-gray-400">{s.label}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {MULTI_STEP_WORKFLOWS.map((wf) => {
+              const isExpanded = expandedItems.has(wf.id);
+              const st = STATUS_MAP[wf.status];
+              return (
+                <div key={wf.id} className="rounded-2xl bg-white border border-background-200/70 overflow-hidden">
+                  <div className="p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-xl bg-teal-50 flex items-center justify-center">
+                          <i className={`${wf.category === 'content_production' ? 'ri-file-text-line' : wf.category === 'compliance_audit' ? 'ri-search-eye-line' : wf.category === 'growth_automation' ? 'ri-rocket-2-line' : 'ri-database-2-line'} text-teal-600 text-xl`} />
+                        </div>
+                        <div>
+                          <h3 className="text-base font-bold text-foreground-950">{wf.name}</h3>
+                          <p className="text-sm text-foreground-500">{wf.description}</p>
+                          <div className="flex flex-wrap items-center gap-2 mt-2">
+                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${st.bgClass} ${st.textClass} ${st.borderClass} border`}>{st.label}</span>
+                            <span className="text-[10px] text-foreground-400">{wf.estimatedDuration}</span>
+                            <span className="text-[10px] text-emerald-600 font-bold">✓ {wf.successRate}% ({wf.totalExecutions} exéc.)</span>
+                            <span className="text-[10px] text-foreground-400">Dernière: {new Date(wf.lastExecuted).toLocaleDateString('fr-FR')}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => toggleExpand(wf.id)}
+                        className="w-8 h-8 rounded-lg bg-background-100 flex items-center justify-center cursor-pointer hover:bg-background-200 transition-colors flex-shrink-0"
+                      >
+                        <i className={`ri-${isExpanded ? 'subtract' : 'add'}-line text-foreground-500`} />
+                      </button>
+                    </div>
+
+                    {/* Step Pipeline Visual */}
+                    <div className="flex items-center gap-1 mb-4 overflow-x-auto">
+                      {wf.steps.map((step, i) => (
+                        <div key={step.id} className="flex items-center gap-1 flex-shrink-0">
+                          <div className="px-3 py-1.5 rounded-lg text-xs font-bold bg-teal-50 text-teal-700 border border-teal-200 whitespace-nowrap">
+                            {step.order}. {step.name}
+                          </div>
+                          {i < wf.steps.length - 1 && (
+                            <i className="ri-arrow-right-s-line text-teal-400 text-sm" />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Connected Functions */}
+                    <div className="flex flex-wrap gap-1.5">
+                      {wf.connectedFunctions.map(fn => (
+                        <span key={fn} className="text-[10px] font-mono px-2 py-1 rounded-md bg-cyan-50 text-cyan-700 border border-cyan-200 whitespace-nowrap">
+                          <i className="ri-cloud-line mr-1" />{fn}
+                        </span>
+                      ))}
+                    </div>
+
+                    {isExpanded && (
+                      <div className="mt-6 pt-6 border-t border-background-200 space-y-4">
+                        <h4 className="text-sm font-bold text-foreground-950 flex items-center gap-2">
+                          <i className="ri-list-check-2 text-teal-600" />
+                          Étapes Détaillées &amp; Quality Gates
+                        </h4>
+                        {wf.steps.map((step) => {
+                          const stepGates = wf.qualityGates.filter(g => g.stepId === step.id);
+                          return (
+                            <div key={step.id} className="p-4 rounded-xl bg-background-50 border border-background-200">
+                              <div className="flex items-center gap-3 mb-2">
+                                <div className="w-8 h-8 rounded-lg bg-teal-100 flex items-center justify-center flex-shrink-0">
+                                  <span className="text-xs font-bold text-teal-700">{step.order}</span>
+                                </div>
+                                <div>
+                                  <span className="text-sm font-bold text-foreground-950">{step.name}</span>
+                                  <span className="text-xs text-foreground-400 ml-2">— Agent: {step.agent}</span>
+                                </div>
+                              </div>
+                              <p className="text-xs text-foreground-500 mb-3 ml-11">{step.description}</p>
+                              <div className="ml-11 grid grid-cols-1 sm:grid-cols-2 gap-3 text-[10px]">
+                                <div>
+                                  <span className="font-bold text-foreground-600 block mb-1">Inputs</span>
+                                  <div className="space-y-0.5">
+                                    {step.inputs.map((inp, i) => (
+                                      <span key={i} className="block text-foreground-500">→ {inp}</span>
+                                    ))}
+                                  </div>
+                                </div>
+                                <div>
+                                  <span className="font-bold text-foreground-600 block mb-1">Outputs</span>
+                                  <div className="space-y-0.5">
+                                    {step.outputs.map((out, i) => (
+                                      <span key={i} className="block text-foreground-500">→ {out}</span>
+                                    ))}
+                                  </div>
+                                </div>
+                                <div className="sm:col-span-2 flex flex-wrap items-center gap-3">
+                                  <span className="text-foreground-500">Retry: <strong className="text-foreground-700">{step.retryPolicy}</strong></span>
+                                  <span className="text-foreground-500">Déviation: <strong className="text-foreground-700">{step.acceptableDeviation}</strong></span>
+                                  <span className="text-foreground-500">Validation: <strong className="text-foreground-700">{step.validationRule}</strong></span>
+                                </div>
+                              </div>
+                              {stepGates.length > 0 && (
+                                <div className="ml-11 mt-3 space-y-1.5">
+                                  <span className="text-[10px] font-bold text-foreground-500 block">Quality Gates</span>
+                                  {stepGates.map((gate, gi) => (
+                                    <div key={gi} className="flex items-center gap-2 text-[10px]">
+                                      <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${
+                                        gate.action === 'pass' ? 'bg-emerald-100 text-emerald-700' :
+                                        gate.action === 'retry' ? 'bg-amber-100 text-amber-700' :
+                                        'bg-red-100 text-red-700'
+                                      }`}>
+                                        {gate.action.toUpperCase()}
+                                      </span>
+                                      <span className="text-foreground-500">{gate.metric} {gate.threshold} — {gate.description}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* ============ TAB: INTEROPÉRABILITÉ ============ */}
+        {activeTab === 'interop' && (
+          <div className="space-y-6">
+            <div className="rounded-2xl bg-white border border-indigo-200 p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center">
+                  <i className="ri-plug-line text-indigo-600 text-lg" />
+                </div>
+                <div>
+                  <h3 className="font-heading text-sm font-bold text-foreground-950">Protocole d'Interopérabilité — Sécurité par Design</h3>
+                  <p className="text-xs text-foreground-500">Principe du privilège minimum. Chaque connexion API tierce est isolée, auditable, avec scope de données minimal.</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-100">
+                  <i className="ri-checkbox-circle-line text-emerald-600 text-lg mb-1 block" />
+                  <strong className="text-emerald-700 block mb-0.5">Chiffrement Bout-en-Bout</strong>
+                  <span className="text-emerald-600">TLS 1.3 + AES-256 at-rest. Toutes les données sensibles (PII, financières) chiffrées.</span>
+                </div>
+                <div className="p-3 rounded-lg bg-amber-50 border border-amber-100">
+                  <i className="ri-filter-line text-amber-600 text-lg mb-1 block" />
+                  <strong className="text-amber-700 block mb-0.5">Minimisation des Données</strong>
+                  <span className="text-amber-600">Seule la stricte fraction de données requise est transmise. Audit automatique du scope.</span>
+                </div>
+                <div className="p-3 rounded-lg bg-indigo-50 border border-indigo-100">
+                  <i className="ri-file-search-line text-indigo-600 text-lg mb-1 block" />
+                  <strong className="text-indigo-700 block mb-0.5">Traçabilité Complète</strong>
+                  <span className="text-indigo-600">Chaque flux documenté : qui, quoi, quand, pourquoi. Registre automatique kos_data_flows.</span>
+                </div>
+              </div>
+            </div>
+
+            {INTEROPERABILITY_CONNECTIONS.map((conn) => {
+              const isExpanded = expandedItems.has(conn.id);
+              const st = STATUS_MAP[conn.status];
+              const tier = TIER_MAP[conn.tier];
+              return (
+                <div key={conn.id} className="rounded-2xl bg-white border border-background-200/70 overflow-hidden">
+                  <div className="p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${tier.hexColor}15` }}>
+                          <i className={`${tier.icon} text-lg`} style={{ color: tier.hexColor }} />
+                        </div>
+                        <div>
+                          <h3 className="text-base font-bold text-foreground-950">{conn.name}</h3>
+                          <div className="flex flex-wrap items-center gap-2 mt-1">
+                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${st.bgClass} ${st.textClass} ${st.borderClass} border`}>{st.label}</span>
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold text-foreground-500 bg-background-100" style={{ color: tier.hexColor }}>{tier.label}</span>
+                            <span className="text-[10px] text-foreground-400">{conn.provider}</span>
+                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-foreground-950 text-white font-mono">{conn.authMethod}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <button onClick={() => toggleExpand(conn.id)} className="w-8 h-8 rounded-lg bg-background-100 flex items-center justify-center cursor-pointer hover:bg-background-200 transition-colors flex-shrink-0">
+                        <i className={`ri-${isExpanded ? 'subtract' : 'add'}-line text-foreground-500`} />
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-[10px] mb-4">
+                      <div>
+                        <span className="text-foreground-400 block">Niveau Sécurité</span>
+                        <span className={`font-bold ${
+                          conn.securityLevel === 'maximum' ? 'text-red-600' :
+                          conn.securityLevel === 'elevated' ? 'text-amber-600' : 'text-emerald-600'
+                        }`}>{conn.securityLevel.toUpperCase()}</span>
+                      </div>
+                      <div>
+                        <span className="text-foreground-400 block">Dernière Synchro</span>
+                        <span className="font-bold text-foreground-700">{conn.lastSync === '—' ? '—' : new Date(conn.lastSync).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' })}</span>
+                      </div>
+                      <div>
+                        <span className="text-foreground-400 block">Fréquence</span>
+                        <span className="font-bold text-foreground-700">{conn.syncFrequency}</span>
+                      </div>
+                      <div>
+                        <span className="text-foreground-400 block">Edge Function</span>
+                        <span className="font-bold text-cyan-600 font-mono">{conn.edgeFunctionSlug}</span>
+                      </div>
+                    </div>
+
+                    {isExpanded && (
+                      <div className="mt-6 pt-6 border-t border-background-200 space-y-4">
+                        <h4 className="text-sm font-bold text-foreground-950 flex items-center gap-2">
+                          <i className="ri-flow-chart text-indigo-600" />
+                          Cartographie des Flux de Données
+                        </h4>
+                        {conn.dataFlows.map((flow) => (
+                          <div key={flow.id} className="p-4 rounded-xl bg-background-50 border border-background-200">
+                            <div className="flex items-center gap-3 mb-2">
+                              <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                                flow.dataCategory === 'pii' ? 'bg-red-50 text-red-700 border border-red-200' :
+                                flow.dataCategory === 'financial' ? 'bg-orange-50 text-orange-700 border border-orange-200' :
+                                flow.dataCategory === 'regulatory' ? 'bg-indigo-50 text-indigo-700 border border-indigo-200' :
+                                'bg-gray-50 text-gray-600 border border-gray-200'
+                              }`}>
+                                {flow.dataCategory.toUpperCase()}
+                              </span>
+                              <span className="text-[10px] text-foreground-500">
+                                Direction: <strong className="text-foreground-700">{flow.direction}</strong>
+                              </span>
+                            </div>
+                            <div className="space-y-2 text-[10px]">
+                              <div>
+                                <span className="font-bold text-foreground-600">Champs échangés</span>
+                                <div className="flex flex-wrap gap-1 mt-1">
+                                  {flow.fields.map((f) => (
+                                    <span key={f} className="px-1.5 py-0.5 rounded bg-white border border-background-200 font-mono text-foreground-600">{f}</span>
+                                  ))}
+                                </div>
+                              </div>
+                              <div className="grid grid-cols-2 gap-2">
+                                <div>
+                                  <span className="font-bold text-foreground-600 block">Finalité</span>
+                                  <span className="text-foreground-500">{flow.purpose}</span>
+                                </div>
+                                <div>
+                                  <span className="font-bold text-foreground-600 block">Rétention</span>
+                                  <span className="text-foreground-500">{flow.retentionPolicy}</span>
+                                </div>
+                                <div>
+                                  <span className="font-bold text-foreground-600 block">Chiffrement</span>
+                                  <span className="text-foreground-500">
+                                    At-rest: {flow.encryptionAtRest ? '✓' : '✗'} | Transit: {flow.encryptionInTransit ? '✓' : '✗'}
+                                  </span>
+                                </div>
+                                <div>
+                                  <span className="font-bold text-foreground-600 block">Minimisation</span>
+                                  <span className={flow.minimalRequired ? 'text-emerald-600' : 'text-red-600'}>
+                                    {flow.minimalRequired ? '✓ Respectée' : '⚠ À revoir'}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* ============ TAB: GOUVERNANCE & TRUST ============ */}
+        {activeTab === 'governance' && (
+          <div className="space-y-6">
+            <div className="rounded-2xl bg-foreground-950 p-6 text-white">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center">
+                  <i className="ri-shield-check-line text-amber-400 text-lg" />
+                </div>
+                <div>
+                  <h3 className="font-heading text-sm font-bold">Politique de Confidentialité — Argument de Closing</h3>
+                  <p className="text-xs text-gray-400">Standards Anthropic + Big Four + Régulateurs Africains</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-center text-xs">
+                {[
+                  { label: 'Politiques', value: CDO_INNOVATION_STATS.totalPolicies, icon: 'ri-file-text-line', color: 'amber' },
+                  { label: 'Implémentées', value: CDO_INNOVATION_STATS.policiesImplemented, icon: 'ri-check-double-line', color: 'emerald' },
+                  { label: 'Contrôles', value: CDO_INNOVATION_STATS.totalControls, icon: 'ri-shield-line', color: 'indigo' },
+                  { label: 'Automatisés', value: CDO_INNOVATION_STATS.controlsAutomated, icon: 'ri-cpu-line', color: 'violet' },
+                ].map((s) => (
+                  <div key={s.label} className="p-3 rounded-xl bg-white/8 border border-white/10">
+                    <i className={`${s.icon} text-${s.color}-400 text-lg mb-1 block`} />
+                    <span className="block text-lg font-bold font-heading">{s.value}</span>
+                    <span className="text-[10px] text-gray-400">{s.label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {GOVERNANCE_POLICIES.map((policy) => {
+              const isExpanded = expandedItems.has(policy.id);
+              const risk = RISK_MAP[policy.riskLevel];
+              const pillar = PILLAR_CONFIG[policy.pillar];
+              return (
+                <div key={policy.id} className="rounded-2xl bg-white border border-background-200/70 overflow-hidden">
+                  <div className="p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${pillar.hexColor}15` }}>
+                          <i className={`${pillar.icon} text-lg`} style={{ color: pillar.hexColor }} />
+                        </div>
+                        <div>
+                          <h3 className="text-base font-bold text-foreground-950">{policy.title}</h3>
+                          <p className="text-sm text-foreground-500">{policy.description}</p>
+                          <div className="flex flex-wrap items-center gap-2 mt-1">
+                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${risk.bgClass}`} style={{ color: risk.hexColor }}>{risk.label}</span>
+                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                              policy.implementationStatus === 'implemented' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
+                              policy.implementationStatus === 'in_progress' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
+                              'bg-gray-50 text-gray-500 border border-gray-200'
+                            }`}>
+                              {policy.implementationStatus === 'implemented' ? 'Implémenté' : policy.implementationStatus === 'in_progress' ? 'En Cours' : 'Planifié'}
+                            </span>
+                            <span className="text-[10px] text-foreground-400">Standard: {policy.standard}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <button onClick={() => toggleExpand(policy.id)} className="w-8 h-8 rounded-lg bg-background-100 flex items-center justify-center cursor-pointer hover:bg-background-200 transition-colors flex-shrink-0">
+                        <i className={`ri-${isExpanded ? 'subtract' : 'add'}-line text-foreground-500`} />
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-[10px]">
+                      <div>
+                        <span className="text-foreground-400 block">Preuves</span>
+                        <span className="font-bold text-foreground-700">{policy.evidenceCount} documents</span>
+                      </div>
+                      <div>
+                        <span className="text-foreground-400 block">Dernier Audit</span>
+                        <span className="font-bold text-foreground-700">{new Date(policy.lastAudited).toLocaleDateString('fr-FR')}</span>
+                      </div>
+                      <div>
+                        <span className="text-foreground-400 block">Prochain Audit</span>
+                        <span className="font-bold text-foreground-700">{new Date(policy.nextAudit).toLocaleDateString('fr-FR')}</span>
+                      </div>
+                      <div>
+                        <span className="text-foreground-400 block">Contrôles</span>
+                        <span className="font-bold text-foreground-700">{policy.controls.length}</span>
+                      </div>
+                    </div>
+
+                    {isExpanded && (
+                      <div className="mt-6 pt-6 border-t border-background-200 space-y-3">
+                        <h4 className="text-sm font-bold text-foreground-950 flex items-center gap-2">
+                          <i className="ri-list-settings-line" style={{ color: pillar.hexColor }} />
+                          Contrôles de Gouvernance
+                        </h4>
+                        {policy.controls.map((ctrl) => (
+                          <div key={ctrl.id} className="flex items-center gap-3 p-3 rounded-lg bg-background-50 border border-background-200">
+                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                              ctrl.type === 'preventive' ? 'bg-red-50 text-red-700 border border-red-200' :
+                              ctrl.type === 'detective' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
+                              'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                            }`}>
+                              {ctrl.type.toUpperCase()}
+                            </span>
+                            <span className="text-xs text-foreground-700 flex-1">{ctrl.name}</span>
+                            <span className={`text-[10px] px-2 py-0.5 rounded-full ${
+                              ctrl.automationLevel === 'fully_automated' ? 'bg-violet-50 text-violet-700 border border-violet-200' :
+                              ctrl.automationLevel === 'semi_automated' ? 'bg-teal-50 text-teal-700 border border-teal-200' :
+                              'bg-gray-50 text-gray-500 border border-gray-200'
+                            }`}>
+                              {ctrl.automationLevel === 'fully_automated' ? '100% Auto' : ctrl.automationLevel === 'semi_automated' ? 'Semi-Auto' : 'Manuel'}
+                            </span>
+                            <span className="text-[10px] text-foreground-400 font-mono">{ctrl.evidenceId}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* ============ TAB: AUTO-APPRENTISSAGE [KOS-CONNECT] ============ */}
+        {activeTab === 'auto_learning' && (
+          <div className="space-y-6">
+            <div className="rounded-2xl bg-white border border-violet-200 p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-xl bg-violet-50 flex items-center justify-center">
+                  <i className="ri-loop-left-line text-violet-600 text-lg" />
+                </div>
+                <div>
+                  <h3 className="font-heading text-sm font-bold text-foreground-950">Protocole [KOS-CONNECT] — Mémoire Permanente de Contexte</h3>
+                  <p className="text-xs text-foreground-500">
+                    Chaque schéma de connexion est isolé, versionné et réutilisable par tous les agents KOS.{' '}
+                    <strong className="text-violet-600">{CDO_INNOVATION_STATS.totalReuses.toLocaleString('fr-FR')} réutilisations</strong> à date.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {KOS_CONNECT_ARTIFACTS.map((artifact) => {
+              const isExpanded = expandedItems.has(artifact.id);
+              return (
+                <div key={artifact.id} className="rounded-2xl bg-white border border-background-200/70 overflow-hidden">
+                  <div className="p-6">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-xl bg-violet-50 flex items-center justify-center">
+                          <i className="ri-puzzle-2-line text-violet-600 text-xl" />
+                        </div>
+                        <div>
+                          <h3 className="text-base font-bold text-foreground-950">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-violet-100 text-violet-700 border border-violet-200 mr-2">
+                              [KOS-CONNECT]
+                            </span>
+                            {artifact.domain}
+                          </h3>
+                          <p className="text-sm text-foreground-500 mt-1">{artifact.description}</p>
+                          <div className="flex flex-wrap items-center gap-2 mt-1">
+                            <span className="text-[10px] text-foreground-400">v{artifact.version}</span>
+                            <span className="text-[10px] text-violet-600 font-bold">{artifact.usageCount.toLocaleString('fr-FR')} utilisations</span>
+                            <span className="text-[10px] text-foreground-400">Créé le {new Date(artifact.createdAt).toLocaleDateString('fr-FR')}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <button onClick={() => toggleExpand(artifact.id)} className="w-8 h-8 rounded-lg bg-background-100 flex items-center justify-center cursor-pointer hover:bg-background-200 transition-colors flex-shrink-0">
+                        <i className={`ri-${isExpanded ? 'subtract' : 'add'}-line text-foreground-500`} />
+                      </button>
+                    </div>
+
+                    {/* Reusable By */}
+                    <div className="flex flex-wrap items-center gap-1.5 mb-4">
+                      <span className="text-[10px] text-foreground-400 font-bold">Réutilisable par:</span>
+                      {artifact.reusableBy.map((agent) => (
+                        <span key={agent} className="text-[10px] px-2 py-0.5 rounded-full bg-violet-50 text-violet-700 border border-violet-200">
+                          {agent}
+                        </span>
+                      ))}
+                    </div>
+
+                    {isExpanded && (
+                      <div className="mt-6 pt-6 border-t border-background-200 space-y-4">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 text-[10px]">
+                          <div className="p-4 rounded-xl bg-background-50 border border-background-200">
+                            <h5 className="font-bold text-foreground-700 mb-2 flex items-center gap-1">
+                              <i className="ri-arrow-right-line text-violet-500" />Input Schema
+                            </h5>
+                            {Object.entries(artifact.connectionSchema.inputSchema).map(([k, v]) => (
+                              <div key={k} className="mb-1">
+                                <span className="font-mono text-foreground-600 font-bold">{k}</span>
+                                <span className="text-foreground-400 ml-1">— {v}</span>
+                              </div>
+                            ))}
+                          </div>
+                          <div className="p-4 rounded-xl bg-background-50 border border-background-200">
+                            <h5 className="font-bold text-foreground-700 mb-2 flex items-center gap-1">
+                              <i className="ri-arrow-left-line text-violet-500" />Output Schema
+                            </h5>
+                            {Object.entries(artifact.connectionSchema.outputSchema).map(([k, v]) => (
+                              <div key={k} className="mb-1">
+                                <span className="font-mono text-foreground-600 font-bold">{k}</span>
+                                <span className="text-foreground-400 ml-1">— {v}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-[10px]">
+                          <div className="p-3 rounded-lg bg-red-50 border border-red-100">
+                            <span className="font-bold text-red-700 block mb-1">Error Handling</span>
+                            <span className="text-red-600">{artifact.connectionSchema.errorHandling}</span>
+                          </div>
+                          <div className="p-3 rounded-lg bg-amber-50 border border-amber-100">
+                            <span className="font-bold text-amber-700 block mb-1">Rate Limit &amp; Cache</span>
+                            <span className="text-amber-600">{artifact.connectionSchema.rateLimit}</span>
+                            <span className="text-amber-500 block mt-0.5">{artifact.connectionSchema.cachingStrategy}</span>
+                          </div>
+                          <div className="p-3 rounded-lg bg-teal-50 border border-teal-100">
+                            <span className="font-bold text-teal-700 block mb-1">Fallback</span>
+                            <span className="text-teal-600">{artifact.connectionSchema.fallbackBehavior}</span>
+                          </div>
+                        </div>
+                        <div>
+                          <span className="text-[10px] font-bold text-foreground-500 block mb-1">Dépendances</span>
+                          <div className="flex flex-wrap gap-1">
+                            {artifact.dependencies.map((dep) => (
+                              <span key={dep} className="text-[10px] px-2 py-0.5 rounded bg-foreground-950 text-white font-mono">{dep}</span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* CDO Org Chart */}
+            <div className="rounded-2xl bg-foreground-950 p-6 text-white">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-xl bg-violet-500/20 flex items-center justify-center">
+                  <i className="ri-organization-chart text-violet-400 text-lg" />
+                </div>
+                <div>
+                  <h3 className="font-heading text-sm font-bold">Organigramme CDO — Direction Innovation & Data</h3>
+                  <p className="text-xs text-gray-400">Équipe agentique autonome sous supervision CDO</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                {CDO_INNOVATION_STATS.orgChartCdo.map((member) => (
+                  <div key={member.id} className={`p-4 rounded-xl border text-center ${member.id === 'cdo-001' ? 'bg-violet-500/20 border-violet-400/30 col-span-full lg:col-span-1 lg:col-start-3' : 'bg-white/8 border-white/10'}`}>
+                    <i className={`${member.icon} text-2xl mb-2 block ${member.id === 'cdo-001' ? 'text-violet-400' : 'text-teal-400'}`} />
+                    <span className="block text-sm font-bold">{member.name}</span>
+                    <span className="block text-[10px] text-gray-400 mb-2">{member.role}</span>
+                    <span className="block text-[9px] text-gray-500">Reports to: {member.reportsTo}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ============ LOGS TAB ============ */}
+        {(activeTab === 'logs' || filteredLogs.length > 0) && (
+          <div className={`${activeTab === 'logs' ? '' : 'mt-6'}`}>
+            <div className="rounded-2xl bg-foreground-950 border border-gray-800 overflow-hidden">
+              <div className="flex items-center gap-3 p-4 border-b border-gray-800">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                </div>
+                <span className="text-xs text-gray-400 font-mono">KOS CDO Innovation — Execution Log</span>
+                <span className="text-[10px] text-gray-500 ml-auto">{filteredLogs.length} entrées</span>
+              </div>
+              <div className="p-4 font-mono text-xs max-h-[400px] overflow-y-auto">
+                <div className="space-y-1">
+                  {filteredLogs.map((log, i) => (
+                    <div key={i} className={`${
+                      log.status === 'success' ? 'text-emerald-400' :
+                      log.status === 'warning' ? 'text-amber-400' :
+                      log.status === 'error' ? 'text-red-400' :
+                      'text-cyan-400'
+                    }`}>
+                      <span className="text-gray-600">[{log.timestamp.slice(11, 19)}]</span>{' '}
+                      <span className="text-gray-500">[{log.domain}]</span>{' '}
+                      {log.edgeFunction && <span className="text-teal-500">[{log.edgeFunction}]</span>}{' '}
+                      <span>{log.status === 'success' ? '✓' : log.status === 'warning' ? '⚠' : log.status === 'error' ? '✗' : 'ℹ'}</span>{' '}
+                      <span>{log.detail}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+      </div>
+
+      {/* ============ CROSS-LINKS ============ */}
+      <section className="py-12 bg-white border-t border-background-200">
+        <div className="max-w-7xl mx-auto px-4 md:px-6">
+          <div className="text-center mb-8">
+            <h2 className="font-heading text-2xl md:text-3xl font-bold text-foreground-950 mb-2">
+              Écosystème CDO — Centres Interconnectés
+            </h2>
+            <p className="text-foreground-600">Accès direct aux centres de commandement liés à l'innovation et la gouvernance des données.</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            {[
+              { label: 'CDO Engineering', path: '/kos-cdo-engineering-command', icon: 'ri-cpu-line', color: '#0D9488' },
+              { label: 'AI Sovereignty & Ethics', path: '/kos-ai-sovereignty-ethics', icon: 'ri-scales-3-line', color: '#6366F1' },
+              { label: 'Data Governance', path: '/kos-data-governance', icon: 'ri-database-2-line', color: '#EA580C' },
+              { label: 'Mass Infra Upgrade', path: '/kos-mass-infra-upgrade', icon: 'ri-rocket-2-line', color: '#DC2626' },
+              { label: 'AI Governance Council', path: '/kos-ai-governance-ethics', icon: 'ri-shield-star-line', color: '#7C3AED' },
+            ].map((link) => (
+              <a
+                key={link.path}
+                href={link.path}
+                className="rounded-xl border border-background-200 bg-background-50 p-4 text-center hover:shadow-md hover:border-foreground-200 transition-all cursor-pointer block"
+              >
+                <div className="w-10 h-10 mx-auto mb-2 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${link.color}15` }}>
+                  <i className={`${link.icon} text-lg`} style={{ color: link.color }} />
+                </div>
+                <span className="text-sm font-bold text-foreground-800">{link.label}</span>
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+    </hubLayout>
+  );
+}
+
+
+
+
+

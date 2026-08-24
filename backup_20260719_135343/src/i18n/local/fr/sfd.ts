@@ -1,0 +1,75 @@
+const sfd = {
+  sfdConformite: {
+    meta: { title: 'Conformité SFD BCEAO UEMOA — Accompagnement Réglementaire | KHEPRA EXPERTS', description: 'Accompagnement expert pour la conformité réglementaire des SFD dans l\'espace UEMOA. Diagnostic BCEAO, agrément, procédures, formation. KHEPRA EXPERTS, Lomé, Togo.', keywords: 'conformité SFD, BCEAO conformité, microfinance UEMOA, agrément SFD, réglementation BCEAO, conformité microfinance, SFD UEMOA, institution financière WAEMU' },
+    hero: {
+      badge: 'Accompagnement Réglementaire SFD', title: 'Mise en conformité', titleHighlight: 'SFD', titleSuffix: '— Nouvelle loi uniforme sur la microfinance',
+      subtitle: 'Votre Système Financier Décentralisé fait face aux nouvelles exigences réglementaires de la BCEAO ou de la BEAC ? Nos experts vous accompagnent à chaque étape : diagnostic, plan d\'action, gouvernance et mise en œuvre opérationnelle — zones UEMOA et CEMAC.',
+      cta1: 'Demander un diagnostic gratuit', cta2: 'Lire nos analyses',
+      alert: 'Nouvelle Loi Uniforme sur la Microfinance 2023 (Décision n°019/CM/UMOA) — en cours de transposition dans les 8 États membres de l\'UEMOA. Ce texte modernise le cadre juridique des SFD et IMF.',
+      breadcrumb: { home: 'Accueil', services: 'Services', current: 'Conformité SFD' },
+      stats: { mfiSupported: 'SFD accompagnés', complianceRate: 'Taux de conformité atteint', avgTimeline: 'Durée moyenne de mise en conformité', countriesCovered: 'Zones UEMOA & CEMAC couvertes' },
+    },
+    services: {
+      badge: 'Nos prestations', title: 'Un accompagnement complet à 360°',
+      intro: 'De l\'audit initial à la mise en œuvre opérationnelle, nous couvrons l\'ensemble des dimensions de la conformité réglementaire des SFD dans les espaces UEMOA (BCEAO) et CEMAC (BEAC). Notre accompagnement intègre désormais la prise en compte de la',
+      introHighlight: 'Décision n°019/CM/UMOA du 21 décembre 2023',
+      introEnd: "portant Loi Uniforme sur la Microfinance dans l'UEMOA, texte fondateur en cours de transposition dans les 8 États membres, qui modernise le cadre juridique des SFD et IMF.",
+      items: [
+        { title: 'Diagnostic réglementaire', description: 'Évaluation complète de votre situation au regard des nouvelles exigences réglementaires BCEAO (UEMOA) et BEAC (CEMAC) sur la microfinance.', points: ['Audit de gouvernance institutionnelle', 'Analyse des ratios prudentiels BCEAO/BEAC', 'Cartographie des écarts réglementaires'] },
+        { title: 'Plan de mise en conformité', description: 'Élaboration d\'une feuille de route personnalisée avec des jalons clairs et des actions prioritaires.', points: ['Priorisation des actions correctives', 'Calendrier de mise en œuvre', 'Indicateurs de suivi et reporting'] },
+        { title: 'Renforcement de la gouvernance', description: 'Restructuration des organes de gouvernance selon les standards BCEAO (UEMOA) et BEAC (CEMAC) : conseil d\'administration, comités spécialisés, contrôle interne.', points: ['Révision des statuts et règlements intérieurs', 'Formation des administrateurs', 'Mise en place du contrôle interne'] },
+        { title: 'Gestion prudentielle', description: 'Accompagnement au respect des normes prudentielles : solvabilité, liquidité, fonds propres et limites de concentration.', points: ['Modélisation des ratios prudentiels', 'Politique de gestion des risques', 'Tableaux de bord de pilotage'] },
+        { title: 'Protection des membres', description: 'Mise en conformité avec les exigences de transparence tarifaire et de protection des consommateurs de services financiers.', points: ['Révision de la politique tarifaire', 'Mécanismes de traitement des réclamations', 'Communication financière aux membres'] },
+        { title: 'Monnaie électronique & digital', description: 'Articulation de vos activités avec la réglementation sur la monnaie électronique et les services financiers numériques.', points: ['Conformité mobile money & e-money', 'Partenariats avec les fintechs', 'Sécurité des données et KYC digital'] },
+      ],
+    },
+    form: {
+      title: 'Formulaire de demande', subtitle: 'Réponse sous 24 heures', steps: ['Vos coordonnées', 'Votre structure', 'Vos besoins & message'],
+      testimonial: { quote: 'Grâce à KHEPRA EXPERTS, notre coopérative a obtenu son agrément BCEAO en 8 mois et a passé l\'audit de supervision avec un taux de conformité de 97%.', author: 'Directeur Général', role: "Mutuelle d'épargne et de crédit — Côte d'Ivoire" },
+      success: { title: 'Demande envoyée !', message: 'Merci pour votre demande. Nous vous recontacterons rapidement pour planifier votre diagnostic gratuit.', cta: 'Soumettre une nouvelle demande' },
+      fields: {
+        fullName: 'Nom complet *', fullNamePlaceholder: 'Prénom et nom', email: 'Adresse e-mail *', phone: 'Téléphone / WhatsApp',
+        country: 'Pays *', countryPlaceholder: 'Sélectionner un pays',
+        countries: { benin: 'Bénin', 'burkina-faso': 'Burkina Faso', 'cote-divoire': "Côte d'Ivoire", 'guinee-bissau': 'Guinée-Bissau', mali: 'Mali', niger: 'Niger', senegal: 'Sénégal', togo: 'Togo', autre: 'Autre' },
+        institutionName: 'Nom de votre SFD / Institution *', institutionPlaceholder: "Ex : Mutuelle d'épargne et de crédit de...",
+        structureType: 'Type de structure *', structureTypePlaceholder: 'Sélectionner le type',
+        structureTypes: { mutuelle: "Mutuelle d'épargne et de crédit (MEC)", cooperative: "Coopérative d'épargne et de crédit (COOPEC)", association: 'Association de microfinance', 'societe-anonyme': 'Société anonyme de microfinance', reseau: 'Réseau / Fédération de SFD', autre: 'Autre structure agréée' },
+        membersCount: 'Nombre de membres / clients *', membersCountPlaceholder: 'Sélectionner',
+        membersCounts: { 'moins-500': 'Moins de 500', '500-2000': '500 – 2 000', '2000-10000': '2 000 – 10 000', '10000-50000': '10 000 – 50 000', 'plus-50000': 'Plus de 50 000' },
+        balanceSheet: 'Total bilan (FCFA)', balanceSheetPlaceholder: 'Sélectionner',
+        balanceSheets: { 'moins-100m': 'Moins de 100 millions', '100m-500m': '100 – 500 millions', '500m-2mrd': '500 millions – 2 milliards', 'plus-2mrd': 'Plus de 2 milliards' },
+        age: 'Ancienneté de la structure', agePlaceholder: 'Sélectionner',
+        ages: { 'moins-3ans': 'Moins de 3 ans', '3-10ans': '3 – 10 ans', '10-20ans': '10 – 20 ans', 'plus-20ans': 'Plus de 20 ans' },
+        complianceStatus: 'Situation actuelle vis-à-vis de la réglementation', complianceStatusPlaceholder: 'Décrivez votre situation actuelle',
+        domaines: { label: 'Domaines prioritaires', items: { 'diagnostic-reglementaire': 'Diagnostic réglementaire', 'plan-conformite': 'Plan de mise en conformité', gouvernance: 'Renforcement de la gouvernance', 'gestion-prudentielle': 'Gestion prudentielle', 'protection-membres': 'Protection des membres', 'monnaie-electronique': 'Monnaie électronique' } },
+        urgence: "Niveau d'urgence", urgencePlaceholder: 'Sélectionner',
+        urgences: { 'moins-3mois': 'Moins de 3 mois', '3-6mois': '3 – 6 mois', '6-12mois': '6 – 12 mois', 'plus-1an': 'Plus de 1 an' },
+        message: 'Message complémentaire', messagePlaceholder: 'Décrivez vos besoins spécifiques...', prev: 'Précédent', next: 'Suivant', submit: 'Envoyer ma demande', sending: 'Envoi en cours...',
+      },
+      formLabels: {
+        leftColumn: { badge: 'Formulaire de demande', title: 'Demandez votre diagnostic de conformité {highlight}', titleHighlight: 'gratuit', subtitle: "Remplissez ce formulaire pour qu'un expert KHEPRA EXPERTS vous contacte sous 48h." },
+        benefits: { response48h: { title: 'Réponse sous 48h', desc: 'Un expert vous contacte rapidement.' }, confidentiality: { title: 'Confidentialité garantie', desc: 'Toutes les informations restent confidentielles.' }, freeDiagnosis: { title: 'Diagnostic offert', desc: 'Premier entretien sans engagement.' }, expertise: { title: 'Expertise UEMOA', desc: 'Connaissance approfondie des 8 pays membres.' } },
+        testimonial: { quote: '"KHEPRA EXPERTS nous a accompagnés dans notre mise en conformité en seulement 4 mois."', author: 'Directeur Général', role: "Mutuelle d'épargne et de crédit — Côte d'Ivoire" },
+        step1: { title: 'Vos coordonnées', subtitle: 'Informations de contact' }, step2: { title: 'Votre structure', subtitle: "Informations pour adapter l'accompagnement" }, step3: { title: 'Vos besoins spécifiques', subtitle: 'Précisez les domaines prioritaires' },
+        labels: {
+          fullName: 'Nom complet *', fullNamePlaceholder: 'Prénom et nom', email: 'Adresse e-mail *', phone: 'Téléphone / WhatsApp', phonePlaceholder: '+228 XX XX XX XX',
+          country: 'Pays *', countryPlaceholder: 'Sélectionner un pays', institution: 'Nom de votre SFD / Institution *', institutionPlaceholder: "Ex : Mutuelle d'épargne et de crédit de...",
+          type: 'Type de structure *', typePlaceholder: 'Sélectionner le type', members: 'Nombre de membres / clients *', membersPlaceholder: 'Sélectionner',
+          balance: 'Total bilan (FCFA)', balancePlaceholder: 'Sélectionner', age: 'Ancienneté de la structure', agePlaceholder: 'Sélectionner',
+          complianceStatus: 'Situation actuelle vis-à-vis de la réglementation', domaines: 'Domaines de conformité concernés', urgence: "Niveau d'urgence",
+          message: 'Message complémentaire', messagePlaceholder: 'Décrivez votre situation...',
+        },
+        situationOptions: { nonConforme: 'Non conforme', partiellement: 'Partiellement conforme', enCours: "Mise en conformité en cours", conforme: 'Conforme — optimisation souhaitée' },
+        urgenceOptions: { urgent: 'Urgent (&lt; 3 mois)', normal: 'Normal (3–6 mois)', planifie: 'Planifié (&gt; 6 mois)' },
+        domaines: { gouvernance: 'Gouvernance institutionnelle', prudentiel: 'Ratios prudentiels', protection: 'Protection des membres', 'controle-interne': 'Contrôle interne & audit', 'monnaie-electronique': 'Monnaie électronique', reporting: 'Reporting réglementaire BCEAO', restructuration: 'Restructuration / fusion', formation: 'Formation des organes' },
+        error: 'Une erreur est survenue.', success: { title: 'Demande envoyée !', message: 'Merci. Un expert vous contactera sous 48h.', cta: 'Soumettre une nouvelle demande' },
+        navigation: { prev: 'Précédent', next: 'Suivant', submit: 'Envoyer ma demande', sending: 'Envoi en cours...' },
+      },
+    },
+  },
+};
+
+export default sfd;
+
+
+

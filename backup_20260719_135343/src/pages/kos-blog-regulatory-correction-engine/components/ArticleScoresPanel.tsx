@@ -1,0 +1,119 @@
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import type { ArticleBigFourScore } from '@/mocks/selfLearningEngine';
+
+interface ArticleScoresPanelProps {
+  articleScores: ArticleBigFourScore[];
+}
+
+const statusConfig: Record<string, { label: string; color: string; bg: string }> = {
+  excellent: { label: 'Excellent (≥90)', color: 'text-emerald-700', bg: 'bg-emerald-100' },
+  bon: { label: 'Bon (85-89)', color: 'text-primary-700', bg: 'bg-primary-100' },
+  a_ameliorer: { label: 'À Améliorer (&lt;85)', color: 'text-amber-700', bg: 'bg-amber-100' },
+  critique: { label: 'Critique (&lt;75)', color: 'text-red-700', bg: 'bg-red-100' },
+};
+
+export default function ArticleScoresPanel({ articleScores }: ArticleScoresPanelProps) {
+  const [filter, setFilter] = useState<string>('all');
+
+  const filtered = filter === 'all'
+    ? articleScores
+    : articleScores.filter(a => a.status === filter);
+
+  const sorted = [...filtered].sort((a, b) => b.scoreTotal - a.scoreTotal);
+
+  return (
+    <div className="space-y-6">
+      {/* Filter pills */}
+      <div className="flex items-center gap-2 flex-wrap">
+        <button
+          onClick={() => setFilter('all')}
+          className={`px-4 py-2 rounded-full text-xs font-semibold transition-colors cursor-pointer whitespace-nowrap ${
+            filter === 'all' ? 'bg-accent-500 text-background-50' : 'bg-background-100 text-foreground-600 hover:bg-background-200'
+          }`}
+          type="button"
+        >
+          Tous ({articleScores.length})
+        </button>
+        {Object.entries(statusConfig).map(([key, config]) => {
+          const count = articleScores.filter(a => a.status === key).length;
+          if (count === 0) return null;
+          return (
+            <button
+              key={key}
+              onClick={() => setFilter(key)}
+              className={`px-4 py-2 rounded-full text-xs font-semibold transition-colors cursor-pointer whitespace-nowrap ${
+                filter === key ? 'bg-accent-500 text-background-50' : `${config.bg} ${config.color} hover:opacity-80`
+              }`}
+              type="button"
+            >
+              {config.label} ({count})
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Scores table */}
+      <div className="overflow-x-auto rounded-2xl border border-background-200">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="bg-foreground-950 text-background-50">
+              <th className="text-left px-4 py-3 font-bold">Article</th>
+              <th className="text-center px-3 py-3 font-bold whitespace-nowrap">Score</th>
+              <th className="text-center px-3 py-3 font-bold whitespace-nowrap">Exact.</th>
+              <th className="text-center px-3 py-3 font-bold whitespace-nowrap">Traçab.</th>
+              <th className="text-center px-3 py-3 font-bold whitespace-nowrap">Gouv.</th>
+              <th className="text-center px-3 py-3 font-bold whitespace-nowrap">AML</th>
+              <th className="text-center px-3 py-3 font-bold whitespace-nowrap">Clarté</th>
+              <th className="text-center px-3 py-3 font-bold whitespace-nowrap">Risque</th>
+              <th className="text-center px-3 py-3 font-bold whitespace-nowrap">Statut</th>
+              <th className="text-center px-3 py-3 font-bold whitespace-nowrap">Corr.</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sorted.map((article, i) => {
+              const cfg = statusConfig[article.status];
+              return (
+                <tr key={article.articleSlug} className={i % 2 === 0 ? 'bg-background-50' : 'bg-background-100'}>
+                  <td className="px-4 py-3">
+                    <Link
+                      to={`/blog/${article.articleSlug}`}
+                      className="text-xs text-foreground-800 font-medium hover:text-accent-600 transition-colors cursor-pointer line-clamp-2"
+                    >
+                      {article.articleTitle}
+                    </Link>
+                  </td>
+                  <td className="px-3 py-3 text-center">
+                    <span className="text-sm font-bold text-foreground-950 font-heading">{article.scoreTotal}</span>
+                  </td>
+                  <td className="px-3 py-3 text-center text-xs text-foreground-600">{article.exactitude}/30</td>
+                  <td className="px-3 py-3 text-center text-xs text-foreground-600">{article.tracabilite}/20</td>
+                  <td className="px-3 py-3 text-center text-xs text-foreground-600">{article.gouvernance}/15</td>
+                  <td className="px-3 py-3 text-center text-xs text-foreground-600">{article.amlCft}/15</td>
+                  <td className="px-3 py-3 text-center text-xs text-foreground-600">{article.clarte}/10</td>
+                  <td className="px-3 py-3 text-center text-xs text-foreground-600">{article.risqueJuridique}/10</td>
+                  <td className="px-3 py-3 text-center">
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${cfg.bg} ${cfg.color}`}>
+                      {cfg.label.split(' ')[0]}
+                    </span>
+                  </td>
+                  <td className="px-3 py-3 text-center">
+                    <div className="flex items-center gap-1 justify-center">
+                      <span className="text-[10px] text-emerald-600 font-semibold">{article.correctionsApplied}</span>
+                      {article.correctionsPending > 0 && (
+                        <span className="text-[10px] text-amber-600 font-semibold">(+{article.correctionsPending})</span>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+
+

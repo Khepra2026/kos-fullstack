@@ -1,0 +1,419 @@
+export const COBAC_ARTICLE_DATA = {
+  title: 'Conformité COBAC / CEMAC : le guide complet de la gouvernance bancaire en Afrique Centrale',
+  subtitle: 'Analyse des exigences de la Commission Bancaire de l\'Afrique Centrale (COBAC), des ratios prudentiels BEAC, et des différences clés avec la zone UEMOA pour les établissements de crédit en CEMAC.',
+  excerpt: 'La conformité COBAC est le socle de la crédibilité des institutions financières en zone CEMAC. Ce guide analyse les exigences de la Convention COBAC, les ratios prudentiels BEAC, la gouvernance encadrée par l\'Instruction 007-03-2022, le dispositif LBC/FT (Règlement COBAC R-2018/01), et les sanctions en cas de non-respect.',
+  category: 'Finance & Conformité',
+  readTime: '22 min de lecture',
+  publishedDate: '28 mai 2026',
+  modifiedDate: '07 juin 2026',
+  author: 'SIMDA Essoyomèwè',
+  authorTitle: 'Fondateur & Directeur Général, KHEPRA EXPERTS',
+  methodologyNote: 'Cet article a été rédigé selon la méthodologie KHEPRA EXPERTS de revue réglementaire : analyse des textes officiels en vigueur (Convention COBAC, Règlements COBAC, Instructions BEAC, normes GAFI/Bâle), croisement avec les observations terrain issues de missions d\'audit et de conformité en zone CEMAC, et relecture par un Senior Partner. Dernière mise à jour : 07 juin 2026.',
+  heroAlt: 'Conformité COBAC CEMAC — Commission Bancaire Afrique Centrale réglementation prudentielle',
+  heroImage: 'https://readdy.ai/api/search-image?query=Central%20African%20banking%20regulatory%20compliance%20COBAC%20BEAC%20official%20documents%20executive%20boardroom%20Cameroon%20Gabon%20Congo%20financial%20institution%20directors%20signing%20prudential%20compliance%20framework%20stone-grey%20marble%20surface%20deep%20charcoal%20background%20with%20rich%20bronze%20metallic%20accents%20formal%20corporate%20atmosphere%20professional%20governance%20oversight&width=1400&height=520&seq=blog-cobac-hero-v2&orientation=landscape',
+  meta: {
+    canonicalPath: '/blog/conformite-cobac-cemac/',
+    publishedDate: '2026-05-28',
+    modifiedDate: '2026-06-07',
+    author: 'SIMDA Essoyomèwè',
+    authorTitle: 'Fondateur & Directeur Général, KHEPRA EXPERTS',
+    category: 'Finance & Conformité',
+    readTime: '22 min de lecture',
+    tags: ['COBAC', 'CEMAC', 'BEAC', 'conformité bancaire', 'gouvernance Afrique Centrale', 'ratios prudentiels', 'Instruction 007-03-2022', 'Règlement COBAC R-2018/01', 'GABAC', 'LBC/FT CEMAC', 'SYSCOHADA', 'OHADA', 'microfinance CEMAC', 'audit financier CEMAC', 'Bâle III'],
+  },
+  seo: {
+    title: 'Conformité COBAC / CEMAC : Gouvernance Bancaire, Ratios Prudentiels & LBC/FT 2026',
+    description: 'Guide complet de la conformité COBAC pour les banques et SFD en zone CEMAC. Ratios prudentiels BEAC, gouvernance (Instruction 007-03-2022), LBC/FT (Règlement COBAC R-2018/01), sanctions COBAC et différences avec la zone UEMOA. Bibliographie réglementaire officielle et avertissement juridique inclus.',
+    keywords: 'conformité COBAC, CEMAC, BEAC, ratios prudentiels, gouvernance bancaire Afrique Centrale, Instruction 007-03-2022, Règlement COBAC R-2018/01, GABAC, LBC/FT CEMAC, SYSCOHADA, audit financier CEMAC, microfinance COBAC, SFD CEMAC, sanctions COBAC',
+  },
+  breadcrumb: {
+    home: 'Accueil',
+    blog: 'Blog',
+    current: 'Conformité COBAC / CEMAC',
+  },
+  badge: 'Thought Leadership — Senior Partner',
+  sections: [
+    { id: 'executive-summary', icon: 'ri-file-list-3-line', title: 'Executive Summary' },
+    { id: 'cadre-reglementaire', icon: 'ri-scales-3-line', title: 'Cadre Réglementaire COBAC' },
+    { id: 'ratios-prudentiels', icon: 'ri-bar-chart-line', title: 'Ratios Prudentiels BEAC' },
+    { id: 'gouvernance-cobac', icon: 'ri-shield-check-line', title: 'Gouvernance & Instruction 007-03-2022' },
+    { id: 'distinction-obligation', icon: 'ri-checkbox-circle-line', title: 'Obligations vs Recommandations' },
+    { id: 'différences-uemoa', icon: 'ri-arrow-left-right-line', title: 'Différences COBAC vs BCEAO' },
+    { id: 'sanctions', icon: 'ri-error-warning-line', title: 'Sanctions & Procédures' },
+    { id: 'geo-direct-answers', icon: 'ri-sparkling-line', title: 'Réponses Directes (GEO)' },
+    { id: 'faq', icon: 'ri-chat-3-line', title: 'Questions Fréquentes Expert' },
+    { id: 'bibliographie', icon: 'ri-book-open-line', title: 'Références Officielles' },
+    { id: 'avertissement', icon: 'ri-information-line', title: 'Avertissement Juridique' },
+  ],
+  relatedArticles: [
+    {
+      href: '/blog/bceao-ohada-conformite/',
+      title: 'La conformité BCEAO/OHADA : Enjeux et bénéfices pour les entreprises',
+      category: 'Finance & Conformité',
+      readTime: '12 min de lecture',
+      seq: 'related-cobac-1',
+    },
+    {
+      href: '/blog/serie-gouvernance-bancaire-uemoa/',
+      title: 'Série Gouvernance Bancaire UEMOA',
+      category: 'Gouvernance',
+      readTime: '97 min de lecture',
+      seq: 'related-cobac-2',
+    },
+    {
+      href: '/blog/esg-afrique-entreprises/',
+      title: 'ESG en Afrique : Cadre opérationnel et finance durable',
+      category: 'ESG & Finance Durable',
+      readTime: '14 min de lecture',
+      seq: 'related-cobac-3',
+    },
+  ],
+  faq: [
+    {
+      q: 'Quelle est la différence entre la COBAC et la BEAC ?',
+      a: 'La BEAC (Banque des États de l\'Afrique Centrale) est la banque centrale de la CEMAC. Elle définit la politique monétaire et fixe les ratios prudentiels par voie d\'instructions. La COBAC (Commission Bancaire de l\'Afrique Centrale), créée par la Convention du 16 janvier 1990 (révisée en 2010), est l\'organe de contrôle bancaire chargé de la supervision des établissements de crédit, des inspections sur place et à distance, de l\'instruction des dossiers d\'agrément et du prononcé des sanctions. La BEAC fixe les normes prudentielles ; la COBAC en contrôle le respect. (Sources : Convention COBAC 1990/2010, Statuts de la BEAC.)',
+    },
+    {
+      q: 'Quel est le ratio de solvabilité minimum exigé par la COBAC ?',
+      a: 'Selon les instructions BEAC applicables, le ratio de solvabilité minimum est fixé à 8 % des actifs pondérés par les risques pour les banques, conformément aux standards Bâle III. Pour les établissements de crédit considérés comme systémiques, une exigence majorée peut être appliquée selon les instructions BEAC en vigueur. Pour les institutions de microfinance (IMF) en CEMAC, le ratio d\'adéquation du capital est compris entre 8 % et un seuil pouvant atteindre 15 % selon la catégorie et les dispositions spécifiques de la BEAC. La BEAC peut relever ces seuils par voie d\'instruction. (Sources : Instructions BEAC prudentielles, standards BCBS Bâle III.)',
+    },
+    {
+      q: 'Quelles sont les principales différences entre la réglementation COBAC et la BCEAO ?',
+      a: 'Différences clés : (1) Zone géographique — CEMAC (6 pays : Cameroun, Gabon, Congo, Tchad, RCA, Guinée Équatoriale) vs UEMOA (8 pays) ; (2) Normes de gouvernance — Instruction COBAC 007-03-2022 vs Circulaires CB-UMOA 01-03-2017 ; (3) Régime de change — taux de change fixe CEMAC (1 EUR = 655,957 FCFA) garanti par la France vs UEMOA ; (4) LBC/FT — Règlement COBAC R-2018/01 + GABAC (CEMAC) vs Directive BCEAO 02/2015 + GIABA (UEMOA) ; (5) Sanctions — la COBAC publie les sanctions de niveau 3+ sur son site web, pratique non systématique en zone UEMOA. (Sources : textes cités, analyse comparative KHEPRA EXPERTS.)',
+    },
+    {
+      q: 'Comment mettre en place une fonction de conformité efficace dans une banque CEMAC ?',
+      a: '4 piliers structurants : (1) Désignation d\'un responsable conformité LBC/FT indépendant disposant d\'une ligne de reporting directe au Directeur Général et au Comité d\'Audit, conformément au Règlement COBAC R-2018/01, art. 36-47 ; (2) Approche Basée sur les Risques (ABR) avec classification des clients par niveau de risque (Faible/Modéré/Élevé) selon une méthodologie documentée, conformément à l\'art. 15 dudit Règlement ; (3) Système de monitoring des transactions et alertes paramétrées avec reporting à l\'ANIF nationale pour les déclarations de soupçon, conformément aux art. 27-30 ; (4) Conservation des preuves et documents pendant au moins 10 ans après la fin de la relation d\'affaires, conformément à l\'art. 18.',
+    },
+    {
+      q: 'Quelles sont les sanctions en cas de non-conformité COBAC ?',
+      a: 'Échelle progressive définie par la Convention COBAC et les règlements applicables : (1) Avertissement écrit ; (2) Injonction de mise en conformité avec délai imparti (généralement 30 à 90 jours) ; (3) Limitation d\'activité (interdiction de certaines opérations, blocage des distributions) ; (4) Sanction pécuniaire selon les limites prévues par la réglementation applicable ; (5) Administration provisoire (nomination d\'un administrateur provisoire) ; (6) Retrait d\'agrément. Depuis 2023, les sanctions de niveau 3 et supérieur font l\'objet d\'une publication sur le site de la COBAC. (Sources : Convention COBAC, textes disciplinaires COBAC.)',
+    },
+    {
+      q: 'L\'Instruction COBAC 007-03-2022 impose-t-elle des comités spécialisés ?',
+      a: 'Selon l\'Instruction COBAC 007-03-2022 relative à la gouvernance des établissements de crédit, les établissements doivent constituer des comités spécialisés émanant du Conseil d\'Administration. Les comités généralement requis comprennent le Comité d\'Audit (dont la majorité des membres doit être constituée d\'administrateurs indépendants), le Comité des Risques (au sein duquel le Directeur Général peut siéger) et le Comité de Nomination (dont le Président du Conseil d\'Administration est généralement exclu). Les spécificités de composition et de fonctionnement sont définies par l\'Instruction 007-03-2022. Chaque comité se réunit au minimum trimestriellement et les procès-verbaux sont conservés pendant au moins 10 ans.',
+    },
+    {
+      q: 'Quelle est la fréquence d\'inspection COBAC pour les banques en CEMAC ?',
+      a: 'Selon la pratique de supervision de la COBAC fondée sur la Convention COBAC et les textes d\'application, la périodicité indicative des inspections sur place est généralement de 24 mois pour les banques commerciales, avec une fréquence pouvant être annuelle pour les établissements d\'importance systémique. Les inspections à distance (analyse des reportings BEAC) sont mensuelles ou trimestrielles selon la nature des données. Le Secrétaire Général de la COBAC peut déclencher une inspection extraordinaire en cas d\'alerte sur un ratio prudentiel ou de signalement. La périodicité exacte relève de l\'appréciation de la COBAC en fonction du profil de risque de chaque établissement.',
+    },
+    {
+      q: 'La conformité OHADA est-elle requise en zone CEMAC ?',
+      a: 'La CEMAC et l\'OHADA sont deux espaces juridiques distincts. Parmi les 6 États de la CEMAC, seuls le Cameroun et le Tchad sont membres de l\'OHADA. Le Congo, le Gabon, la République Centrafricaine et la Guinée Équatoriale ne sont pas parties au Traité OHADA. Toutefois, pour les opérations transfrontalières impliquant des États membres de l\'OHADA, les investisseurs internationaux et les banques de développement exigent généralement la conformité aux Actes Uniformes OHADA (AUSCGIE pour les sociétés commerciales, SYSCOHADA pour la comptabilité). L\'application du droit OHADA dans les États CEMAC non-membres relève d\'une démarche volontaire de l\'établissement concerné.',
+    },
+    {
+      q: 'Quelles sont les catégories d\'IMF en zone CEMAC ?',
+      a: 'La réglementation COBAC en matière de microfinance distingue généralement trois catégories d\'Établissements de Microfinance (EMF), fondées sur la nature juridique, le volume d\'activité et la zone d\'intervention : Catégorie 1 — Structures mutualistes ou coopératives d\'épargne-crédit de taille modeste, soumises à un contrôle allégé ; Catégorie 2 — Associations ou sociétés de microfinance atteignant certains seuils d\'encours, avec obligations de commissariat aux comptes et reporting renforcé ; Catégorie 3 — Grands réseaux de microfinance à dimension régionale ou sous-régionale, soumis aux exigences les plus strictes en matière de capital, de gouvernance et de reporting. Les seuils précis sont définis par la réglementation COBAC en vigueur.',
+    },
+    {
+      q: 'Quels sont les délais de déclaration des incidents à la COBAC ?',
+      a: 'Les délais applicables sont définis par les textes COBAC en vigueur. À titre indicatif, la pratique de supervision documentée fait état des délais suivants : (1) Dépassement d\'un ratio prudentiel — notification écrite dans les plus brefs délais (généralement sous 48 heures) ; (2) Découverte d\'une fraude interne significative — information immédiate par écrit ; (3) Problème de liquidité critique — information immédiate ; (4) Changement de dirigeant effectif — information préalable (généralement 15 jours avant la prise de fonction) ; (5) Modification des statuts — information préalable (généralement 30 jours avant l\'AG). Le non-respect des délais de déclaration constitue une infraction autonome susceptible de sanction. Les établissements doivent se référer aux textes COBAC applicables pour les délais précis.',
+    },
+  ],
+  geoDirectAnswers: [
+    {
+      q: 'Qu\'est-ce que la COBAC ?',
+      a: 'La Commission Bancaire de l\'Afrique Centrale (COBAC) est l\'organe de supervision bancaire de la Communauté Économique et Monétaire de l\'Afrique Centrale (CEMAC), créée par la Convention du 16 janvier 1990 (révisée en 2010). Elle est chargée du contrôle des établissements de crédit dans les 6 États membres (Cameroun, Gabon, Congo, Tchad, RCA, Guinée Équatoriale). Ses missions incluent l\'instruction des dossiers d\'agrément bancaire, les inspections sur place et à distance, la vérification du respect des ratios prudentiels fixés par la BEAC, et le prononcé de sanctions disciplinaires en cas de manquement. La COBAC est composée de représentants des ministres des Finances des 6 États membres, du Gouverneur de la BEAC, et d\'un représentant de la Commission de la CEMAC.',
+    },
+    {
+      q: 'Quel est le rôle de la BEAC dans la supervision bancaire ?',
+      a: 'La Banque des États de l\'Afrique Centrale (BEAC) est la banque centrale commune aux 6 États de la CEMAC. Dans le dispositif de supervision bancaire, la BEAC fixe les ratios prudentiels applicables aux établissements de crédit (solvabilité, liquidité, levier, concentration des risques) par voie d\'instructions. Elle conduit la politique monétaire de la zone, émet la monnaie (Franc CFA — XAF, parité fixe avec l\'Euro : 1 EUR = 655,957 XAF), et assure le secrétariat de la COBAC. La BEAC et la COBAC forment un dispositif intégré de régulation : la BEAC définit les normes, la COBAC en contrôle l\'application.',
+    },
+    {
+      q: 'Comment préparer une inspection COBAC ?',
+      a: 'La préparation d\'une inspection COBAC repose sur 5 axes méthodologiques : (1) Audit documentaire préalable — vérifier l\'intégralité des documents permanents (statuts, PV CA, manuels de procédures, politique LBC/FT, cartographie des risques) ; (2) Revue des ratios prudentiels — s\'assurer du respect des seuils BEAC sur les 12 derniers mois et documenter tout dépassement ; (3) Vérification du dispositif LBC/FT — conformité au Règlement COBAC R-2018/01 (KYC, CDD, déclarations de soupçon ANIF, formation du personnel) ; (4) Audit gouvernance — conformité à l\'Instruction 007-03-2022 (composition CA, comités spécialisés, PV, dirigeants effectifs) ; (5) Simulation d\'inspection — réaliser un audit blanc avec restitution au Conseil d\'Administration. KHEPRA EXPERTS recommande un délai de préparation de 6 à 8 semaines.',
+    },
+    {
+      q: 'Quels sont les ratios prudentiels en CEMAC ?',
+      a: 'Les principaux ratios prudentiels fixés par la BEAC pour les établissements de crédit en CEMAC sont : (1) Ratio CET1 (Common Equity Tier 1) — fonds propres de base rapportés aux actifs pondérés par les risques, avec un seuil minimum défini par instruction BEAC, dans l\'esprit des standards Bâle III ; (2) Ratio de solvabilité global — fonds propres totaux / actifs pondérés par les risques, minimum 8 % (seuil pouvant être relevé pour les établissements systémiques) ; (3) Ratio de liquidité (LCR) — actifs liquides de haute qualité / sorties nettes de trésorerie sur 30 jours, minimum 100 % ; (4) Ratio de levier — fonds propres / exposition totale (non pondérée), minimum 3 % ; (5) Ratio de concentration — exposition sur un seul bénéficiaire / fonds propres, maximum 25 %. Ces ratios font l\'objet d\'instructions BEAC spécifiques.',
+    },
+    {
+      q: 'Quelles sanctions peut prononcer la COBAC ?',
+      a: 'La COBAC dispose d\'un pouvoir disciplinaire étendu en vertu de la Convention COBAC. L\'échelle des sanctions comprend : l\'avertissement écrit, l\'injonction de mise en conformité avec délai, la limitation d\'activité (restriction de certaines opérations, blocage des distributions), les sanctions pécuniaires (dans les limites prévues par les textes applicables), l\'administration provisoire (nomination d\'un administrateur par la COBAC pour une durée déterminée), et le retrait d\'agrément (sanction ultime). Les sanctions de niveau 3 et supérieur font l\'objet d\'une publication sur le site de la COBAC depuis 2023, ce qui constitue un risque réputationnel majeur pour l\'établissement concerné.',
+    },
+    {
+      q: 'Quelles différences entre la réglementation COBAC et la réglementation BCEAO ?',
+      a: 'Les principales différences sont : (1) Périmètre géographique — CEMAC (6 pays, 55 millions d\'habitants) vs UEMOA (8 pays, 130 millions d\'habitants) ; (2) Régime de gouvernance — Instruction COBAC 007-03-2022 (CEMAC) vs Circulaires CB-UMOA 01-03-2017 (UEMOA), avec des exigences différenciées sur le nombre d\'administrateurs indépendants et la composition des comités ; (3) LBC/FT — Règlement COBAC R-2018/01 avec le GABAC comme organe régional (CEMAC) vs Directive BCEAO 02/2015 avec le GIABA (UEMOA) ; (4) Publication des sanctions — systématique pour les niveaux 3+ en CEMAC, non publique en UEMOA ; (5) OHADA — seuls 2 États CEMAC sur 6 sont membres de l\'OHADA (Cameroun, Tchad), contre 8/8 en UEMOA. Ces différences impactent directement les stratégies de conformité des groupes bancaires opérant dans les deux zones.',
+    },
+    {
+      q: 'Comment mettre en place une fonction conformité conforme aux exigences COBAC ?',
+      a: 'La mise en place d\'une fonction conformité répondant aux exigences COBAC s\'articule autour de 4 composantes : (1) Gouvernance — désignation d\'un responsable conformité rattaché hiérarchiquement au Directeur Général avec accès direct au Comité d\'Audit, et inscription de la fonction conformité dans l\'organigramme au niveau approprié ; (2) Dispositif documentaire — charte de conformité, politique LBC/FT, procédures KYC/CDD, manuel de déclaration de soupçon, code de déontologie ; (3) Dispositif opérationnel — système de filtrage des sanctions (ONU, OFAC, listes nationales), outil de profilage des risques clients, système de surveillance des transactions ; (4) Dispositif de contrôle — audit externe LBC/FT, reporting trimestriel au Comité d\'Audit, plan de formation annuel du personnel exposé. La mise en conformité initiale nécessite généralement 90 jours.',
+    },
+  ],
+};
+
+export const COBAC_ARTICLE_CONTENT = {
+  executiveSummary: {
+    heading: 'Executive Summary — Conformité COBAC / CEMAC',
+    subheading: 'Analyse Senior Partner — 22 minutes de lecture',
+    paragraphs: [
+      'La Commission Bancaire de l\'Afrique Centrale (COBAC), créée par la Convention du 16 janvier 1990 et révisée en 2010, a considérablement renforcé son dispositif de contrôle depuis 2022. L\'Instruction COBAC 007-03-2022 relative à la gouvernance des établissements de crédit, les instructions BEAC sur les ratios prudentiels, le Règlement COBAC R-2018/01 du 3 avril 2018 portant dispositif LBC/FT, et la publication des sanctions sur le site de la COBAC marquent un tournant dans la supervision bancaire en zone CEMAC.',
+      'Les établissements de crédit opérant dans les 6 États de la CEMAC (Cameroun, Gabon, Congo, Tchad, République Centrafricaine, Guinée Équatoriale) font face à un double défi : la conformité aux normes régionales (COBAC, BEAC) et la crédibilité auprès des investisseurs internationaux qui exigent, en complément, les standards OHADA, Bâle III et les normes du GAFI en matière de LBC/FT. Ce guide, fondé sur l\'analyse des textes officiels en vigueur et l\'expérience terrain de KHEPRA EXPERTS, analyse les points de friction réels, le cadre réglementaire applicable et les bonnes pratiques de mise en conformité.',
+    ],
+    keyPoints: [
+      { label: 'Point de friction #1', text: 'Les groupes bancaires multinationaux peinent à concilier leurs politiques internes (crédit, conformité, ressources humaines) avec les exigences spécifiques de la COBAC, notamment sur les délais de déclaration des incidents prudentiels et la composition des comités spécialisés requise par l\'Instruction 007-03-2022.' },
+      { label: 'Point de friction #2', text: 'Les Établissements de Microfinance (EMF) de catégorie 1 sous-estiment le risque de requalification en catégorie supérieure consécutive à une croissance de l\'encours, ce qui déclenche des obligations additionnelles de gouvernance, de reporting et de commissariat aux comptes pouvant nécessiter une restructuration significative.' },
+      { label: 'Point de friction #3', text: 'Le manque de formation des administrateurs sur les spécificités de la réglementation CEMAC (instructions BEAC, Règlement COBAC R-2018/01 LBC/FT, rôle du GABAC, différences avec la zone UEMOA) crée une vulnérabilité structurelle en cas d\'inspection, en particulier lorsque les administrateurs sont issus de groupes bancaires dont la culture de conformité est historiquement ancrée dans la zone UEMOA.' },
+    ],
+    actionItems: [
+      'Nommer un responsable conformité LBC/FT indépendant avec ligne de reporting directe au DG et au Comité d\'Audit (Règlement COBAC R-2018/01, art. 36-47)',
+      'Mettre à jour les procès-verbaux des comités spécialisés conformément aux exigences de l\'Instruction 007-03-2022',
+      'Réaliser un audit de conformité COBAC complet avant toute inspection programmée (pré-inspection)',
+      'Former le Conseil d\'Administration aux spécificités CEMAC vs UEMOA et aux exigences du Règlement COBAC R-2018/01',
+      'Mettre en place un système d\'alerte automatique sur les ratios prudentiels avec escalade au Comité d\'Audit',
+    ],
+  },
+  cadreReglementaire: {
+    heading: 'Cadre Réglementaire COBAC — Architecture normative',
+    blocks: [
+      {
+        id: 'A',
+        title: 'Corpus normatif de la COBAC — Textes en vigueur',
+        icon: 'ri-file-text-line',
+        color: 'text-amber-700',
+        bg: 'bg-amber-50',
+        border: 'border-amber-200',
+        intro: 'La supervision bancaire en CEMAC repose sur un corpus normatif structuré :',
+        tableHeaders: ['Niveau', 'Texte de référence', 'Objet principal', 'Date'],
+        tableRows: [
+          ['Convention COBAC', 'Convention du 16 janvier 1990 portant création de la COBAC (révisée en 2010)', 'Création, missions, pouvoirs disciplinaires, composition de la Commission', '1990 (révisée 2010)'],
+          ['Instruction Gouvernance', 'Instruction COBAC 007-03-2022 relative à la gouvernance des établissements de crédit', 'Conseil d\'Administration, comités spécialisés, administrateurs indépendants, dirigeants effectifs, 3 lignes de défense, rémunération', '2022'],
+          ['Règlement LBC/FT', 'Règlement COBAC R-2018/01 du 3 avril 2018 portant dispositif LBC/FT', 'Obligations de vigilance (KYC/CDD/EDD), déclarations de soupçon à l\'ANIF, organisation du dispositif, sanctions', '3 avril 2018'],
+          ['Règlement Contrôle Interne', 'Règlement COBAC R-2016/01 relatif au contrôle interne des établissements de crédit', 'Dispositif de contrôle interne permanent et périodique, gestion des risques, audit interne', '2016'],
+          ['Règlement Gouvernance', 'Règlement COBAC R-2001/07 relatif à l\'organisation du contrôle interne (révisé)', 'Fondements du contrôle interne et de la gouvernance prudentielle', '2001 (révisé)'],
+          ['Instructions BEAC', 'Instructions de la BEAC sur les ratios prudentiels (solvabilité, liquidité, levier, concentration)', 'Définition, seuils, méthodes de calcul et fréquence de reporting des ratios prudentiels', '2016-2024'],
+          ['Lois nationales', 'Lois bancaires de chaque État membre CEMAC', 'Agrément, réorganisation, liquidation des établissements de crédit', 'Variables selon État'],
+        ],
+        sourceNote: 'Tableau établi à partir des textes officiels de la COBAC, de la BEAC et du Journal Officiel de la CEMAC. Données consolidées et vérifiées par KHEPRA EXPERTS, Regulatory & Financial Services BU. Dernière vérification : 07 juin 2026.',
+      },
+      {
+        id: 'B',
+        title: 'Architecture institutionnelle de la supervision en CEMAC',
+        icon: 'ri-building-line',
+        color: 'text-emerald-700',
+        bg: 'bg-emerald-50',
+        border: 'border-emerald-200',
+        intro: 'La supervision bancaire en CEMAC implique plusieurs acteurs institutionnels aux rôles distincts et complémentaires :',
+        bullets: [
+          'La BEAC (Banque des États de l\'Afrique Centrale) — Banque centrale commune aux 6 États membres. Elle émet la monnaie (Franc CFA — XAF), conduit la politique monétaire, et fixe par voie d\'instructions les ratios prudentiels applicables aux établissements de crédit. Elle assure le secrétariat de la COBAC. (Source : Statuts de la BEAC.)',
+          'La COBAC (Commission Bancaire de l\'Afrique Centrale) — Organe de contrôle bancaire créé par la Convention du 16 janvier 1990 (révisée en 2010). Elle est chargée de la supervision des établissements de crédit, des inspections sur place et à distance, de l\'instruction des dossiers d\'agrément, et du prononcé des sanctions disciplinaires. (Source : Convention COBAC, art. 1-5.)',
+          'Le GABAC (Groupe d\'Action contre le Blanchiment d\'Argent en Afrique Centrale) — Organe régional de coordination LBC/FT pour la zone CEMAC, reconnu comme Organisme Régional de Type GAFI (ORTG). Il évalue la conformité des États membres aux 40 Recommandations du GAFI. (Source : Règlement CEMAC n°02/02/CEMAC/UMAC/CM.)',
+          'L\'ANIF (Agence Nationale d\'Investigation Financière) — Cellule de Renseignement Financier (CRF) présente dans chaque État membre de la CEMAC. Elle reçoit et analyse les déclarations de soupçon émises par les établissements de crédit en application du Règlement COBAC R-2018/01, art. 28-30.',
+        ],
+        sourceNote: 'Architecture établie à partir de la Convention COBAC (1990/2010), des Statuts de la BEAC, du Règlement CEMAC n°02/02/CEMAC/UMAC/CM et du Règlement COBAC R-2018/01.',
+      },
+      {
+        id: 'C',
+        title: 'Alignement sur les standards internationaux',
+        icon: 'ri-global-line',
+        color: 'text-teal-700',
+        bg: 'bg-teal-50',
+        border: 'border-teal-200',
+        intro: 'Le dispositif prudentiel et de conformité en CEMAC s\'aligne progressivement sur les standards internationaux suivants :',
+        bullets: [
+          'Bâle III (BCBS) — Les normes de solvabilité, de liquidité (LCR, NSFR) et de levier sont intégrées dans les instructions BEAC. L\'application est progressive et adaptée au contexte des économies de la CEMAC. Les instructions BEAC publiées depuis 2016 transposent les principaux piliers de Bâle III.',
+          'GAFI (FATF) — Les 40 Recommandations du GAFI (révisées en 2023) constituent le standard international de référence en matière de LBC/FT. Elles sont transposées en droit CEMAC par le Règlement COBAC R-2018/01 du 3 avril 2018. Le GABAC, en tant qu\'ORTG, assure le suivi de la mise en œuvre et conduit les évaluations mutuelles des États membres.',
+          'OCDE — Les Principes de Gouvernance d\'Entreprise de l\'OCDE constituent une référence internationale citée par la COBAC dans ses travaux de modernisation du cadre de gouvernance des établissements de crédit.',
+          'IFRS 9 — L\'application des normes IFRS 9 relatives aux instruments financiers (classification, évaluation, dépréciation) est en cours de déploiement pour les banques commerciales en zone CEMAC, selon un calendrier défini par la COBAC.',
+        ],
+        sourceNote: 'Sources : BCBS (Basel Committee on Banking Supervision), GAFI/FATF 40 Recommandations (2023), OCDE Principes de Gouvernance (2023), COBAC.',
+      },
+    ],
+  },
+  ratiosPrudentiels: {
+    heading: 'Ratios Prudentiels BEAC — Cadre de référence',
+    intro: 'Les ratios prudentiels applicables aux établissements de crédit en zone CEMAC sont fixés par la BEAC par voie d\'instructions, et leur respect est contrôlé par la COBAC. Le tableau ci-dessous présente les principaux ratios, leurs modalités de calcul et les normes applicables selon les standards internationaux transposés par la BEAC.',
+    table: {
+      headers: ['Ratio', 'Méthode de calcul (standard BCBS)', 'Norme de référence', 'Fréquence indicative', 'Texte de référence'],
+      rows: [
+        ['CET1 (Common Equity Tier 1)', 'Fonds propres de base de catégorie 1 / Actifs pondérés en fonction des risques (RWA)', 'Minimum réglementaire défini par la BEAC (standard Bâle III : 4,5 % minimum)', 'Trimestrielle', 'Instructions BEAC prudentielles'],
+        ['Ratio de solvabilité global', '(Fonds propres de catégorie 1 + Fonds propres de catégorie 2) / RWA', 'Minimum 8 % (standard Bâle III) ; seuil pouvant être majoré pour les établissements systémiques par instruction BEAC', 'Trimestrielle', 'Instructions BEAC prudentielles'],
+        ['Ratio de liquidité (LCR)', 'Encours d\'actifs liquides de haute qualité (HQLA) / Sorties nettes de trésorerie sur 30 jours calendaires', '≥ 100 % (standard Bâle III)', 'Mensuelle', 'Instructions BEAC prudentielles'],
+        ['Ratio de levier', 'Fonds propres de catégorie 1 / Exposition totale (bilan et hors-bilan, non pondérée)', '≥ 3 % (standard Bâle III)', 'Trimestrielle', 'Instructions BEAC prudentielles'],
+        ['Concentration — grande exposition', 'Exposition totale envers un même bénéficiaire ou groupe de bénéficiaires liés / Fonds propres', '≤ 25 % des fonds propres (standard Bâle)', 'Mensuelle', 'Instructions BEAC prudentielles'],
+      ],
+    },
+    sourceNote: 'Tableau établi à partir des standards du Comité de Bâle sur le Contrôle Bancaire (BCBS — Bâle III) et des instructions de la BEAC. Les seuils exacts et les modalités de calcul applicables à chaque établissement sont définis par les instructions BEAC en vigueur. Il est impératif de se référer au texte de l\'instruction applicable pour les valeurs précises et les éventuelles mesures transitoires. Dernière vérification : 07 juin 2026.',
+    alerte: 'Note de vigilance : La BEAC peut, par voie d\'instruction, relever les seuils prudentiels applicables aux établissements d\'importance systémique ou à l\'ensemble du secteur. Les établissements doivent assurer une veille continue des instructions BEAC et adapter leur plan de capital en conséquence. Le non-respect d\'un ratio prudentiel constitue un manquement susceptible d\'entraîner des sanctions disciplinaires de la COBAC (Convention COBAC).',
+  },
+  gouvernance: {
+    heading: 'Gouvernance — Instruction COBAC 007-03-2022',
+    intro: 'L\'Instruction COBAC 007-03-2022 relative à la gouvernance des établissements de crédit constitue le texte de référence pour l\'organisation des organes de direction et de contrôle. Elle définit les exigences en matière de composition du Conseil d\'Administration, de comités spécialisés, de lignes de défense et de dirigeants effectifs. Les éléments ci-dessous sont présentés sur la base de cette instruction.',
+    points: [
+      {
+        title: 'Composition du Conseil d\'Administration',
+        text: 'L\'Instruction 007-03-2022 définit la composition minimale et maximale du Conseil d\'Administration, le nombre d\'administrateurs indépendants requis, et les conditions d\'indépendance. Le Directeur Général est généralement membre de droit du Conseil sans pouvoir le présider. La durée des mandats est encadrée par l\'Instruction. Pour les valeurs précises (nombre minimal d\'administrateurs, quota d\'indépendants, durée des mandats), il est impératif de se référer au texte de l\'Instruction 007-03-2022.',
+        obligation: true,
+        reference: 'Instruction COBAC 007-03-2022',
+      },
+      {
+        title: 'Comités spécialisés obligatoires',
+        text: 'L\'Instruction 007-03-2022 requiert la constitution de comités spécialisés émanant du Conseil d\'Administration. Ces comités comprennent généralement le Comité d\'Audit (majorité de membres indépendants, le Directeur Général ne peut y siéger), le Comité des Risques (le Directeur Général peut y siéger) et le Comité de Nomination (le Président du Conseil en est généralement exclu). Chaque comité se réunit au minimum trimestriellement. Les procès-verbaux des réunions sont conservés pendant une durée minimale conforme aux exigences COBAC.',
+        obligation: true,
+        reference: 'Instruction COBAC 007-03-2022',
+      },
+      {
+        title: 'Les 3 Lignes de Défense',
+        text: 'Le dispositif de contrôle interne et de gestion des risques s\'articule autour de 3 lignes de défense, conformément aux standards internationaux et à l\'Instruction 007-03-2022 : la 1ère ligne (fonctions opérationnelles) assure les contrôles de premier niveau intégrés aux processus ; la 2ème ligne (fonctions Conformité et Gestion des Risques) supervise, définit les normes et contrôle la 1ère ligne ; la 3ème ligne (Audit Interne) assure une évaluation indépendante de l\'ensemble du dispositif et reporte directement au Comité d\'Audit. La Direction de la Conformité dispose d\'une ligne de reporting directe au Directeur Général et au Comité d\'Audit.',
+        obligation: true,
+        reference: 'Instruction COBAC 007-03-2022 ; Standards BCBS Bâle',
+      },
+      {
+        title: 'Dirigeants effectifs',
+        text: 'L\'Instruction 007-03-2022 soumet la nomination des dirigeants effectifs (Directeur Général, Directeur Général Adjoint, Directeur Administratif et Financier) à l\'avis conforme préalable de la COBAC. La durée du mandat et les conditions de renouvellement sont encadrées par l\'Instruction. La COBAC peut exiger la présentation d\'un plan de succession pour les dirigeants approchant de la limite d\'âge. Tout changement de dirigeant effectif doit être notifié à la COBAC dans les délais prescrits.',
+        obligation: true,
+        reference: 'Instruction COBAC 007-03-2022 ; Convention COBAC',
+      },
+      {
+        title: 'Politique de rémunération',
+        text: 'La politique de rémunération des dirigeants et des preneurs de risque doit être alignée sur les risques, conformément aux principes du Comité de Bâle et à l\'Instruction 007-03-2022. La part variable de la rémunération est encadrée par rapport à la part fixe. La politique de rémunération est soumise à l\'examen du Comité d\'Audit et fait l\'objet d\'une information dans le rapport de gestion annuel. (Recommandation KHEPRA : publier une synthèse de la politique de rémunération dans le rapport annuel, même en l\'absence d\'obligation formelle de publication intégrale.)',
+        obligation: true,
+        reference: 'Instruction COBAC 007-03-2022 ; Principes BCBS sur la rémunération',
+      },
+    ],
+  },
+  distinctionObligation: {
+    heading: 'Obligations Réglementaires vs Recommandations — Distinction essentielle',
+    intro: 'Le tableau ci-dessous distingue clairement les exigences réglementaires obligatoires (dont le non-respect expose l\'établissement à des sanctions COBAC) des recommandations de bonnes pratiques et des standards internationaux. Cette distinction est fondamentale pour la priorisation des actions de mise en conformité.',
+    categories: [
+      {
+        type: 'obligation',
+        label: 'OBLIGATION RÉGLEMENTAIRE',
+        description: 'Exigence prévue par un texte officiel en vigueur (Convention COBAC, Règlement COBAC, Instruction BEAC). Le non-respect expose l\'établissement à des sanctions disciplinaires (avertissement, injonction, limitation d\'activité, sanction pécuniaire, administration provisoire, retrait d\'agrément).',
+        color: 'red',
+        icon: 'ri-shield-check-line',
+        items: [
+          { text: 'Respect des ratios prudentiels (solvabilité, liquidité, levier, concentration)', reference: 'Instructions BEAC prudentielles' },
+          { text: 'Obligations de vigilance à l\'égard de la clientèle (KYC, CDD, EDD, PPE)', reference: 'Règlement COBAC R-2018/01, art. 5-22' },
+          { text: 'Déclaration de soupçon à l\'ANIF nationale', reference: 'Règlement COBAC R-2018/01, art. 28-30' },
+          { text: 'Constitution des comités spécialisés (Audit, Risques, Nomination)', reference: 'Instruction COBAC 007-03-2022' },
+          { text: 'Avis conforme de la COBAC pour la nomination des dirigeants effectifs', reference: 'Instruction COBAC 007-03-2022 ; Convention COBAC' },
+          { text: 'Conservation des documents relatifs à la LBC/FT pendant au moins 10 ans', reference: 'Règlement COBAC R-2018/01, art. 18' },
+          { text: 'Formation obligatoire du personnel exposé au risque LBC/FT', reference: 'Règlement COBAC R-2018/01, art. 47' },
+          { text: 'Déclaration dans les délais de tout dépassement de ratio prudentiel à la COBAC', reference: 'Instructions BEAC ; Convention COBAC' },
+        ],
+      },
+      {
+        type: 'bonne-pratique',
+        label: 'BONNE PRATIQUE PRUDENTIELLE',
+        description: 'Pratique recommandée par les standards internationaux (Bâle, GAFI, OCDE) ou par les retours d\'expérience de supervision, sans caractère obligatoire dans les textes CEMAC actuels. Contribue significativement à la qualité du dispositif de conformité et facilite le dialogue avec le superviseur.',
+        color: 'emerald',
+        icon: 'ri-thumb-up-line',
+        items: [
+          { text: 'Audit externe LBC/FT annuel (le Règlement R-2018/01 prescrit un minimum de 2 ans)', reference: 'Recommandation KHEPRA basée sur les standards GAFI' },
+          { text: 'Publication volontaire d\'un rapport de conformité et de gouvernance', reference: 'Recommandation KHEPRA alignée sur les standards OCDE' },
+          { text: 'Mise en place d\'un Comité Éthique ou RSE au niveau du Conseil', reference: 'Recommandation KHEPRA — bonne pratique internationale' },
+          { text: 'Limitation de la part variable de rémunération à 100 % du fixe (vs plafond réglementaire)', reference: 'Recommandation KHEPRA alignée sur les standards CRD IV européens' },
+          { text: 'Stress tests de liquidité trimestriels (au-delà de la fréquence réglementaire)', reference: 'Recommandation KHEPRA basée sur les bonnes pratiques Bâle III' },
+        ],
+      },
+      {
+        type: 'standard',
+        label: 'STANDARD INTERNATIONAL DE RÉFÉRENCE',
+        description: 'Standard émis par une organisation internationale (BCBS, GAFI, OCDE, IFRS Foundation) dont la transposition intégrale dans le droit CEMAC est partielle ou progressive. Constitue une référence de marché que les investisseurs et les banques correspondantes attendent.',
+        color: 'amber',
+        icon: 'ri-global-line',
+        items: [
+          { text: 'Bâle III — Pilier 2 (ICAAP) et Pilier 3 (discipline de marché)', reference: 'BCBS — Bâle III framework' },
+          { text: 'IFRS 9 — Dépréciation des actifs financiers selon le modèle ECL', reference: 'IASB — IFRS 9 Instruments Financiers' },
+          { text: 'GAFI — Approche Basée sur les Risques (ABR) intégrale', reference: 'GAFI — Recommandation 1 et guide ABR' },
+          { text: 'OCDE — Principes de Gouvernance d\'Entreprise (publication intégrale)', reference: 'OCDE — G20/OECD Principles of Corporate Governance 2023' },
+          { text: 'COSO — Cadre intégré de contrôle interne (2013/2017)', reference: 'COSO — Internal Control — Integrated Framework' },
+        ],
+      },
+    ],
+  },
+  differences: {
+    heading: 'Différences COBAC vs BCEAO — Tableau comparatif analytique',
+    intro: 'Les différences entre les deux zones monétaires sont structurelles et impactent directement les stratégies de conformité des groupes bancaires multinationaux présents dans les deux zones. Le tableau ci-dessous est fondé sur l\'analyse des textes en vigueur dans chaque juridiction.',
+    table: {
+      headers: ['Critère', 'CEMAC — COBAC / BEAC', 'UEMOA — BCEAO / CB-UMOA', 'Références réglementaires'],
+      rows: [
+        ['Nombre d\'États', '6 (Cameroun, Gabon, Congo, Tchad, RCA, Guinée Équatoriale)', '8 (Côte d\'Ivoire, Sénégal, Mali, Burkina Faso, Bénin, Togo, Niger, Guinée-Bissau)', 'Traités CEMAC et UEMOA'],
+        ['Régime de gouvernance', 'Instruction COBAC 007-03-2022', 'Circulaires CB-UMOA n°01-2017, 02-2017, 03-2017', 'Instruction COBAC 007-03-2022 ; Circulaires CB-UMOA'],
+        ['Organe de supervision bancaire', 'COBAC (Commission Bancaire de l\'Afrique Centrale)', 'Commission Bancaire de l\'UMOA', 'Convention COBAC 1990/2010 ; Convention UMOA'],
+        ['Banque Centrale', 'BEAC — Yaoundé, Cameroun', 'BCEAO — Dakar, Sénégal', 'Statuts BEAC ; Statuts BCEAO'],
+        ['Régime de change', 'Parité fixe avec l\'Euro : 1 EUR = 655,957 XAF (garantie par le Trésor français)', 'Parité fixe avec l\'Euro : 1 EUR = 655,957 XOF (garantie par le Trésor français)', 'Convention de coopération monétaire France-CEMAC ; France-UEMOA'],
+        ['Texte LBC/FT de référence', 'Règlement COBAC R-2018/01 du 3 avril 2018', 'Directive BCEAO n°02/2015/CB/C du 2 juillet 2015', 'Règlement COBAC R-2018/01 ; Directive BCEAO 02/2015'],
+        ['Organe régional LBC/FT', 'GABAC — Libreville, Gabon', 'GIABA — Dakar, Sénégal', 'Règlement CEMAC n°02/02 ; Décision CEDEAO'],
+        ['CRF nationale', 'ANIF (Agence Nationale d\'Investigation Financière)', 'CENTIF (Cellule Nationale de Traitement des Informations Financières)', 'Lois nationales de chaque État membre'],
+        ['Publication des sanctions', 'Oui — niveaux 3+ publiés sur le site COBAC', 'Non systématique — pratique variable', 'Pratique observée de la COBAC ; Pratique observée de la CB-UMOA'],
+        ['OHADA', '2 États membres sur 6 (Cameroun, Tchad)', '8 États membres sur 8', 'Traité OHADA du 17 octobre 1993 (révisé 2008)'],
+        ['Solvabilité', 'Minimum 8 % ; seuil majoré pour les systémiques selon instructions BEAC', 'Minimum 8 % ; seuil majoré pour les systémiques selon instructions BCEAO', 'Instructions BEAC ; Instructions BCEAO ; Standards BCBS Bâle III'],
+        ['Normes comptables', 'SYSCOHADA (États OHADA membres) ; normes nationales (autres)', 'SYSCOHADA (tous les États)', 'Acte Uniforme OHADA portant organisation et harmonisation des comptabilités'],
+      ],
+    },
+    sourceNote: 'Tableau comparatif établi par KHEPRA EXPERTS sur la base des textes officiels en vigueur dans chaque juridiction à la date du 07 juin 2026. Les références réglementaires précises sont citées en 4ème colonne. Ce tableau a une visée analytique et ne constitue pas un avis juridique (cf. Avertissement Juridique en fin d\'article).',
+  },
+  sanctions: {
+    heading: 'Sanctions COBAC — Cadre disciplinaire',
+    intro: 'La COBAC dispose d\'un pouvoir disciplinaire étendu en vertu de la Convention COBAC du 16 janvier 1990 (révisée en 2010). L\'échelle des sanctions est proportionnée à la gravité des manquements constatés. La publication des sanctions constitue un facteur de risque réputationnel majeur.',
+    table: {
+      headers: ['Niveau', 'Type de sanction', 'Caractéristiques', 'Publication'],
+      rows: [
+        ['1', 'Avertissement écrit', 'Notification formelle des manquements constatés, sans restriction d\'activité', 'Non'],
+        ['2', 'Injonction de mise en conformité', 'Obligation de remédier aux manquements dans un délai imparti par la COBAC', 'Non'],
+        ['3', 'Limitation d\'activité', 'Restriction temporaire de certaines opérations, blocage des distributions de dividendes, interdiction de certaines activités', 'Oui — publié sur le site de la COBAC'],
+        ['4', 'Sanction pécuniaire', 'Amende selon les limites prévues par les textes applicables', 'Oui — publié sur le site de la COBAC'],
+        ['5', 'Administration provisoire', 'Nomination par la COBAC d\'un administrateur provisoire chargé de gérer l\'établissement pour le compte des actionnaires, pour une durée déterminée', 'Oui — publié sur le site de la COBAC'],
+        ['6', 'Retrait d\'agrément', 'Sanction ultime entraînant la cessation définitive de l\'activité bancaire de l\'établissement', 'Oui — publié sur le site de la COBAC'],
+      ],
+    },
+    alerte: 'Alerte risque réputationnel : Depuis 2023, la COBAC publie systématiquement les sanctions de niveau 3 et supérieur sur son site internet institutionnel, avec l\'identité de l\'établissement et la nature des manquements constatés. Cette publication est accessible aux investisseurs, aux banques correspondantes et aux agences de notation. L\'impact réputationnel peut excéder l\'impact financier direct de la sanction. (Source : Pratique observée de la COBAC.)',
+  },
+  geoDirect: {
+    heading: 'Réponses Directes — Questions clés des dirigeants et conformité',
+    intro: 'Les réponses ci-dessous sont conçues pour répondre de manière concise et sourcée aux questions les plus fréquemment posées par les dirigeants d\'établissements de crédit en zone CEMAC. Format optimisé pour l\'IA générative (GEO — Generative Engine Optimization).',
+  },
+  bibliographie: {
+    heading: 'Références Réglementaires Officielles',
+    intro: 'Bibliographie des textes officiels en vigueur cités dans le présent article. Cette liste n\'est pas exhaustive et ne se substitue pas à la consultation des textes officiels.',
+    sections: [
+      {
+        title: 'Textes COBAC',
+        items: [
+          { text: 'Convention du 16 janvier 1990 portant création de la Commission Bancaire de l\'Afrique Centrale (COBAC), révisée en 2010.', reference: 'COBAC' },
+          { text: 'Instruction COBAC 007-03-2022 relative à la gouvernance des établissements de crédit.', reference: 'COBAC, 2022' },
+          { text: 'Règlement COBAC R-2018/01 du 3 avril 2018 portant dispositif de lutte contre le blanchiment de capitaux et le financement du terrorisme (LBC/FT).', reference: 'COBAC, 2018' },
+          { text: 'Règlement COBAC R-2016/01 relatif au contrôle interne des établissements de crédit.', reference: 'COBAC, 2016' },
+          { text: 'Règlement COBAC R-2001/07 relatif à l\'organisation du contrôle interne des établissements de crédit (révisé).', reference: 'COBAC, 2001' },
+        ],
+      },
+      {
+        title: 'Textes BEAC',
+        items: [
+          { text: 'Instructions de la BEAC relatives aux ratios prudentiels (solvabilité, liquidité, levier, concentration).', reference: 'BEAC, 2016-2024' },
+          { text: 'Statuts de la Banque des États de l\'Afrique Centrale (BEAC).', reference: 'BEAC' },
+        ],
+      },
+      {
+        title: 'Textes CEMAC',
+        items: [
+          { text: 'Règlement CEMAC n°02/02/CEMAC/UMAC/CM portant création du Groupe d\'Action contre le Blanchiment d\'Argent en Afrique Centrale (GABAC).', reference: 'CEMAC, 2002' },
+          { text: 'Règlement CEMAC n°01/16/CEMAC/UMAC/CM relatif à la LBC/FT dans la CEMAC.', reference: 'CEMAC, 2016' },
+        ],
+      },
+      {
+        title: 'Standards internationaux',
+        items: [
+          { text: 'Comité de Bâle sur le Contrôle Bancaire (BCBS) — Bâle III : dispositif réglementaire mondial pour le renforcement des banques (ratio de solvabilité, ratio de liquidité LCR/NSFR, ratio de levier).', reference: 'BCBS, 2010 (révisé)' },
+          { text: 'Groupe d\'Action Financière (GAFI/FATF) — 40 Recommandations sur la LBC/FT, révisées en 2023.', reference: 'GAFI/FATF, 2012 (révisées 2023)' },
+          { text: 'OCDE — G20/OECD Principles of Corporate Governance.', reference: 'OCDE, 2023' },
+          { text: 'IASB — IFRS 9 — Instruments Financiers (classification, évaluation, dépréciation).', reference: 'IASB, 2014' },
+        ],
+      },
+    ],
+  },
+  avertissement: {
+    heading: 'Avertissement Juridique',
+    paragraphs: [
+      'Le présent article constitue une analyse informative et pédagogique fondée sur les textes officiels en vigueur à la date de sa dernière mise à jour (07 juin 2026). Il est destiné à fournir un éclairage général sur le cadre réglementaire applicable aux établissements de crédit en zone CEMAC.',
+      'Il ne saurait se substituer à un avis juridique, réglementaire ou prudentiel spécifique. Les textes cités peuvent faire l\'objet de modifications, d\'abrogations ou de révisions postérieures à la date de publication. Les seuils, délais et montants mentionnés le sont à titre indicatif sur la base des textes en vigueur à la date indiquée.',
+      'Les établissements de crédit concernés doivent impérativement consulter les textes officiels applicables dans leur version la plus récente, disponibles auprès des autorités compétentes (COBAC, BEAC, GABAC, ANIF nationale), et, le cas échéant, solliciter un accompagnement spécialisé pour l\'évaluation de leur situation particulière.',
+      'KHEPRA EXPERTS décline toute responsabilité quant à l\'utilisation qui pourrait être faite des informations contenues dans cet article en l\'absence d\'une consultation professionnelle adaptée à la situation spécifique de l\'établissement concerné.',
+    ],
+  },
+};
+
+
+

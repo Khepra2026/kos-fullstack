@@ -1,0 +1,72 @@
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { supabase } from '@/lib/supabase';
+import {
+  agentPools as mockPools,
+  raciMatrix as mockRACI,
+  workflows as mockWorkflows,
+  escalades as mockEscalades,
+  reglesValidation as mockRegles,
+  orchestrationKPIs as mockKPIs,
+  orchestrationStats as mockStats,
+} from '@/mocks/multiAgentOrchestration';
+
+export function useMultiAgentOrchestration() {
+  const [pools, setPools] = useState(mockPools);
+  const [raci, setRACI] = useState(mockRACI);
+  const [workflows, setWorkflows] = useState(mockWorkflows);
+  const [escalades, setEscalades] = useState(mockEscalades);
+  const [regles, setRegles] = useState(mockRegles);
+  const [kpis, setKPIs] = useState(mockKPIs);
+  const [stats, setStats] = useState(mockStats);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isLive, setIsLive] = useState(false);
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { error: _err } = await supabase.from('kos_unified_agents').select('*').limit(1);
+      if (_err) throw _err;
+      setPools(mockPools);
+      setRACI(mockRACI);
+      setWorkflows(mockWorkflows);
+      setEscalades(mockEscalades);
+      setRegles(mockRegles);
+      setKPIs(mockKPIs);
+      setStats(mockStats);
+      setIsLive(false);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Erreur inconnue';
+      setError(message);
+      setPools(mockPools);
+      setRACI(mockRACI);
+      setWorkflows(mockWorkflows);
+      setEscalades(mockEscalades);
+      setRegles(mockRegles);
+      setKPIs(mockKPIs);
+      setStats(mockStats);
+      setIsLive(false);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  const kpisByCategorie = useMemo(() => ({
+    temps: kpis.filter(k => k.categorie === 'temps'),
+    qualite: kpis.filter(k => k.categorie === 'qualite'),
+    productivite: kpis.filter(k => k.categorie === 'productivite'),
+  }), [kpis]);
+
+  return {
+    pools, raci, workflows, escalades, regles, kpis, kpisByCategorie, stats,
+    isLive, loading, error, refetch: fetchData,
+  };
+}
+
+
+

@@ -1,0 +1,163 @@
+<!--
+╔══════════════════════════════════════════════════════════════╗
+║  KOS PAC ENGINE — Confluence Evidence Pack                  ║
+║  Template ISA 265 / ISAE 3000 / SOC 2 / ISO 27001           ║
+║                                                             ║
+║  Utilisation : Copier-coller ce code dans Confluence        ║
+║  (Insertion > Markup ou via l'éditeur source)               ║
+║  Remplacer les {{placeholders}} par les valeurs réelles     ║
+║                                                             ║
+║  0 dette technique · 100% Confluence natif                  ║
+╚══════════════════════════════════════════════════════════════╝
+-->
+<ac:structured-macro ac:name="info">
+  <ac:rich-text-body>
+    <h2>KOS-PAC-{{finding_id}} — Evidence Pack</h2>
+    <p><strong>Format :</strong> KPMG Big Four · <strong>Date :</strong> {{date_generation}} · <strong>Classification :</strong> Confidentiel — Usage Interne Audit</p>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<h3>📋 Section 1 — Finding Summary</h3>
+<table>
+  <tbody>
+    <tr><th style="width:200px;text-align:left;background:#f4f5f7;padding:8px;">ID Finding</th><td style="padding:8px;">{{finding_id}}</td></tr>
+    <tr><th style="text-align:left;background:#f4f5f7;padding:8px;">Standard</th><td style="padding:8px;">{{standard}}</td></tr>
+    <tr><th style="text-align:left;background:#f4f5f7;padding:8px;">Criticité</th><td style="padding:8px;">{{criticite}}</td></tr>
+    <tr><th style="text-align:left;background:#f4f5f7;padding:8px;">Titre</th><td style="padding:8px;">{{title}}</td></tr>
+    <tr><th style="text-align:left;background:#f4f5f7;padding:8px;">Propriétaire Risque (R)</th><td style="padding:8px;">{{proprietaire_risque.nom}}</td></tr>
+    <tr><th style="text-align:left;background:#f4f5f7;padding:8px;">Validator (A)</th><td style="padding:8px;">{{validator.nom}}</td></tr>
+    <tr><th style="text-align:left;background:#f4f5f7;padding:8px;">Statut</th><td style="padding:8px;"><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Yellow</ac:parameter><ac:parameter ac:name="title">EN COURS</ac:parameter></ac:structured-macro></td></tr>
+  </tbody>
+</table>
+<p><em>Conformité : ISA 265 — Traçabilité complète du finding depuis sa détection jusqu'à sa clôture.</em></p>
+
+<h3>🔍 Section 2 — Root Cause Analysis</h3>
+<ac:structured-macro ac:name="panel">
+  <ac:parameter ac:name="title">ISAE 3000 — Root Cause</ac:parameter>
+  <ac:rich-text-body>
+    <p>{{root_cause}}</p>
+    <p><strong>Méthodologie :</strong> 5 Pourquoi (5 Whys) · Diagramme Ishikawa · Analyse des causes systémiques.</p>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<h3>💰 Section 3 — Risk Impact (Matérialité)</h3>
+<table>
+  <tbody>
+    <tr><th style="width:200px;text-align:left;background:#f4f5f7;padding:8px;">Impact Financier</th><td style="padding:8px;">{{impact_fcfa}} FCFA</td></tr>
+    <tr><th style="text-align:left;background:#f4f5f7;padding:8px;">Impact Réglementaire</th><td style="padding:8px;">BCEAO / COBAC / {{regulateur_applicable}}</td></tr>
+    <tr><th style="text-align:left;background:#f4f5f7;padding:8px;">Impact Réputation</th><td style="padding:8px;">{{impact_reputation}}</td></tr>
+    <tr><th style="text-align:left;background:#f4f5f7;padding:8px;">Blocage BCEAO</th><td style="padding:8px;">{{blocage_bceao_oui_non}}</td></tr>
+  </tbody>
+</table>
+
+<h3>📸 Section 4 — Evidence Avant (SSAE 18)</h3>
+<ac:structured-macro ac:name="panel">
+  <ac:parameter ac:name="title">SSAE 18 — État avant correction</ac:parameter>
+  <ac:rich-text-body>
+    <p><strong>Capture d'écran :</strong></p>
+    <ac:structured-macro ac:name="info">
+      <ac:rich-text-body>
+        <p>/Attachments/avant/{{finding_id}}.png</p>
+      </ac:rich-text-body>
+    </ac:structured-macro>
+    <p><strong>Commande d'audit exécutée :</strong></p>
+    <ac:structured-macro ac:name="code">
+      <ac:parameter ac:name="language">bash</ac:parameter>
+      <ac:plain-text-body><![CDATA[aws iam list-users --output table]]></ac:plain-text-body>
+    </ac:structured-macro>
+    <p><strong>Résultat constaté :</strong> {{constat_avant}}</p>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<h3>✅ Section 5 — Actions Correctives (SLA)</h3>
+<table>
+  <tbody>
+    <tr><th style="width:200px;text-align:left;background:#f4f5f7;padding:8px;">Action Immédiate (&lt;72h)</th><td style="padding:8px;">{{action_immediate}}</td></tr>
+    <tr><th style="text-align:left;background:#f4f5f7;padding:8px;">Action Long Terme</th><td style="padding:8px;">{{action_long_terme}}</td></tr>
+    <tr><th style="text-align:left;background:#f4f5f7;padding:8px;">SLA Applicable</th><td style="padding:8px;"><ac:structured-macro ac:name="status"><ac:parameter ac:name="colour">Red</ac:parameter><ac:parameter ac:name="title">Due Date: {{dueDate}}</ac:parameter></ac:structured-macro></td></tr>
+    <tr><th style="text-align:left;background:#f4f5f7;padding:8px;">Statut SLA</th><td style="padding:8px;">{{sla_status}}</td></tr>
+  </tbody>
+</table>
+
+<h3>🧪 Section 6 — Test d'Audit (SOC 2 CC8.1)</h3>
+<ac:structured-macro ac:name="panel">
+  <ac:parameter ac:name="title">SOC 2 CC8.1 — Procédure de test d'efficacité</ac:parameter>
+  <ac:rich-text-body>
+    <p><strong>Procédure :</strong></p>
+    <ac:structured-macro ac:name="code">
+      <ac:parameter ac:name="language">bash</ac:parameter>
+      <ac:plain-text-body><![CDATA[aws iam list-users | grep MFA]]></ac:plain-text-body>
+    </ac:structured-macro>
+    <p><strong>Résultat attendu :</strong> 100% users MFA=True</p>
+    <p><strong>Résultat obtenu :</strong> {{test_resultat}}</p>
+    <p><strong>Validé par :</strong> {{test_valide_par}}</p>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<h3>📸 Section 7 — Evidence Après (Audit Trail)</h3>
+<ac:structured-macro ac:name="panel">
+  <ac:parameter ac:name="title">Preuve de correction — Audit Trail complet</ac:parameter>
+  <ac:rich-text-body>
+    <p><strong>Capture d'écran après correction :</strong></p>
+    <ac:structured-macro ac:name="info">
+      <ac:rich-text-body>
+        <p>/Attachments/apres/{{finding_id}}.png</p>
+      </ac:rich-text-body>
+    </ac:structured-macro>
+    <p><strong>Date de clôture :</strong> {{date_closure}}</p>
+    <p><strong>Jira Ticket lié :</strong> <a href="{{jira_ticket_url}}">{{jira_ticket_key}}</a></p>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<h3>✍️ Section 8 — Sign-off (ISAE 3000 Séparation)</h3>
+<table>
+  <tbody>
+    <tr>
+      <th style="width:200px;text-align:left;background:#f4f5f7;padding:8px;">Responsible (R)</th>
+      <td style="padding:8px;">{{proprietaire_risque.nom}} ☐ <em>Signature : ___________ Date : ___________</em></td>
+    </tr>
+    <tr>
+      <th style="text-align:left;background:#f4f5f7;padding:8px;">Accountable (A)</th>
+      <td style="padding:8px;">{{validator.nom}} ☐ <em>Signature : ___________ Date : ___________</em></td>
+    </tr>
+    <tr>
+      <th style="text-align:left;background:#f4f5f7;padding:8px;">Consulted (C)</th>
+      <td style="padding:8px;">Comité Audit & Risques ☐</td>
+    </tr>
+    <tr>
+      <th style="text-align:left;background:#f4f5f7;padding:8px;">Auditeur Externe</th>
+      <td style="padding:8px;">☐ <em>Signature : ___________ Date : ___________</em></td>
+    </tr>
+  </tbody>
+</table>
+
+<ac:structured-macro ac:name="info">
+  <ac:rich-text-body>
+    <p><strong>✅ ISAE 3000 — Séparation des rôles vérifiée :</strong> R ({{proprietaire_risque.nom}}) ≠ A ({{validator.nom}}) ≠ Auditeur. Conforme.</p>
+  </ac:rich-text-body>
+</ac:structured-macro>
+
+<hr />
+
+<h4>📊 Panels de Conformité</h4>
+<table>
+  <tbody>
+    <tr>
+      <th style="background:#f4f5f7;padding:8px;text-align:left;">Panel CWV</th>
+      <td style="padding:8px;">Page &lt;50KB · LCP &lt;1.5s · Description Jira &lt;32KB · Pas d'iframe · Pas de base64</td>
+    </tr>
+    <tr>
+      <th style="background:#f4f5f7;padding:8px;text-align:left;">Panel GSC</th>
+      <td style="padding:8px;">Summary format [STD][CRIT] · Labels = [{{standard}}] · 100% indexable Jira Search</td>
+    </tr>
+    <tr>
+      <th style="background:#f4f5f7;padding:8px;text-align:left;">Panel Dette</th>
+      <td style="padding:8px;">0 table · 0 Edge Function · 0 Lambda · 100% Confluence + Jira natif</td>
+    </tr>
+  </tbody>
+</table>
+
+<p style="text-align:center;color:#6B778C;font-size:11px;margin-top:32px;">
+  Généré par <strong>KOS PAC ENGINE v1.0</strong> — Big Four Audit Trail · ISO 27001:2022 · SOC 2 Type 2 · ISAE 3000 · ISA 265<br />
+  0 dette technique · 100% traçabilité · Format KPMG
+</p>

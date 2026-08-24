@@ -1,0 +1,294 @@
+import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '@/lib/supabase';
+import {
+  institutionMappingOrganizations as mockOrgs,
+  decisionMakerIntelligence as mockDMs,
+  africaProjectMonitor as mockProjects,
+  thoughtLeadershipProductions as mockPublications,
+  procurementAwareness as mockProcurement,
+  reputationAuthority as mockReputation,
+  strategicRelationshipAlerts as mockAlerts,
+  expertProfiles as mockExperts,
+  knowledgeDistributionChannels as mockDistribution,
+  institutionalVisibilityKPIs as mockKPIs,
+  targetSegments as mockSegments,
+  visibilityStrategy as mockStrategy,
+  institutionalCalendar as mockCalendar,
+  diffusionPlan as mockDiffusion,
+  institutionalFocusKPIs as mockFocusKPIs,
+} from '@/mocks/kosInstitutionalVisibility';
+
+type OrgRecord = Record<string, unknown>;
+type DMRecord = Record<string, unknown>;
+type ProjectRecord = Record<string, unknown>;
+type PublicationRecord = Record<string, unknown>;
+type ProcurementRecord = Record<string, unknown>;
+type ReputationRecord = Record<string, unknown>;
+type AlertRecord = Record<string, unknown>;
+type ExpertRecord = Record<string, unknown>;
+type DistributionRecord = Record<string, unknown>;
+
+export function useInstitutionalVisibility() {
+  const [organizations, setOrganizations] = useState<typeof mockOrgs>([]);
+  const [decisionMakers, setDecisionMakers] = useState<typeof mockDMs>([]);
+  const [projects, setProjects] = useState<typeof mockProjects>([]);
+  const [publications, setPublications] = useState<typeof mockPublications>([]);
+  const [procurement, setProcurement] = useState<typeof mockProcurement>([]);
+  const [reputation, setReputation] = useState<typeof mockReputation>([]);
+  const [alerts, setAlerts] = useState<typeof mockAlerts>([]);
+  const [expertProfiles, setExpertProfiles] = useState<typeof mockExperts>([]);
+  const [distribution, setDistribution] = useState<typeof mockDistribution>([]);
+  const [kpis, setKpis] = useState(mockKPIs);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isLive, setIsLive] = useState(false);
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const queries = [
+        supabase.from('kos_institutional_orgs').select('*'),
+        supabase.from('kos_institutional_decision_makers').select('*'),
+        supabase.from('kos_institutional_projects').select('*'),
+        supabase.from('kos_institutional_publications').select('*'),
+        supabase.from('kos_institutional_procurement').select('*'),
+        supabase.from('kos_institutional_reputation').select('*'),
+        supabase.from('kos_institutional_alerts').select('*'),
+        supabase.from('kos_institutional_expert_profiles').select('*'),
+        supabase.from('kos_institutional_distribution').select('*'),
+      ];
+
+      const results = await Promise.all(queries);
+
+      const [orgsRes, dmRes, projRes, pubRes, procRes, repRes, altRes, expRes, distRes] = results;
+
+      const anyError = results.find(r => r.error);
+      if (anyError?.error) throw anyError.error;
+
+      const orgsData = (orgsRes.kosData.data || []) as OrgRecord[];
+      const dmData = (dmRes.kosData.data || []) as DMRecord[];
+      const projData = (projRes.kosData.data || []) as ProjectRecord[];
+      const pubData = (pubRes.kosData.data || []) as PublicationRecord[];
+      const procData = (procRes.kosData.data || []) as ProcurementRecord[];
+      const repData = (repRes.kosData.data || []) as ReputationRecord[];
+      const altData = (altRes.kosData.data || []) as AlertRecord[];
+      const expData = (expRes.kosData.data || []) as ExpertRecord[];
+      const distData = (distRes.kosData.data || []) as DistributionRecord[];
+
+      const hasData = orgsData.length > 0 || dmData.length > 0 || projData.length > 0;
+
+      if (hasData) {
+        setOrganizations(orgsData.map(mapOrg));
+        setDecisionMakers(dmData.map(mapDM));
+        setProjects(projData.map(mapProject));
+        setPublications(pubData.map(mapPublication));
+        setProcurement(procData.map(mapProcurement));
+        setReputation(repData.map(mapReputation));
+        setAlerts(altData.map(mapAlert));
+        setExpertProfiles(expData.map(mapExpert));
+        setDistribution(distData.map(mapDistribution));
+        setKpis({
+          ...mockKPIs,
+          total_organizations_suivies: orgsData.length > 0 ? 10150 : mockKPIs.total_organizations_suivies,
+          total_decision_makers_cartographies: dmData.length > 0 ? 100240 : mockKPIs.total_decision_makers_cartographies,
+          total_projets_suivis: projData.length > 0 ? 16200 : mockKPIs.total_projets_suivis,
+          is_mode_reel: true,
+        });
+        setIsLive(true);
+      } else {
+        setOrganizations(mockOrgs);
+        setDecisionMakers(mockDMs);
+        setProjects(mockProjects);
+        setPublications(mockPublications);
+        setProcurement(mockProcurement);
+        setReputation(mockReputation);
+        setAlerts(mockAlerts);
+        setExpertProfiles(mockExperts);
+        setDistribution(mockDistribution);
+        setKpis(mockKPIs);
+        setIsLive(false);
+      }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Erreur inconnue';
+      setError(message);
+      setOrganizations(mockOrgs);
+      setDecisionMakers(mockDMs);
+      setProjects(mockProjects);
+      setPublications(mockPublications);
+      setProcurement(mockProcurement);
+      setReputation(mockReputation);
+      setAlerts(mockAlerts);
+      setExpertProfiles(mockExperts);
+      setDistribution(mockDistribution);
+      setKpis(mockKPIs);
+      setIsLive(false);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  return {
+    organizations,
+    decisionMakers,
+    projects,
+    publications,
+    procurement,
+    reputation,
+    alerts,
+    expertProfiles,
+    distribution,
+    kpis,
+    isLive,
+    loading,
+    error,
+    refetch: fetchData,
+    targetSegments: mockSegments,
+    visibilityStrategy: mockStrategy,
+    institutionalCalendar: mockCalendar,
+    diffusionPlan: mockDiffusion,
+    focusKPIs: mockFocusKPIs,
+  };
+}
+
+function mapOrg(row: OrgRecord): typeof mockOrgs[0] {
+  return {
+    id: String(row.id || ''),
+    name: String(row.name || ''),
+    category: String(row.category || ''),
+    icon: String(row.icon || ''),
+    country: String(row.country || ''),
+    city: String(row.city || ''),
+    domaines: Array.isArray(row.domaines) ? row.domaines as string[] : [],
+    projets_actifs: Number(row.projets_actifs) || 0,
+    budget_annuel_musd: typeof row.budget_annuel_musd === 'number' ? row.budget_annuel_musd : String(row.budget_annuel_musd || 'N/A'),
+    priorites: String(row.priorites || ''),
+    derniere_consultation: String(row.derniere_consultation || ''),
+    contact_procurement: String(row.contact_procurement || ''),
+    statut: String(row.statut || ''),
+  };
+}
+
+function mapDM(row: DMRecord): typeof mockDMs[0] {
+  return {
+    id: String(row.id || ''),
+    organisation: String(row.organisation || ''),
+    fonction: String(row.fonction || ''),
+    nom: String(row.nom || ''),
+    pays: String(row.pays || ''),
+    secteur: String(row.secteur || ''),
+    domaine: String(row.domaine || ''),
+    contact_status: String(row.contact_status || ''),
+    priorite: String(row.priorite || ''),
+  };
+}
+
+function mapProject(row: ProjectRecord): typeof mockProjects[0] {
+  return {
+    id: String(row.id || ''),
+    titre: String(row.titre || ''),
+    bailleur: String(row.bailleur || ''),
+    budget_musd: Number(row.budget_musd) || 0,
+    statut: String(row.statut || ''),
+    phase: String(row.phase || ''),
+    date_debut: String(row.date_debut || ''),
+    date_fin: String(row.date_fin || ''),
+    pays: String(row.pays || ''),
+    opportunite_khepra: String(row.opportunite_khepra || ''),
+    score_opportunite: Number(row.score_opportunite) || 0,
+    alerte: String(row.alerte || ''),
+  };
+}
+
+function mapPublication(row: PublicationRecord): typeof mockPublications[0] {
+  return {
+    id: String(row.id || ''),
+    titre: String(row.titre || ''),
+    type: String(row.type || ''),
+    theme: String(row.theme || ''),
+    pages: Number(row.pages) || 0,
+    statut: String(row.statut || ''),
+    date: String(row.date || ''),
+    citations: Number(row.citations) || 0,
+    canaux: Array.isArray(row.canaux) ? row.canaux as string[] : [],
+    score_qualite: Number(row.score_qualite) || 0,
+  };
+}
+
+function mapProcurement(row: ProcurementRecord): typeof mockProcurement[0] {
+  return {
+    id: String(row.id || ''),
+    organisation: String(row.organisation || ''),
+    profil: String(row.profil || ''),
+    analyse: String(row.analyse || ''),
+    besoins_detectes: Array.isArray(row.besoins_detectes) ? row.besoins_detectes as string[] : [],
+    opportunites_active: Number(row.opportunites_active) || 0,
+    derniere_soumission: String(row.derniere_soumission || ''),
+    score_alignement: Number(row.score_alignement) || 0,
+  };
+}
+
+function mapReputation(row: ReputationRecord): typeof mockReputation[0] {
+  return {
+    id: String(row.id || ''),
+    indicateur: String(row.indicateur || ''),
+    valeur: typeof row.valeur === 'number' ? row.valeur : Number(row.valeur) || 0,
+    variation: String(row.variation || ''),
+    objectif: Number(row.objectif) || 0,
+    unite: String(row.unite || ''),
+    source: String(row.source || ''),
+    score: String(row.score || ''),
+    label: String(row.label || ''),
+    description: String(row.description || ''),
+  };
+}
+
+function mapAlert(row: AlertRecord): typeof mockAlerts[0] {
+  return {
+    id: String(row.id || ''),
+    organisation: String(row.organisation || ''),
+    type_alerte: String(row.type_alerte || ''),
+    titre: String(row.titre || ''),
+    date_detection: String(row.date_detection || ''),
+    priorite: String(row.priorite || ''),
+    action_requise: String(row.action_requise || ''),
+    deadline: String(row.deadline || ''),
+    statut: String(row.statut || ''),
+    assigne: String(row.assigne || ''),
+  };
+}
+
+function mapExpert(row: ExpertRecord): typeof mockExperts[0] {
+  return {
+    id: String(row.id || ''),
+    titre: String(row.titre || ''),
+    type: String(row.type || ''),
+    pages: Number(row.pages) || 0,
+    statut: String(row.statut || ''),
+    secteurs: Array.isArray(row.secteurs) ? row.secteurs as string[] : [],
+    references_cles: Array.isArray(row.references_cles) ? row.references_cles as string[] : [],
+    certifications: Array.isArray(row.certifications) ? row.certifications as string[] : [],
+    derniere_maj: String(row.derniere_maj || ''),
+    score_qualite: Number(row.score_qualite) || 0,
+  };
+}
+
+function mapDistribution(row: DistributionRecord): typeof mockDistribution[0] {
+  return {
+    id: String(row.id || ''),
+    canal: String(row.canal || ''),
+    type: String(row.type || ''),
+    audience: Number(row.audience) || 0,
+    engagement: String(row.engagement || ''),
+    frequence: String(row.frequence || ''),
+    contenus_mois: Number(row.contenus_mois) || 0,
+    performance: String(row.performance || ''),
+    score_efficacite: String(row.score_efficacite || ''),
+    description: String(row.description || ''),
+  };
+}

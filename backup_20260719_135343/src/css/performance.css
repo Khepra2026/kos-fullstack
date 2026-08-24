@@ -1,0 +1,112 @@
+/* ============================================================
+   PERFORMANCE CSS — Core Web Vitals Optimizations
+   Content-visibility, anti-CLS, GPU acceleration, font rendering
+   ============================================================ */
+
+/* ─── Content Visibility — skip rendering for off-screen sections ──────── */
+/* Applied statically (not via JS injection) so it works on first paint.
+   contain-intrinsic-size provides an estimated height to prevent scroll jank. */
+section[data-cv="auto"],
+.lazy-section {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 500px;
+}
+
+/* Above-the-fold content should NEVER be skipped */
+header,
+section:first-of-type,
+[data-cv="visible"] {
+  content-visibility: visible;
+}
+
+/* ─── Anti-CLS — prevent layout shifts from images / embeds ────────────── */
+
+/* Force height auto to prevent stretching */
+img {
+  height: auto;
+  max-width: 100%;
+}
+
+/* Containers that hold dynamic images — reserve space + contain overflow */
+.hero-image-wrapper,
+.card-image-wrapper,
+.avatar-wrapper,
+[data-img-container] {
+  overflow: hidden;
+  position: relative;
+  background: var(--color-background-100, #f5f5f5);
+}
+
+/* Skeleton / placeholder — avoid CLS when content loads */
+.skeleton-block,
+[data-skeleton] {
+  min-height: 200px;
+  background: linear-gradient(
+    90deg,
+    var(--color-background-100, #f0f0f0) 25%,
+    var(--color-background-200, #e0e0e0) 50%,
+    var(--color-background-100, #f0f0f0) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Ad units / dynamic embeds — reserve minimum space */
+ins,
+iframe:not([width]):not([height]) {
+  display: block;
+  min-height: 250px;
+  aspect-ratio: 16 / 9;
+}
+
+/* ─── Font Rendering — optimize text display ──────────────────────────── */
+
+/* Ensure text remains visible during webfont load */
+body {
+  text-rendering: optimizeSpeed;
+}
+
+h1, h2, h3, h4, h5, h6,
+.heading-text,
+.display-text {
+  text-rendering: optimizeLegibility;
+}
+
+/* ─── GPU Acceleration — compositor-only animations ───────────────────── */
+
+/* Use transform and opacity for animations (compositor-only, no layout) */
+.gpu-accelerated,
+.animate-gpu {
+  will-change: transform, opacity;
+}
+
+/* Only apply will-change right before animation starts */
+.animate-gpu-active {
+  will-change: transform;
+}
+
+/* ─── Reduce Motion — respect user preferences ────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .gpu-accelerated,
+  .animate-gpu,
+  .animate-gpu-active {
+    will-change: auto !important;
+  }
+}
+
+/* ─── Resource hints visual feedback (dev only) ───────────────────────── */
+@media (scripting: none) {
+  /* No JS → show static content, hide interactive-only elements */
+  [data-js-only] {
+    display: none;
+  }
+}

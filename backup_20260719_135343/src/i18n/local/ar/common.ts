@@ -1,0 +1,20 @@
+const common = {
+  faq: { title: 'الأسئلة الشائعة', badge: 'FAQ', description: 'اعثر على إجابات لأكثر الأسئلة شيوعًا حول خدماتنا.' },
+  contact: { title: 'اتصل بنا', subtitle: 'ناقش مشروعك الاستراتيجي معنا', name: 'الاسم الكامل', email: 'البريد الإلكتروني', phone: 'الهاتف', company: 'المنظمة', message: 'الرسالة', submit: 'إرسال', sending: 'جارٍ الإرسال…', success: 'تم الإرسال بنجاح!', error: 'حدث خطأ.', address: 'العنوان', addressText: 'لومي، توغو' },
+  footer: { tagline: 'شريكك الاستراتيجي في الاستشارات والتدقيق المالي والحوكمة والتحول الرقمي', quickLinks: 'روابط سريعة', services: 'الخدمات', about: 'من نحن', blog: 'المدونة', contact: 'اتصل بنا', legalLinks: 'قانوني', privacy: 'سياسة الخصوصية', terms: 'شروط الاستخدام', followUs: 'تابعنا', rights: 'جميع الحقوق محفوظة.' },
+  common: { learnMore: 'اعرف المزيد' },
+  cta: { diagnostic_free: 'تشخيص مجاني', diagnostic_subtitle: 'رد خلال ساعتين · بدون التزام' },
+  leadMagnet: {
+    whitepaper: { title: 'حمّل ورقتنا البيضاء', description: 'تحليل متعمق وتوصيات عملية.', button: 'تحميل الورقة البيضاء' },
+    webinar: { title: 'انضم إلى ندوتنا القادمة', description: 'تبادل مباشر مع خبرائنا.', button: 'سجل في الندوة' },
+    diagnostic: { title: 'تشخيص استراتيجي مجاني', description: '30 دقيقة مع خبير لتحليل وضعك.', button: 'ابدأ التشخيص' },
+    newsletter: { title: 'نشرتنا الاستراتيجية', description: 'تحليلات حصرية مباشرة إلى بريدك.', button: 'اشترك في النشرة' },
+  },
+  monitoring: { title: 'المراقبة التقنية', subtitle: 'أخطاء 404 وأوقات الاستجابة', loading: 'جارٍ تحميل البيانات…', retry: 'إعادة المحاولة', timeRange: { '24h': '24س', '7d': '7 أيام', '30d': '30 يوم' }, stats: { total404: 'أخطاء 404', total404Sub: 'صفحات مفقودة', totalErrors: 'أخطاء HTTP/JS', totalErrorsSub: 'طلبات وسكريبتات', avgResponse: 'متوسط وقت API', avgResponseSub: 'مللي', avgPageLoad: 'تحميل الصفحة', avgPageLoadSub: 'مللي' }, notFound: { title: 'أكثر عناوين 404', subtitle: 'الصفحات المفقودة الأكثر تكرارًا', url: 'الرابط', count: 'مرات الحدوث', empty: 'لا توجد أخطاء' }, performance: { title: 'وقت استجابة API', subtitle: 'المتوسط والحد الأقصى', tooltipAvg: 'متوسط', tooltipMax: 'أقصى', tooltipCount: 'طلبات', empty: 'لا توجد بيانات' }, topErrors: { title: 'أهم الأخطاء', subtitle: 'الأخطاء الأكثر تكرارًا', empty: 'لا توجد أخطاء' }, errorLog: { title: 'سجل الأخطاء', subtitle: 'الأخطاء الحديثة', type: 'النوع', message: 'الرسالة', url: 'الرابط', date: 'التاريخ', empty: 'لا توجد أخطاء حديثة' }, navigation: { title: 'التنقل', subtitle: 'أوقات تحميل الصفحات', empty: 'لا توجد بيانات' } },
+  dashboard: { login: { title: 'لوحة التحكم', subtitle: 'دخول المسؤولين', passwordLabel: 'كلمة المرور', passwordPlaceholder: 'أدخل كلمة المرور', loginButton: 'تسجيل الدخول', incorrectPassword: 'كلمة مرور غير صحيحة' }, header: { title: 'لوحة التحكم', subtitle: 'تتبع التحويلات والأداء', timeRange: { '7d': '7 أيام', '30d': '30 يوم', '90d': '90 يوم', all: 'الكل' }, refreshButton: 'تحديث' }, loading: 'جارٍ تحميل البيانات…', kpis: { totalLeads: { title: 'إجمالي العملاء المحتملين', subtitle: 'جديد' } }, pipeline: { title: 'خط أنابيب التحويل' }, sources: { title: 'مصادر الاكتساب' }, formTypes: { title: 'الأداء حسب نوع النموذج', ofTotal: 'من الإجمالي' }, recentLeads: { title: 'العملاء المحتملون الأخيرون', table: { date: 'التاريخ', contact: 'جهة الاتصال', organization: 'المنظمة', type: 'النوع', score: 'النتيجة', status: 'الحالة', source: 'المصدر' } }, status: { new: 'جديد', meeting_scheduled: 'تم جدولة اجتماع', qualified: 'مؤهل', converted: 'تم التحويل', lost: 'مفقود' }, formType: { contact: 'اتصال', diagnostic: 'تشخيص', expert: 'خبير', newsletter: 'نشرة' }, metrics: { toolCompletions: { title: 'أدوات مكتملة', subtitle: 'تشخيصات' } }, diagnostics: { title: 'التشخيصات الأخيرة', table: { date: 'التاريخ', tool: 'الأداة', score: 'النتيجة' } }, downloads: { title: 'التنزيلات الأخيرة', table: { date: 'التاريخ', resource: 'المورد', contact: 'جهة الاتصال', country: 'البلد' }, unknownResource: 'مورد غير معروف' }, noData: 'لا توجد بيانات', retry: 'إعادة المحاولة' },
+};
+
+export default common;
+
+
+

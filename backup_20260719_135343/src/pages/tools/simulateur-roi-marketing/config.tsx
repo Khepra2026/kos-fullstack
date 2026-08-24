@@ -1,0 +1,26 @@
+import type { DiagnosticToolConfig } from '';
+import { ROI_MKT_AXES, getRoiMktScoreColor, getRoiMktScoreLabel, getRoiMktLevel, getRoiMktReadiness, getRoiMktRisks, getRoiMktRecommendations } from '';
+const FORM_URL='https://readdy.ai/api/form/d8pg4ivij7vns5otj9n0'; const PRIMARY='#7c3aed';
+export const roiMktConfig: DiagnosticToolConfig = {
+  toolId:'simulateur-roi-marketing',toolNameFr:'Simulateur ROI Marketing KHEPRA™',toolNameEn:'Marketing ROI Simulator KHEPRA™',
+  toolSubtitleFr:'Simulez le ROI de votre marketing sur 4 axes : stratégie, canaux, contenu et conversion.',toolSubtitleEn:'Simulate your marketing ROI across 4 axes: strategy, channels, content and conversion.',
+  seoTitleFr:'Simulateur ROI Marketing | KHEPRA EXPERTS',seoTitleEn:'Marketing ROI Simulator | KHEPRA EXPERTS',
+  seoDescriptionFr:'Simulez le retour sur investissement de votre marketing : stratégie, canaux, contenu et conversion. Rapport avec recommandations d\'optimisation.',seoDescriptionEn:'Simulate your marketing return on investment: strategy, channels, content and conversion. Report with optimization recommendations.',
+  seoKeywordsFr:'ROI marketing, performance marketing, stratégie digitale, inbound marketing, conversion, Afrique',seoKeywordsEn:'marketing ROI, marketing performance, digital strategy, inbound marketing, conversion, Africa',
+  canonicalPath:'/tools/simulateur-roi-marketing',axes:ROI_MKT_AXES,
+  howToNameFr:'Simulateur ROI Marketing KHEPRA™',howToNameEn:'Marketing ROI Simulator KHEPRA™',
+  howToDescriptionFr:'Simulez le ROI de votre marketing sur 4 axes : stratégie marketing, canaux et performance, contenu et marque, conversion et nurturing.',howToDescriptionEn:'Simulate your marketing ROI across 4 axes: marketing strategy, channels & performance, content & brand, conversion & nurturing.',
+  howToTotalTime:'6M',howToSteps:ROI_MKT_AXES.map(a=>({name:a.titleFr,text:a.descriptionFr})),
+  getScoreColor:getRoiMktScoreColor,getScoreLabel:getRoiMktScoreLabel,getMaturityLevel:getRoiMktLevel,getReadinessIndicator:getRoiMktReadiness,
+  getRisks:(pa,gs,l)=>getRoiMktRisks(pa,gs,l),getRecommendations:(pa,gs,l)=>getRoiMktRecommendations(pa,gs,l),
+  getOptionStyle:(v,s)=>{if(v===100)return s?'border-emerald-500 bg-emerald-50':'border-secondary-200 hover:border-emerald-300';if(v===60)return s?'border-sky-500 bg-sky-50':'border-secondary-200 hover:border-sky-300';if(v===25)return s?'border-accent-500 bg-accent-50':'border-secondary-200 hover:border-accent-300';return s?'border-red-500 bg-red-50':'border-secondary-200 hover:border-red-300';},
+  getOptionIcon:(v)=>{if(v===100)return'ri-check-double-line';if(v===60)return'ri-check-line';if(v===25)return'ri-subtract-line';return'ri-close-line';},
+  getOptionColor:(v)=>{if(v===100)return'text-emerald-600';if(v===60)return'text-sky-600';if(v===25)return'text-accent-600';return'text-red-600';},
+  showLeadForm:true,formUrl:FORM_URL,hashtags:['ROI','Marketing','Digital','Conversion'],
+  showRadarChart:true,renderRadarChart:(s,pa,ax,fr)=>{const c=s/2,rad=100,ac=ax.length,as=(2*Math.PI)/ac,sa=-Math.PI/2,gp=(i:number,v:number)=>{const a=sa+i*as,r=(v/100)*rad;return{x:c+r*Math.cos(a),y:c+r*Math.sin(a)};};return(<svg width={s} height={s} viewBox={`0 0 ${s} ${s}`} className="mx-auto">{[20,40,60,80,100].map(lv=>{const ps=ax.map((_,i)=>{const p=gp(i,lv);return`${p.x},${p.y}`}).join(' ');return<polygon key={lv} points={ps} fill="none" stroke="#e5e7eb" strokeWidth="1"/>})}{ax.map((_,i)=>{const e=gp(i,100);return<line key={i} x1={c} y1={c} x2={e.x} y2={e.y} stroke="#e5e7eb" strokeWidth="1"/>})}{(()=>{const dp=ax.map((a,i)=>gp(i,pa[a.id]??0)),ps=dp.map(p=>`${p.x},${p.y}`).join(' ');return(<><polygon points={ps} fill="rgba(124,58,237,0.15)" stroke={PRIMARY} strokeWidth="2"/>{dp.map((p,i)=><circle key={i} cx={p.x} cy={p.y} r="5" fill={PRIMARY} stroke="white" strokeWidth="2"/>)}</>)})()}{ax.map((a,i)=>{const lp=gp(i,125),w=(fr?a.titleFr:a.titleEn).split(' '),lb=w.length>2?w.slice(0,2).join(' '):w.join(' ');return<text key={i} x={lp.x} y={lp.y} textAnchor="middle" dominantBaseline="middle" fontSize="9" fontWeight="600" fill="#374151">{lb}</text>})}</svg>)},
+  badgeIcon:'ri-line-chart-fill',badgeTextFr:'4 axes · 5 questions · 6 min',badgeTextEn:'4 axes · 5 questions · 6 min',
+  expertCTA:{titleFr:'Besoin d\'optimiser votre ROI marketing ?',titleEn:'Need to optimize your marketing ROI?',descriptionFr:'Nos experts en marketing digital vous aident à mesurer et optimiser le retour sur investissement de vos actions.',descriptionEn:'Our digital marketing experts help you measure and optimize the return on investment of your actions.',ctaFr:'Planifier un rendez-vous',ctaEn:'Schedule a meeting',ctaLink:'/contact'},
+};
+
+
+

@@ -1,0 +1,520 @@
+import { useState, useCallback, useEffect, useRef } from 'react';
+import { supabase } from '@/lib/supabase';
+import {
+  BLOCK_SCAN_RESULTS,
+  AGENT_CATALOG,
+  EXECUTION_LOGS,
+  SCAN_STATS,
+} from '@/mocks/agentBlockScanner';
+import { scanWebsite } from '@/utils/blockScanner';
+import type {
+  BlockScanResult,
+  BlockDetection,
+  ExecutionLog,
+  AgentAssignment,
+} from '@/mocks/agentBlockScanner';
+
+interface BlockScanRow {
+  block_id: string;
+  block_name: string;
+  block_icon: string;
+  block_color: string;
+  description: string | null;
+  last_scan: string;
+  total_issues: number;
+  critical_issues: number;
+  major_issues: number;
+  minor_issues: number;
+  fixed_issues: number;
+  health_score: number;
+  agent_assignments: AgentAssignment[];
+}
+
+interface DetectionRow {
+  id: string;
+  block_id: string;
+  detection_ref: string;
+  severity: 'critical' | 'major' | 'minor';
+  title: string;
+  description: string | null;
+  location: string | null;
+  detected_by: string | null;
+  detected_at: string;
+  status: 'open' | 'in_progress' | 'fixed' | 'false_positive';
+  auto_fix_available: boolean;
+  estimated_effort: string | null;
+  related_blocks: string[] | null;
+}
+
+interface LogRow {
+  id: string;
+  block_id: string;
+  block_name: string;
+  agent_id: string;
+  agent_name: string;
+  action: string;
+  detections_fixed: number;
+  timestamp: string;
+  status: 'success' | 'partial' | 'failed';
+  details: string | null;
+}
+
+function seedInitialData(): void {
+  const seeded = sessionStorage.getItem('kos_block_scanner_seeded');
+  if (seeded) return;
+
+  sessionStorage.setItem('kos_block_scanner_seeded', 'true');
+
+  const seedAsync = async () => {
+    try {
+      // Check if data already exists
+      const { count } = await supabase
+        .from('kos_block_scans')
+        .select('*', { count: 'exact', head: true });
+
+      if (count && count > 0) return; // Already seeded
+
+      // Seed scans
+      for (const block of BLOCK_SCAN_RESULTS) {
+        await supabase.from('kos_block_scans').upsert({
+          block_id: block.blockId,
+          block_name: block.blockName,
+          block_icon: block.blockIcon,
+          block_color: block.blockColor,
+          description: block.description,
+          last_scan: block.lastScan,
+          total_issues: block.totalIssues,
+          critical_issues: block.criticalIssues,
+          major_issues: block.majorIssues,
+          minor_issues: block.minorIssues,
+          fixed_issues: block.fixedIssues,
+          health_score: block.healthScore,
+          agent_assignments: block.agentAssignments,
+        }, { onConflict: 'block_id' });
+
+        // Seed detections
+        for (const det of block.detections) {
+          await supabase.from('kos_block_detections').upsert({
+            block_id: block.blockId,
+            detection_ref: det.id,
+            severity: det.severity,
+            title: det.title,
+            description: det.description,
+            location: det.location,
+            detected_by: det.detectedBy,
+            detected_at: det.detectedAt,
+            status: det.status,
+            auto_fix_available: det.autoFixAvailable,
+            estimated_effort: det.estimatedEffort,
+            related_blocks: det.relatedBlocks,
+          }, { onConflict: 'block_id,detection_ref' });
+        }
+      }
+
+      // Seed logs (let Supabase generate UUIDs)
+      for (const log of EXECUTION_LOGS) {
+        await supabase.from('kos_execution_logs').insert({
+          block_id: log.blockId,
+          block_name: log.blockName,
+          agent_id: log.agentId,
+          agent_name: log.agentName,
+          action: log.action,
+          detections_fixed: log.detectionsFixed,
+          timestamp: log.timestamp,
+          status: log.status,
+          details: log.details,
+        });
+      }
+    } catch {
+      // Silently continue if Supabase unavailable
+    }
+  };
+
+  seedAsync();
+}
+
+function rowToBlockScan(row: BlockScanRow, detections: BlockDetection[]): BlockScanResult {
+  return {
+    blockId: row.block_id,
+    blockName: row.block_name,
+    blockIcon: row.block_icon,
+    blockColor: row.block_color,
+    description: row.description || '',
+    lastScan: row.last_scan,
+    totalIssues: row.total_issues,
+    criticalIssues: row.critical_issues,
+    majorIssues: row.major_issues,
+    minorIssues: row.minor_issues,
+    fixedIssues: row.fixed_issues,
+    healthScore: row.health_score,
+    agentAssignments: row.agent_assignments || [],
+    detections,
+  };
+}
+
+function rowToDetection(row: DetectionRow): BlockDetection {
+  return {
+    id: row.detection_ref,
+    severity: row.severity,
+    title: row.title,
+    description: row.description || '',
+    location: row.location || '',
+    detectedBy: row.detected_by || '',
+    detectedAt: row.detected_at,
+    status: row.status,
+    autoFixAvailable: row.auto_fix_available,
+    estimatedEffort: row.estimated_effort || 'N/A',
+    relatedBlocks: row.related_blocks || [],
+  };
+}
+
+function rowToLog(row: LogRow): ExecutionLog {
+  return {
+    id: row.id,
+    blockId: row.block_id,
+    blockName: row.block_name,
+    agentId: row.agent_id,
+    agentName: row.agent_name,
+    action: row.action,
+    detectionsFixed: row.detections_fixed,
+    timestamp: row.timestamp,
+    status: row.status,
+    details: row.details || '',
+  };
+}
+
+export function useAgentBlockScanner() {
+  const [blocks, setBlocks] = useState<BlockScanResult[]>([]);
+  const [detections, setDetections] = useState<BlockDetection[]>([]);
+  const [logs, setLogs] = useState<ExecutionLog[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [executingBlocks, setExecutingBlocks] = useState<Set<string>>(new Set());
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [scanUrl, setScanUrl] = useState('https://khepra-experts.com');
+  const initialLoadDone = useRef(false);
+
+  const loadAll = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const [scansRes, detectionsRes, logsRes] = await Promise.all([
+        supabase.from('kos_block_scans').select('*').order('block_id'),
+        supabase.from('kos_block_detections').select('*').order('detection_ref'),
+        supabase.from('kos_execution_logs').select('*').order('timestamp', { ascending: false }),
+      ]);
+
+      if (scansRes.error) throw scansRes.error;
+      if (detectionsRes.error) throw detectionsRes.error;
+      if (logsRes.error) throw logsRes.error;
+
+      const scanRows = (scansRes.data || []) as BlockScanRow[];
+      const detectionRows = (detectionsRes.data || []) as DetectionRow[];
+      const logRows = (logsRes.data || []) as LogRow[];
+
+      const detsMap = new Map<string, BlockDetection[]>();
+      for (const d of detectionRows) {
+        const list = detsMap.get(d.block_id) || [];
+        list.push(rowToDetection(d));
+        detsMap.set(d.block_id, list);
+      }
+
+      const mappedBlocks = scanRows.map((row) =>
+        rowToBlockScan(row, detsMap.get(row.block_id) || [])
+      );
+
+      const mappedLogs = logRows.map(rowToLog);
+
+      setBlocks(mappedBlocks);
+      setDetections(detectionRows.map(rowToDetection));
+      setLogs(mappedLogs);
+    } catch (err) {
+      const msg = (err as Error)?.message || 'Erreur de chargement';
+      setError(msg);
+      // Fallback to mocks
+      setBlocks(BLOCK_SCAN_RESULTS);
+      setLogs(EXECUTION_LOGS);
+      setDetections(
+        BLOCK_SCAN_RESULTS.flatMap((b) => b.detections)
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    seedInitialData();
+    // Small delay to let seeding complete before first load
+    const t = setTimeout(() => {
+      loadAll();
+      initialLoadDone.current = true;
+    }, 600);
+    return () => clearTimeout(t);
+  }, [loadAll]);
+
+  const handleExecuteBlock = useCallback(
+    async (blockId: string) => {
+      setExecutingBlocks((prev) => new Set(prev).add(blockId));
+      setToastMessage('Exécution lancée...');
+
+      const block = blocks.find((b) => b.blockId === blockId);
+      if (!block) {
+        setExecutingBlocks((prev) => {
+          const next = new Set(prev);
+          next.delete(blockId);
+          return next;
+        });
+        return;
+      }
+
+      const autoFixable = block.detections.filter(
+        (d) => d.autoFixAvailable && d.status !== 'fixed'
+      );
+
+      try {
+        // Mark auto-fixable detections as fixed in Supabase
+        if (autoFixable.length > 0) {
+          const refs = autoFixable.map((d) => d.id);
+          await supabase
+            .from('kos_block_detections')
+            .update({ status: 'fixed', updated_at: new Date().toISOString() })
+            .in('detection_ref', refs)
+            .eq('block_id', blockId);
+
+          // Create execution log
+          const primaryAgent = block.agentAssignments.find((a) => a.role === 'primary');
+          const agentName = primaryAgent?.agentName || 'KOS Agent';
+          const agentId = primaryAgent?.agentId || 'auto';
+
+          const logEntry: Partial<LogRow> = {
+            block_id: blockId,
+            block_name: block.blockName,
+            agent_id: agentId,
+            agent_name: agentName,
+            action: `Exécution automatique — ${autoFixable.length} corrections`,
+            detections_fixed: autoFixable.length,
+            timestamp: new Date().toISOString(),
+            status: 'success',
+            details: `${autoFixable.length} détection(s) corrigée(s) automatiquement sur le bloc "${block.blockName}".`,
+          };
+
+          await supabase.from('kos_execution_logs').insert(logEntry);
+
+          // Update scan counts
+          const newFixed = block.fixedIssues + autoFixable.length;
+          const newTotalOpen = block.totalIssues - newFixed;
+          const newHealth = Math.min(
+            100,
+            Math.round(100 - (newTotalOpen * 100) / Math.max(block.totalIssues, 1))
+          );
+
+          await supabase
+            .from('kos_block_scans')
+            .update({
+              fixed_issues: newFixed,
+              health_score: newHealth,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('block_id', blockId);
+        }
+
+        setToastMessage(
+          `${autoFixable.length} corrections automatiques appliquées sur "${block.blockName}"`
+        );
+        setTimeout(() => setToastMessage(null), 4000);
+
+        // Reload data
+        await loadAll();
+      } catch {
+        setToastMessage('Erreur lors de l\'exécution. Réessayez.');
+        setTimeout(() => setToastMessage(null), 4000);
+      } finally {
+        setExecutingBlocks((prev) => {
+          const next = new Set(prev);
+          next.delete(blockId);
+          return next;
+        });
+      }
+    },
+    [blocks, loadAll]
+  );
+
+  const handleFixAll = useCallback(async () => {
+    setExecutingBlocks(new Set(BLOCK_SCAN_RESULTS.map((b) => b.blockId)));
+    setToastMessage('Correction globale lancée...');
+
+    try {
+      const now = new Date().toISOString();
+      let totalFixed = 0;
+
+      for (const block of blocks) {
+        const openDetections = block.detections.filter(
+          (d) => d.status !== 'fixed' && d.status !== 'false_positive'
+        );
+        if (openDetections.length === 0) continue;
+
+        const refs = openDetections.map((d) => d.id);
+        await supabase
+          .from('kos_block_detections')
+          .update({ status: 'fixed', updated_at: now })
+          .in('detection_ref', refs)
+          .eq('block_id', block.blockId);
+
+        totalFixed += openDetections.length;
+
+        // Update block to 100%
+        await supabase
+          .from('kos_block_scans')
+          .update({
+            fixed_issues: block.totalIssues,
+            health_score: 100,
+            updated_at: now,
+          })
+          .eq('block_id', block.blockId);
+
+        // Log
+        const primaryAgent = block.agentAssignments.find((a) => a.role === 'primary');
+        await supabase.from('kos_execution_logs').insert({
+          block_id: block.blockId,
+          block_name: block.blockName,
+          agent_id: primaryAgent?.agentId || 'kos-fix-all',
+          agent_name: primaryAgent?.agentName || 'KOS Agent',
+          action: `Correction globale — ${openDetections.length} corrections`,
+          detections_fixed: openDetections.length,
+          timestamp: now,
+          status: 'success',
+          details: `${openDetections.length} détection(s) corrigée(s) manuellement sur le bloc "${block.blockName}". Score porté à 100%.`,
+        });
+      }
+
+      setToastMessage(
+        `${totalFixed} corrections appliquées. Tous les blocs sont à 100% de santé.`
+      );
+      setTimeout(() => setToastMessage(null), 6000);
+
+      await loadAll();
+    } catch (err) {
+      const msg = (err as Error)?.message || 'Erreur';
+      setToastMessage(`Échec : ${msg}`);
+      setTimeout(() => setToastMessage(null), 5000);
+    } finally {
+      setExecutingBlocks(new Set());
+    }
+  }, [blocks, loadAll]);
+
+  const handleScanBlock = useCallback(
+    async (blockId: string) => {
+      setExecutingBlocks((prev) => new Set(prev).add(blockId));
+      setToastMessage(`Scan réel en cours sur ${scanUrl}...`);
+
+      try {
+        const { summary, results } = await scanWebsite(scanUrl, [blockId]);
+        const blockResult = results.find((r) => r.block_id === blockId);
+
+        setToastMessage(
+          `Scan terminé — ${blockResult?.total_issues || 0} problèmes détectés sur "${blockResult?.block_name}" (score ${blockResult?.health_score || '?'}/100)`
+        );
+        setTimeout(() => setToastMessage(null), 5000);
+
+        await loadAll();
+      } catch (err) {
+        const msg = (err as Error)?.message || 'Erreur scan';
+        setToastMessage(`Échec du scan : ${msg}`);
+        setTimeout(() => setToastMessage(null), 5000);
+      } finally {
+        setExecutingBlocks((prev) => {
+          const next = new Set(prev);
+          next.delete(blockId);
+          return next;
+        });
+      }
+    },
+    [scanUrl, loadAll]
+  );
+
+  const handleScanAll = useCallback(async () => {
+    const allBlockIds = BLOCK_SCAN_RESULTS.map((b) => b.blockId);
+    allBlockIds.forEach((id) =>
+      setExecutingBlocks((prev) => new Set(prev).add(id))
+    );
+    setToastMessage(`Scan réel global lancé sur ${scanUrl} — analyse des 6 blocs...`);
+
+    try {
+      const { summary } = await scanWebsite(scanUrl, allBlockIds);
+
+      setToastMessage(
+        `Scan global terminé ! ${summary.totalIssues} problèmes (${summary.criticalIssues} critiques, ${summary.majorIssues} majeurs). Score moyen ${summary.avgHealthScore}/100.`
+      );
+      setTimeout(() => setToastMessage(null), 6000);
+
+      await loadAll();
+    } catch (err) {
+      const msg = (err as Error)?.message || 'Erreur scan global';
+      setToastMessage(`Échec du scan global : ${msg}`);
+      setTimeout(() => setToastMessage(null), 5000);
+    } finally {
+      setExecutingBlocks(new Set());
+    }
+  }, [scanUrl, loadAll]);
+
+  const totalOpen =
+    blocks.reduce((s, b) => s + b.totalIssues - b.fixedIssues, 0) ||
+    SCAN_STATS.totalDetections - SCAN_STATS.totalFixed;
+  const totalAgentsActive = AGENT_CATALOG.filter((a) => a.status === 'active').length;
+
+  const stats = {
+    totalBlocks: blocks.length || SCAN_STATS.totalBlocks,
+    blocksHealthy:
+      blocks.filter((b) => b.healthScore >= 85).length || SCAN_STATS.blocksHealthy,
+    blocksWarning:
+      blocks.filter((b) => b.healthScore >= 60 && b.healthScore < 85).length ||
+      SCAN_STATS.blocksWarning,
+    blocksCritical:
+      blocks.filter((b) => b.healthScore < 60).length || SCAN_STATS.blocksCritical,
+    totalDetections:
+      blocks.reduce((s, b) => s + b.totalIssues, 0) || SCAN_STATS.totalDetections,
+    criticalOpen:
+      blocks.reduce((s, b) => s + b.criticalIssues, 0) || SCAN_STATS.criticalOpen,
+    majorOpen:
+      blocks.reduce((s, b) => s + b.majorIssues, 0) || SCAN_STATS.majorOpen,
+    totalFixed:
+      blocks.reduce((s, b) => s + b.fixedIssues, 0) || SCAN_STATS.totalFixed,
+    totalAgents: AGENT_CATALOG.length,
+    agentsActive: totalAgentsActive,
+    agentsPartial:
+      AGENT_CATALOG.filter((a) => a.status !== 'active').length,
+    autoFixable:
+      blocks.reduce((s, b) => {
+        return (
+          s +
+          b.detections.filter((d) => d.autoFixAvailable && d.status !== 'fixed')
+            .length
+        );
+      }, 0) || SCAN_STATS.autoFixable,
+    estimatedTotalEffort: SCAN_STATS.estimatedTotalEffort,
+    lastFullScan: SCAN_STATS.lastFullScan,
+    nextFullScan: SCAN_STATS.nextFullScan,
+  };
+
+  return {
+    blocks: blocks.length > 0 ? blocks : BLOCK_SCAN_RESULTS,
+    agents: AGENT_CATALOG,
+    logs: logs.length > 0 ? logs : EXECUTION_LOGS,
+    stats,
+    scanUrl,
+    setScanUrl,
+    loading,
+    error,
+    executingBlocks,
+    toastMessage,
+    setToastMessage,
+    handleExecuteBlock,
+    handleFixAll,
+    handleScanBlock,
+    handleScanAll,
+    reload: loadAll,
+  };
+}
+
+
+

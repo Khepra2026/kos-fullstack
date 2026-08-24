@@ -1,0 +1,921 @@
+import { useState, useMemo, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
+import hubLayout from '@/components/feature/hubLayout';
+import { SeoHead } from '@/components/feature/SeoHead';
+import {
+  KOS_ENGINES_DEPLOYED,
+  KOS_COMPLIANCE_STANDARDS,
+  KOS_QUALITY_GATES,
+  KOS_DEPLOYMENT_PIPELINE,
+  KOS_OVERALL_HEALTH,
+} from '@/mocks/webOperationsDeployment';
+import type { deploymentEngine, qualityGate } from '@/mocks/webOperationsDeployment';
+
+const SUPABASE_URL = 'https://pgfwhahiwqvqeahpirjx.supabase.co';
+const HEALTH_CHECK_FN = `${SUPABASE_URL}/functions/v1/kos-site-health-check`;
+
+type TabId = 'overview' | 'engines' | 'compliance' | 'pipeline' | 'scan';
+
+function getStatusBadge(status: string) {
+  switch (status) {
+    case 'deployed': return { bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-700', label: 'DÉPLOYÉ', dot: 'bg-emerald-500' };
+    case 'partial': return { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700', label: 'PARTIEL', dot: 'bg-amber-500' };
+    case 'offline': return { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-700', label: 'OFFLINE', dot: 'bg-red-500' };
+    case 'mock': return { bg: 'bg-slate-50', border: 'border-slate-200', text: 'text-slate-600', label: 'MOCK', dot: 'bg-slate-400' };
+    default: return { bg: 'bg-gray-50', border: 'border-gray-200', text: 'text-gray-700', label: 'N/A', dot: 'bg-gray-500' };
+  }
+}
+
+function getMonitorBadge(status: string) {
+  switch (status) {
+    case 'pass': return { dot: 'bg-emerald-500', text: 'text-emerald-700', label: 'OK' };
+    case 'warn': return { dot: 'bg-amber-500', text: 'text-amber-700', label: 'WARN' };
+    case 'fail': return { dot: 'bg-red-500', text: 'text-red-700', label: 'FAIL' };
+    case 'pending': return { dot: 'bg-slate-300', text: 'text-slate-500', label: 'PENDING' };
+    default: return { dot: 'bg-gray-400', text: 'text-gray-600', label: 'N/A' };
+  }
+}
+
+function getPipelineStatusBadge(status: string) {
+  switch (status) {
+    case 'completed': return { dot: 'bg-emerald-500', label: 'Terminé', textColor: 'text-emerald-700', bg: 'bg-emerald-50' };
+    case 'in_progress': return { dot: 'bg-amber-500 animate-pulse', label: 'En cours', textColor: 'text-amber-700', bg: 'bg-amber-50' };
+    case 'pending': return { dot: 'bg-slate-300', label: 'En attente', textColor: 'text-slate-500', bg: 'bg-slate-50' };
+    case 'failed': return { dot: 'bg-red-500', label: 'Échec', textColor: 'text-red-700', bg: 'bg-red-50' };
+    default: return { dot: 'bg-gray-400', label: 'N/A', textColor: 'text-gray-700', bg: 'bg-gray-50' };
+  }
+}
+
+function getGateStatusBadge(gate: qualityGate) {
+  if (gate.status === 'disabled') return { bg: 'bg-slate-50', border: 'border-slate-200', text: 'text-slate-500', label: 'Désactivé', icon: 'ri-toggle-line' };
+  if (gate.status === 'error') return { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-700', label: 'Erreur', icon: 'ri-close-circle-line' };
+  if (gate.currentScore >= gate.threshold) return { bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-700', label: 'Pass', icon: 'ri-check-line' };
+  return { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700', label: 'Sous seuil', icon: 'ri-alert-line' };
+}
+
+export default function webOperationsDeploymentPage() {
+  const { i18n } = useTranslation();
+  const lang = i18n.language.startsWith('en') ? 'en' : 'fr';
+  const [activeTab, setActiveTab] = useState<TabId>('overview');
+  const [expandedEngine, setExpandedEngine] = useState<string | null>('quality-system');
+  const [expandedStandard, setExpandedStandard] = useState<string | null>('big-four-quality');
+  const [scanLoading, setScanLoading] = useState(false);
+  const [scanResult, setScanResult] = useState<Record<string, unknown> | null>(null);
+  const [scanError, setScanError] = useState<string | null>(null);
+
+  const health = KOS_OVERALL_HEALTH;
+
+  const engineStats = useMemo(() => ({
+    deployed: KOS_ENGINES_DEPLOYED.filter((e) => e.status === 'deployed').length,
+    partial: KOS_ENGINES_DEPLOYED.filter((e) => e.status === 'partial').length,
+    avgScore: (KOS_ENGINES_DEPLOYED.reduce((s, e) => s + e.score, 0) / KOS_ENGINES_DEPLOYED.length).toFixed(1),
+    allMonitorsPassed: KOS_ENGINES_DEPLOYED.flatMap((e) => e.monitors).filter((m) => m.status === 'pass').length,
+    allMonitorsWarn: KOS_ENGINES_DEPLOYED.flatMap((e) => e.monitors).filter((m) => m.status === 'warn').length,
+    allMonitorsFailed: KOS_ENGINES_DEPLOYED.flatMap((e) => e.monitors).filter((m) => m.status === 'fail').length,
+  }), []);
+
+  const runHealthCheck = useCallback(async () => {
+    setScanLoading(true);
+    setScanError(null);
+    setScanResult(null);
+    try {
+      const resp = await fetch(`${HEALTH_CHECK_FN}?url=https://khepraexperts.com`);
+      const data = await resp.json();
+      setScanResult(data);
+    } catch {
+      setScanError('Impossible de contacter le moteur de scan. Vérifiez la connectivité.');
+    } finally {
+      setScanLoading(false);
+    }
+  }, []);
+
+  const tabs: { id: TabId; label: string; icon: string; count: string }[] = [
+    { id: 'overview', label: 'Vue d\'Ensemble', icon: 'ri-dashboard-line', count: '6' },
+    { id: 'engines', label: 'Moteurs Déployés', icon: 'ri-cpu-line', count: String(KOS_ENGINES_DEPLOYED.length) },
+    { id: 'compliance', label: 'Conformité', icon: 'ri-shield-check-line', count: String(KOS_COMPLIANCE_STANDARDS.length) },
+    { id: 'pipeline', label: 'Pipeline', icon: 'ri-git-branch-line', count: String(KOS_DEPLOYMENT_PIPELINE.length) },
+    { id: 'scan', label: 'Scan Live', icon: 'ri-radar-line', count: 'NOW' },
+  ];
+
+  return (
+    <hubLayout hubId={48}>
+      <SeoHead
+        title="KOS Web Operations Deployment™ — Déploiement & Assurance Qualité | KHEPRA EXPERTS"
+        description="Centre de commandement KOS : déploiement web, assurance qualité 100% Big Four, monitoring temps réel, pipeline CI/CD, gates qualité, conformité ISO 27001. Edge Function kos-site-health-check active."
+        keywords="KOS Web Operations Deployment, déploiement web, assurance qualité Big Four, monitoring qualité, CI/CD, security gates, KHEPRA EXPERTS"
+        canonicalPath="/kos-web-operations-deployment"
+        ogType="website"
+        ogLocale={lang === 'fr' ? 'fr_FR' : 'en_US'}
+      />
+
+        {/* Hero */}
+        <section className="relative pt-32 pb-16 sm:pt-40 sm:pb-20 overflow-hidden bg-foreground-950">
+          <div className="absolute inset-0">
+            <img
+              src="https://readdy.ai/api/search-image?query=abstract%20sophisticated%20dark%20technology%20operations%20command%20center%20with%20emerald%20green%20and%20warm%20amber%20deployment%20pipeline%20visualization%2C%20precise%20geometric%20quality%20assurance%20nodes%20and%20compliance%20monitoring%20rings%20radiating%20from%20a%20central%20orchestration%20hub%2C%20premium%20enterprise%20DevOps%20atmosphere%20with%20interconnected%20system%20architecture%20and%20automated%20workflow%20patterns%2C%20clean%20minimalist%20dark%20background%20with%20glowing%20operational%20status%20indicators%2C%20no%20text%20no%20human%20figures%2C%20orchestrated%20composition%20with%20layered%20deployment%20stages%20and%20real%20time%20monitoring%20visualization&width=1920&height=600&seq=kos-web-ops-hero&orientation=landscape"
+              alt=""
+              className="w-full h-full object-cover object-center opacity-18"
+              width="1920"
+              height="600"
+            />
+          </div>
+          <div className="absolute inset-0 bg-gradient-to-b from-foreground-950/60 via-foreground-950/80 to-foreground-950" />
+
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div className="text-center max-w-4xl mx-auto">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/20 border border-emerald-400/30 backdrop-blur-sm mb-6">
+                <i className="ri-rocket-2-line text-emerald-400 text-sm" />
+                <span className="text-sm font-semibold text-emerald-300 uppercase tracking-wider">
+                  KOS Web Operations Deployment™ — LIVE
+                </span>
+              </div>
+              <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
+                Déploiement Web & Assurance
+                <span className="block text-emerald-400 mt-2">Qualité 100% Big Four</span>
+              </h1>
+              <p className="text-lg sm:text-xl text-gray-300 leading-relaxed mb-8 max-w-3xl mx-auto">
+                <strong className="text-white">{health.enginesDeployed} moteurs KOS</strong> déployés.{' '}
+                <strong className="text-white">{health.enginesFullyOperational} pleinement opérationnels</strong>.{' '}
+                {health.qualityGatesActive}/{health.qualityGatesTotal} gates qualité actives.{' '}
+                Score global : <strong className="text-emerald-400">{health.totalScore}/10</strong>.
+              </p>
+              <div className="flex flex-wrap justify-center gap-3">
+                <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/20 border border-emerald-400/30 backdrop-blur-sm">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="text-sm text-emerald-300 font-semibold">Site Health Monitor ACTIF</span>
+                </div>
+                <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/20 border border-amber-400/30 backdrop-blur-sm">
+                  <span className="w-2 h-2 rounded-full bg-amber-500" />
+                  <span className="text-sm text-amber-300 font-semibold">2 Gates Qualité Actives</span>
+                </div>
+                <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-red-500/20 border border-red-400/30 backdrop-blur-sm">
+                  <i className="ri-lock-line text-red-400" />
+                  <span className="text-sm text-red-300 font-semibold">{health.criticalBlockers.length} Bloqueurs</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Bloqueurs Alert */}
+        <section className="py-5 bg-red-50 border-b border-red-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <div className="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center">
+                  <i className="ri-error-warning-fill text-red-600 text-sm" />
+                </div>
+                <span className="text-sm font-bold text-red-800">Bloqueurs :</span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {health.criticalBlockers.map((b, i) => (
+                  <span key={i} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-white border border-red-200 text-red-700">
+                    <i className="ri-lock-line text-red-500 text-xs" />
+                    {b}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Tab Navigation */}
+        <section className="sticky top-20 z-30 bg-white border-b border-background-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex gap-1 overflow-x-auto py-3">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-bold cursor-pointer transition-all whitespace-nowrap ${
+                    activeTab === tab.id
+                      ? 'bg-foreground-950 text-white'
+                      : 'text-foreground-600 hover:bg-background-100 hover:text-foreground-900'
+                  }`}
+                >
+                  <i className={`${tab.icon} text-base`} />
+                  {tab.label}
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${activeTab === tab.id ? 'bg-white/20' : 'bg-background-200'}`}>
+                    {tab.count}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* === TAB: OVERVIEW === */}
+        {activeTab === 'overview' && (
+          <>
+            {/* Global Score */}
+            <section className="py-10 sm:py-14">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-8">
+                  <div className="rounded-3xl bg-white border border-background-200 p-6 sm:p-7 text-center lg:col-span-1">
+                    <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-background-100 flex items-center justify-center relative">
+                      <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 80 80">
+                        <circle cx="40" cy="40" r="34" fill="none" stroke="currentColor" className="text-background-200" strokeWidth="6" />
+                        <circle cx="40" cy="40" r="34" fill="none" stroke="currentColor" className="text-emerald-500" strokeWidth="6"
+                          strokeDasharray={`${(health.totalScore / 10) * 2 * Math.PI * 34} ${2 * Math.PI * 34}`}
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                      <span className="absolute text-2xl font-bold text-foreground-950 font-heading">{health.totalScore}</span>
+                    </div>
+                    <h3 className="font-heading text-lg font-bold text-foreground-950 mb-1">Score Global KOS</h3>
+                    <p className="text-sm text-foreground-500 mb-2">/10 — Cible {health.targetScore}</p>
+                    <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200">
+                      <span className="w-2 h-2 rounded-full bg-amber-500" />
+                      <span className="text-xs font-bold text-amber-700">EN PROGRESSION</span>
+                    </div>
+                  </div>
+
+                  <div className="rounded-3xl bg-white border border-background-200 p-6 sm:p-7 lg:col-span-2">
+                    <h3 className="font-heading text-base font-bold text-foreground-950 mb-5 flex items-center gap-2">
+                      <i className="ri-cpu-line text-emerald-500" />
+                      État des Moteurs KOS
+                    </h3>
+                    <div className="grid grid-cols-3 gap-4 mb-4">
+                      {[
+                        { label: 'Déployés', value: String(engineStats.deployed), color: '#86BC25', icon: 'ri-check-double-line' },
+                        { label: 'Partiels', value: String(engineStats.partial), color: '#E8C547', icon: 'ri-time-line' },
+                        { label: 'Score Moyen', value: `${engineStats.avgScore}/10`, color: '#0D7B5F', icon: 'ri-bar-chart-line' },
+                      ].map((stat) => (
+                        <div key={stat.label} className="rounded-xl bg-background-50 border border-background-100 p-4 text-center">
+                          <div className="w-8 h-8 mx-auto mb-2 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${stat.color}15` }}>
+                            <i className={`${stat.icon} text-sm`} style={{ color: stat.color }} />
+                          </div>
+                          <span className="block text-xl font-bold text-foreground-950 font-heading">{stat.value}</span>
+                          <span className="text-[10px] text-foreground-400">{stat.label}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="grid grid-cols-3 gap-3">
+                      {[
+                        { label: 'Monitors OK', value: String(engineStats.allMonitorsPassed), color: '#86BC25' },
+                        { label: 'Warnings', value: String(engineStats.allMonitorsWarn), color: '#E8C547' },
+                        { label: 'Échecs', value: String(engineStats.allMonitorsFailed), color: '#C2410C' },
+                      ].map((s) => (
+                        <div key={s.label} className="text-center py-2 rounded-lg bg-background-50">
+                          <span className="block text-lg font-bold font-heading" style={{ color: s.color }}>{s.value}</span>
+                          <span className="text-[10px] text-foreground-400">{s.label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Stats Row */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 mb-8">
+                  {[
+                    { label: 'Moteurs', value: `${health.enginesDeployed}/${health.enginesTotal}`, icon: 'ri-cpu-line', color: '#4F46E5' },
+                    { label: 'Opérationnels', value: String(health.enginesFullyOperational), icon: 'ri-checkbox-circle-line', color: '#86BC25' },
+                    { label: 'Gates Actives', value: `${health.qualityGatesActive}/${health.qualityGatesTotal}`, icon: 'ri-shield-check-line', color: '#8B3040' },
+                    { label: 'Standards', value: String(health.complianceStandards), icon: 'ri-file-check-line', color: '#0D7B5F' },
+                    { label: 'Score Conformité', value: `${health.avgComplianceScore}/10`, icon: 'ri-scales-line', color: '#9B7B2C' },
+                    { label: 'Dernier Scan', value: '13/06 03:00', icon: 'ri-time-line', color: '#6B7280' },
+                    { label: 'Prochain Scan', value: '14/06 03:00', icon: 'ri-calendar-line', color: '#C05A3A' },
+                    { label: 'Edge Functions', value: '1 active', icon: 'ri-cloud-line', color: '#2D7A3A' },
+                  ].map((stat, i) => (
+                    <div key={i} className="rounded-xl bg-white border border-background-200 p-4 text-center">
+                      <div className="w-8 h-8 mx-auto mb-2 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${stat.color}15` }}>
+                        <i className={`${stat.icon} text-sm`} style={{ color: stat.color }} />
+                      </div>
+                      <span className="block text-lg font-bold text-foreground-950 font-heading">{stat.value}</span>
+                      <span className="text-[10px] text-foreground-400">{stat.label}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Quick Wins */}
+                <div className="rounded-3xl bg-foreground-950 p-6 sm:p-8 text-white">
+                  <div className="flex items-center gap-3 mb-5">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center">
+                      <i className="ri-flashlight-line text-emerald-400 text-lg" />
+                    </div>
+                    <h3 className="font-heading text-lg font-bold">Quick Wins — Actions Immédiates</h3>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {health.quickWins.map((win, i) => (
+                      <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-white/8 border border-white/10">
+                        <span className="w-6 h-6 rounded-full bg-emerald-500/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <span className="text-xs font-bold text-emerald-300">{i + 1}</span>
+                        </span>
+                        <p className="text-sm text-gray-300 leading-relaxed">{win}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </section>
+          </>
+        )}
+
+        {/* === TAB: ENGINES === */}
+        {activeTab === 'engines' && (
+          <section className="py-10 sm:py-14">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="text-center mb-10">
+                <h2 className="font-heading text-3xl sm:text-4xl font-bold text-foreground-950 mb-4">
+                  {KOS_ENGINES_DEPLOYED.length} Moteurs KOS Déployés
+                </h2>
+                <p className="text-foreground-600 max-w-2xl mx-auto">
+                  {engineStats.deployed} pleinement opérationnels · {engineStats.partial} en cours de déploiement.{' '}
+                  Score moyen : {engineStats.avgScore}/10.
+                </p>
+              </div>
+
+              <div className="space-y-5">
+                {KOS_ENGINES_DEPLOYED.map((engine) => {
+                  const badge = getStatusBadge(engine.status);
+                  const isExpanded = expandedEngine === engine.id;
+                  const scoreColor = engine.score >= 8 ? '#86BC25' : engine.score >= 6 ? '#E8C547' : '#C2410C';
+                  return (
+                    <div
+                      key={engine.id}
+                      className={`rounded-2xl border transition-all duration-300 ${
+                        isExpanded ? 'border-foreground-300 bg-white shadow-lg' : 'border-background-200 bg-white hover:border-foreground-200 hover:shadow-md'
+                      }`}
+                    >
+                      <button
+                        onClick={() => setExpandedEngine(isExpanded ? null : engine.id)}
+                        className="w-full p-5 sm:p-6 text-left flex items-start gap-4 cursor-pointer"
+                      >
+                        <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${engine.color}15` }}>
+                          <i className={`${engine.icon} text-lg`} style={{ color: engine.color }} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1 flex-wrap">
+                            <h3 className="text-base font-bold text-foreground-950">{engine.name}</h3>
+                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold flex-shrink-0 ${badge.bg} ${badge.border} ${badge.text}`}>
+                              <span className={`w-1.5 h-1.5 rounded-full ${badge.dot}`} />
+                              {badge.label}
+                            </span>
+                          </div>
+                          <p className="text-sm text-foreground-500 line-clamp-2">{engine.description}</p>
+                          <div className="flex flex-wrap items-center gap-4 mt-2 text-xs text-foreground-400">
+                            <span className="flex items-center gap-1">
+                              <span className="font-bold font-heading text-base" style={{ color: scoreColor }}>{engine.score}</span>
+                              /{engine.targetScore}
+                            </span>
+                            <span>{engine.version}</span>
+                            <span><i className="ri-refresh-line mr-1" />{engine.scanFrequency}</span>
+                            <span><i className="ri-time-line mr-1" />Déployé le {new Date(engine.lastDeployed).toLocaleDateString('fr-FR')}</span>
+                          </div>
+                        </div>
+                        <div className="flex-shrink-0 pt-2">
+                          <i className={`ri-${isExpanded ? 'subtract' : 'add'}-line text-foreground-400 text-xl`} />
+                        </div>
+                      </button>
+
+                      {isExpanded && (
+                        <div className="px-6 pb-6 border-t border-background-200 pt-5">
+                          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                            {/* KPIs */}
+                            <div>
+                              <h5 className="text-xs font-bold text-foreground-400 uppercase tracking-wider mb-3">KPIs</h5>
+                              <div className="space-y-2">
+                                {engine.kpis.map((kpi, j) => (
+                                  <div key={j} className="flex items-center justify-between p-2.5 rounded-lg bg-background-50 border border-background-100">
+                                    <div className="flex items-center gap-2">
+                                      <i className={`${kpi.icon} text-xs`} style={{ color: engine.color }} />
+                                      <span className="text-xs text-foreground-600">{kpi.label}</span>
+                                    </div>
+                                    <div className="flex items-baseline gap-1">
+                                      <span className="text-sm font-bold text-foreground-950">{kpi.current}</span>
+                                      <span className="text-[10px] text-foreground-400">/ {kpi.target}</span>
+                                      <span className={`text-[10px] ${kpi.trend === 'up' ? 'text-emerald-600' : kpi.trend === 'down' ? 'text-red-600' : 'text-foreground-400'}`}>
+                                        <i className={`${kpi.trend === 'up' ? 'ri-arrow-up-line' : kpi.trend === 'down' ? 'ri-arrow-down-line' : 'ri-arrow-right-line'} text-xs`} />
+                                      </span>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Monitors */}
+                            <div>
+                              <h5 className="text-xs font-bold text-foreground-400 uppercase tracking-wider mb-3">Monitors</h5>
+                              <div className="space-y-2">
+                                {engine.monitors.map((mon, j) => {
+                                  const mBadge = getMonitorBadge(mon.status);
+                                  return (
+                                    <div key={j} className="flex items-center justify-between p-2.5 rounded-lg bg-background-50 border border-background-100">
+                                      <div className="flex items-center gap-2">
+                                        <i className={`${mon.icon} text-xs`} style={{ color: engine.color }} />
+                                        <span className="text-xs text-foreground-600">{mon.label}</span>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold ${mBadge.dot} bg-opacity-15`}>
+                                          <span className={`w-1.5 h-1.5 rounded-full ${mBadge.dot}`} />
+                                          <span className={mBadge.text}>{mBadge.label}</span>
+                                        </span>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+
+                            {/* Recent Scans */}
+                            <div>
+                              <h5 className="text-xs font-bold text-foreground-400 uppercase tracking-wider mb-3">Scans Récents</h5>
+                              <div className="space-y-2">
+                                {engine.recentScans.map((scan, j) => {
+                                  const sColor = scan.score >= 8 ? '#86BC25' : scan.score >= 6 ? '#E8C547' : '#C2410C';
+                                  return (
+                                    <div key={j} className="flex items-center justify-between p-2.5 rounded-lg bg-background-50 border border-background-100">
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-[10px] text-foreground-400">{new Date(scan.date).toLocaleDateString('fr-FR')}</span>
+                                        <span className="text-[10px] text-foreground-300">{scan.type}</span>
+                                      </div>
+                                      <span className="text-sm font-bold font-heading" style={{ color: sColor }}>{scan.score}</span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                              <a
+                                href={engine.path}
+                                className="inline-flex items-center gap-1.5 mt-3 text-xs font-bold text-accent-600 hover:text-accent-700 cursor-pointer"
+                              >
+                                <i className="ri-external-link-line" />
+                                Ouvrir le dashboard complet
+                              </a>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* === TAB: COMPLIANCE === */}
+        {activeTab === 'compliance' && (
+          <section className="py-10 sm:py-14">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="text-center mb-10">
+                <h2 className="font-heading text-3xl sm:text-4xl font-bold text-foreground-950 mb-4">
+                  Conformité & Assurance Qualité
+                </h2>
+                <p className="text-foreground-600 max-w-2xl mx-auto">
+                  {KOS_COMPLIANCE_STANDARDS.length} standards · {KOS_QUALITY_GATES.length} gates qualité.{' '}
+                  Score moyen de conformité : {health.avgComplianceScore}/10.
+                </p>
+              </div>
+
+              {/* Quality Gates */}
+              <div className="mb-10">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center">
+                    <i className="ri-shield-check-line text-emerald-600 text-sm" />
+                  </div>
+                  <h3 className="font-heading text-lg font-bold text-foreground-950">Quality Gates ({KOS_QUALITY_GATES.length})</h3>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                  {KOS_QUALITY_GATES.map((gate) => {
+                    const gb = getGateStatusBadge(gate);
+                    const pct = Math.min((gate.currentScore / gate.threshold) * 100, 100);
+                    return (
+                      <div key={gate.id} className="rounded-2xl bg-white border border-background-200 p-5">
+                        <div className="flex items-start gap-3 mb-3">
+                          <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${gate.color}15` }}>
+                            <i className={`${gate.icon} text-lg`} style={{ color: gate.color }} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1 flex-wrap">
+                              <h4 className="text-sm font-bold text-foreground-950">{gate.name}</h4>
+                              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${gb.bg} ${gb.border} ${gb.text}`}>
+                                <i className={`${gb.icon} text-[10px]`} />
+                                {gb.label}
+                              </span>
+                              {gate.isAutomatic && (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 border border-emerald-200 text-emerald-700">
+                                  <i className="ri-robot-line text-[10px]" />AUTO
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-xs text-foreground-500">{gate.description}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between text-xs mb-2">
+                          <span className="text-foreground-400">Score : {gate.currentScore}/{gate.threshold}</span>
+                          <span className="font-bold" style={{ color: gate.color }}>{Math.round(pct)}%</span>
+                        </div>
+                        <div className="w-full h-2 rounded-full bg-background-100 overflow-hidden">
+                          <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, backgroundColor: gate.color }} />
+                        </div>
+                        {gate.recentBlocks.length > 0 && (
+                          <div className="mt-3 pt-3 border-t border-background-100">
+                            <span className="text-[10px] font-bold text-red-600 uppercase tracking-wider">Blocages récents</span>
+                            <div className="space-y-1.5 mt-2">
+                              {gate.recentBlocks.map((block, j) => (
+                                <div key={j} className="text-xs text-foreground-600 flex items-start gap-1.5">
+                                  <i className="ri-close-circle-line text-red-500 mt-0.5 flex-shrink-0 text-xs" />
+                                  <span>{block.reason} — <em>{block.content}</em></span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Compliance Standards */}
+              <div>
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center">
+                    <i className="ri-file-check-line text-amber-600 text-sm" />
+                  </div>
+                  <h3 className="font-heading text-lg font-bold text-foreground-950">Standards de Conformité ({KOS_COMPLIANCE_STANDARDS.length})</h3>
+                </div>
+                <div className="space-y-4">
+                  {KOS_COMPLIANCE_STANDARDS.map((standard) => {
+                    const isExpanded = expandedStandard === standard.id;
+                    const pct = Math.round((standard.currentScore / standard.targetScore) * 100);
+                    const sColor = pct >= 80 ? '#86BC25' : pct >= 50 ? '#E8C547' : '#C2410C';
+                    return (
+                      <div
+                        key={standard.id}
+                        className={`rounded-2xl border transition-all duration-300 ${
+                          isExpanded ? 'border-foreground-300 bg-white shadow-lg' : 'border-background-200 bg-white hover:border-foreground-200 hover:shadow-md'
+                        }`}
+                      >
+                        <button
+                          onClick={() => setExpandedStandard(isExpanded ? null : standard.id)}
+                          className="w-full p-5 text-left flex items-start gap-4 cursor-pointer"
+                        >
+                          <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${standard.color}15` }}>
+                            <i className={`${standard.icon} text-lg`} style={{ color: standard.color }} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <h4 className="text-sm font-bold text-foreground-950">{standard.name}</h4>
+                            </div>
+                            <p className="text-xs text-foreground-500 line-clamp-2">{standard.description}</p>
+                            <div className="flex items-center gap-2 mt-2">
+                              <span className="text-sm font-bold font-heading" style={{ color: sColor }}>{standard.currentScore}/{standard.targetScore}</span>
+                              <div className="flex-1 max-w-[120px] h-1.5 rounded-full bg-background-200 overflow-hidden">
+                                <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: sColor }} />
+                              </div>
+                              <span className="text-[10px] text-foreground-400">Audit : {standard.lastAudit}</span>
+                            </div>
+                          </div>
+                          <div className="flex-shrink-0 pt-1">
+                            <i className={`ri-${isExpanded ? 'subtract' : 'add'}-line text-foreground-400 text-lg`} />
+                          </div>
+                        </button>
+                        {isExpanded && (
+                          <div className="px-5 pb-5 border-t border-background-200 pt-4">
+                            <div className="space-y-2">
+                              {standard.controls.map((ctrl, j) => {
+                                const cb = getMonitorBadge(ctrl.status);
+                                return (
+                                  <div key={j} className="flex items-start gap-3 p-3 rounded-xl bg-background-50 border border-background-100">
+                                    <span className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${cb.dot}`} />
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-center gap-2 mb-0.5">
+                                        <h6 className="text-xs font-bold text-foreground-800">{ctrl.label}</h6>
+                                        <span className={`text-[9px] font-bold ${cb.text}`}>{cb.label}</span>
+                                      </div>
+                                      <p className="text-xs text-foreground-500">{ctrl.description}</p>
+                                      <p className="text-[10px] text-foreground-300 mt-1 italic">{ctrl.evidence}</p>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* === TAB: PIPELINE === */}
+        {activeTab === 'pipeline' && (
+          <section className="py-10 sm:py-14">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="text-center mb-10">
+                <h2 className="font-heading text-3xl sm:text-4xl font-bold text-foreground-950 mb-4">
+                  Pipeline de Déploiement — 7 Étapes
+                </h2>
+                <p className="text-foreground-600 max-w-2xl mx-auto">
+                  CI/CD automatisé avec gates qualité, health checks et rollback.
+                </p>
+              </div>
+
+              {/* Pipeline Progress */}
+              <div className="rounded-3xl bg-foreground-950 p-6 sm:p-8 text-white mb-8">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="text-center">
+                    <span className="block text-4xl font-bold font-heading text-emerald-400">
+                      {KOS_DEPLOYMENT_PIPELINE.filter((s) => s.status === 'completed').length}
+                    </span>
+                    <span className="text-xs text-gray-400">Étapes OK</span>
+                  </div>
+                  <div className="text-center">
+                    <span className="block text-4xl font-bold font-heading text-amber-400">
+                      {KOS_DEPLOYMENT_PIPELINE.filter((s) => s.status === 'in_progress').length}
+                    </span>
+                    <span className="text-xs text-gray-400">En cours</span>
+                  </div>
+                  <div className="text-center">
+                    <span className="block text-4xl font-bold font-heading text-slate-400">
+                      {KOS_DEPLOYMENT_PIPELINE.filter((s) => s.status === 'pending').length}
+                    </span>
+                    <span className="text-xs text-gray-400">En attente</span>
+                  </div>
+                  <div className="text-center">
+                    <span className="block text-4xl font-bold font-heading text-red-400">
+                      {KOS_DEPLOYMENT_PIPELINE.filter((s) => s.status === 'failed').length}
+                    </span>
+                    <span className="text-xs text-gray-400">Échecs</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Pipeline Stages */}
+              <div className="space-y-4">
+                {KOS_DEPLOYMENT_PIPELINE.map((stage, i) => {
+                  const pb = getPipelineStatusBadge(stage.status);
+                  return (
+                    <div key={i} className="relative">
+                      {i < KOS_DEPLOYMENT_PIPELINE.length - 1 && (
+                        <div className="absolute left-8 top-16 bottom-0 w-0.5 bg-background-200 hidden sm:block" />
+                      )}
+                      <div className={`rounded-2xl border overflow-hidden transition-all ${
+                        stage.status === 'in_progress' ? 'border-amber-300 bg-white shadow-lg ring-2 ring-amber-200/50' :
+                        stage.status === 'completed' ? 'border-emerald-200 bg-white' :
+                        stage.status === 'failed' ? 'border-red-200 bg-red-50/20' :
+                        'border-background-200 bg-white'
+                      }`}>
+                        <div className="p-5 flex flex-col sm:flex-row items-start gap-4">
+                          <div className="flex flex-col items-center flex-shrink-0">
+                            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${pb.bg}`} style={stage.status === 'completed' ? { backgroundColor: `${stage.color}15` } : {}}>
+                              {stage.status === 'completed' ? <i className="ri-check-line text-emerald-500 text-xl" /> :
+                               stage.status === 'in_progress' ? <i className="ri-loader-4-line text-amber-500 text-xl animate-spin" /> :
+                               stage.status === 'failed' ? <i className="ri-close-line text-red-500 text-xl" /> :
+                               <i className={`${stage.icon} text-xl text-slate-300`} />}
+                            </div>
+                            <span className="text-lg font-bold font-heading mt-1.5" style={{ color: stage.status === 'completed' ? '#86BC25' : stage.status === 'in_progress' ? '#E8C547' : '#94a3b8' }}>
+                              {stage.stage}
+                            </span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1 flex-wrap">
+                              <h3 className="font-heading text-base font-bold text-foreground-950">{stage.name}</h3>
+                              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${pb.bg} ${pb.textColor}`}>
+                                <span className={`w-1.5 h-1.5 rounded-full ${pb.dot}`} />
+                                {pb.label}
+                              </span>
+                            </div>
+                            <p className="text-sm text-foreground-500">{stage.description}</p>
+                            <div className="flex items-center gap-4 mt-2 text-xs text-foreground-400">
+                              <span><i className="ri-time-line mr-1" />{stage.duration}</span>
+                              {stage.completedAt && (
+                                <span><i className="ri-calendar-check-line mr-1" />{new Date(stage.completedAt).toLocaleString('fr-FR')}</span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Current Deployment Status */}
+              <div className="mt-8 rounded-3xl bg-foreground-950 p-6 sm:p-8 text-white text-center">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/20 border border-amber-400/30 mb-4">
+                  <i className="ri-loader-4-line text-amber-400 text-sm animate-spin" />
+                  <span className="text-sm font-semibold text-amber-300 uppercase tracking-wider">Déploiement Bloqué — Quality Gates</span>
+                </div>
+                <p className="text-gray-300 max-w-xl mx-auto text-sm mb-4">
+                  Le pipeline est bloqué à l'étape 3 (Quality Gates) car le Content Quality Gate et le Security Gate sont désactivés.{' '}
+                  Activez les gates pour débloquer le déploiement automatique.
+                </p>
+                <div className="flex flex-wrap justify-center gap-2">
+                  <span className="px-3 py-1.5 rounded-full bg-red-500/20 text-red-300 text-xs">Content Gate désactivé</span>
+                  <span className="px-3 py-1.5 rounded-full bg-red-500/20 text-red-300 text-xs">Security Gate désactivé</span>
+                  <span className="px-3 py-1.5 rounded-full bg-emerald-500/20 text-emerald-300 text-xs">Legal Gate actif</span>
+                  <span className="px-3 py-1.5 rounded-full bg-emerald-500/20 text-emerald-300 text-xs">URL Gate actif</span>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* === TAB: SCAN === */}
+        {activeTab === 'scan' && (
+          <section className="py-10 sm:py-14">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="text-center mb-10">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-50 border border-emerald-200 mb-4">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="text-sm font-semibold text-emerald-700 uppercase tracking-wider">Edge Function Active — kos-site-health-check</span>
+                </div>
+                <h2 className="font-heading text-3xl sm:text-4xl font-bold text-foreground-950 mb-4">
+                  Scan Live du Site
+                </h2>
+                <p className="text-foreground-600 max-w-2xl mx-auto">
+                  Lance un scan complet en temps réel : headers HTTP, robots.txt, sitemap, SEO on-page, performance.
+                </p>
+              </div>
+
+              {/* Scan Trigger */}
+              <div className="max-w-lg mx-auto mb-10">
+                <div className="rounded-3xl bg-white border border-background-200 p-6 text-center">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-emerald-50 flex items-center justify-center">
+                    <i className={`ri-radar-line text-3xl text-emerald-600 ${scanLoading ? 'animate-spin' : ''}`} />
+                  </div>
+                  <h3 className="font-heading text-lg font-bold text-foreground-950 mb-2">Site Health Check</h3>
+                  <p className="text-sm text-foreground-500 mb-5">
+                    Scan complet de khepraexperts.com : 4 checks (headers, robots.txt, sitemap, SEO on-page).{'\n'}
+                    Résultats stockés dans Supabase site_health_checks.
+                  </p>
+                  <button
+                    onClick={runHealthCheck}
+                    disabled={scanLoading}
+                    className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full bg-emerald-600 text-white font-bold text-sm hover:bg-emerald-500 transition-all duration-300 cursor-pointer whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {scanLoading ? (
+                      <>
+                        <i className="ri-loader-4-line animate-spin" />
+                        Scan en cours...
+                      </>
+                    ) : (
+                      <>
+                        <i className="ri-radar-line" />
+                        Lancer le Scan Live
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* Scan Error */}
+              {scanError && (
+                <div className="max-w-lg mx-auto mb-8 rounded-2xl bg-red-50 border border-red-200 p-5 text-center">
+                  <i className="ri-error-warning-line text-red-500 text-2xl mb-2 block" />
+                  <p className="text-sm text-red-700 font-semibold">{scanError}</p>
+                </div>
+              )}
+
+              {/* Scan Results */}
+              {scanResult && (
+                <div className="max-w-3xl mx-auto">
+                  {/* Overall Score */}
+                  <div className="rounded-3xl bg-foreground-950 p-6 sm:p-8 text-white mb-6">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                      <div>
+                        <span className="block text-4xl font-bold font-heading text-emerald-400">
+                          {String(scanResult.average_score)}/10
+                        </span>
+                        <span className="text-xs text-gray-400">Score Global</span>
+                      </div>
+                      <div>
+                        <span className="block text-4xl font-bold font-heading text-white">
+                          {String(scanResult.scan_count)}
+                        </span>
+                        <span className="text-xs text-gray-400">Checks</span>
+                      </div>
+                      <div>
+                        <span className="block text-4xl font-bold font-heading text-amber-400">
+                          {String(scanResult.total_duration_ms)}ms
+                        </span>
+                        <span className="text-xs text-gray-400">Durée totale</span>
+                      </div>
+                      <div>
+                        <span className="block text-4xl font-bold font-heading text-white">
+                          {new Date(String(scanResult.timestamp)).toLocaleTimeString('fr-FR')}
+                        </span>
+                        <span className="text-xs text-gray-400">Timestamp</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Per-Scan Results */}
+                  <div className="space-y-4">
+                    {(scanResult.results as Array<Record<string, unknown>>).map((result, i) => {
+                      const status = String(result.status);
+                      const score = Number(result.score);
+                      const scanType = String(result.scan_type);
+                      const sColor = score >= 8 ? '#86BC25' : score >= 5 ? '#E8C547' : '#C2410C';
+                      const errors = (result.errors as string[]) || [];
+                      const recs = (result.recommendations as string[]) || [];
+                      return (
+                        <div key={i} className="rounded-2xl bg-white border border-background-200 p-5">
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${sColor}15` }}>
+                                <i className={`${scanType === 'http_headers' ? 'ri-shield-line' : scanType === 'robots_txt' ? 'ri-file-text-line' : scanType === 'sitemap_xml' ? 'ri-node-tree' : 'ri-search-line'} text-lg`} style={{ color: sColor }} />
+                              </div>
+                              <div>
+                                <h4 className="font-heading text-base font-bold text-foreground-950 capitalize">
+                                  {scanType.replace(/_/g, ' ')}
+                                </h4>
+                                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                  status === 'pass' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
+                                  status === 'warn' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
+                                  'bg-red-50 text-red-700 border border-red-200'
+                                }`}>
+                                  {status.toUpperCase()}
+                                </span>
+                              </div>
+                            </div>
+                            <span className="text-2xl font-bold font-heading" style={{ color: sColor }}>{score}/10</span>
+                          </div>
+                          <span className="text-[10px] text-foreground-400">Endpoint : {String(result.endpoint)} · {String(result.duration_ms)}ms</span>
+                          {errors.length > 0 && (
+                            <div className="mt-3 space-y-0.5">
+                              {errors.map((err, j) => (
+                                <p key={j} className="text-xs text-red-600 flex items-start gap-1">
+                                  <i className="ri-close-circle-line text-xs mt-0.5 flex-shrink-0" />{err}
+                                </p>
+                              ))}
+                            </div>
+                          )}
+                          {recs.length > 0 && (
+                            <div className="mt-2 space-y-0.5">
+                              {recs.map((rec, j) => (
+                                <p key={j} className="text-xs text-emerald-700 flex items-start gap-1">
+                                  <i className="ri-check-line text-xs mt-0.5 flex-shrink-0" />{rec}
+                                </p>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Supabase Note */}
+                  <div className="mt-6 p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-center">
+                    <p className="text-sm text-emerald-700 flex items-center justify-center gap-2">
+                      <i className="ri-database-2-line" />
+                      Résultats stockés dans Supabase <code className="text-xs bg-emerald-100 px-1.5 py-0.5 rounded">site_health_checks</code>
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </section>
+        )}
+
+        {/* Cross-link to KOS Ecosystem */}
+        <section className="py-12 sm:py-16 bg-white border-t border-background-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-8">
+              <h2 className="font-heading text-2xl sm:text-3xl font-bold text-foreground-950 mb-2">
+                Écosystème KOS — Tous les Moteurs
+              </h2>
+              <p className="text-foreground-600">Interconnexion complète des 12 dashboards KOS.</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {[
+                { label: 'Web Operations', path: '/kos-web-operations-deployment', icon: 'ri-rocket-2-line', color: '#2D7A3A', current: true },
+                { label: 'Quality System', path: '/kos-autonomous-quality-system', icon: 'ri-shield-check-line', color: '#8B3040' },
+                { label: 'Unified Autopilot', path: '/kos-unified-autopilot', icon: 'ri-cpu-line', color: '#0D7B5F' },
+                { label: 'Orchestrator Engine', path: '/kos-orchestrator-engine', icon: 'ri-git-branch-line', color: '#4F46E5' },
+                { label: 'Task Orchestrator', path: '/kos-auto-task-orchestrator', icon: 'ri-list-check', color: '#86BC25' },
+                { label: 'URL Auto-Pointage', path: '/kos-url-auto-pointage', icon: 'ri-link', color: '#9B7B2C' },
+              ].map((link) => (
+                <a
+                  key={link.path}
+                  href={link.path}
+                  className={`rounded-xl border p-4 text-center hover:shadow-md transition-all cursor-pointer block ${
+                    link.current ? 'border-emerald-300 bg-emerald-50/40 ring-2 ring-emerald-400' : 'border-background-200 bg-background-50 hover:border-foreground-200'
+                  }`}
+                >
+                  <div className="w-10 h-10 mx-auto mb-2 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${link.color}15` }}>
+                    <i className={`${link.icon} text-lg`} style={{ color: link.color }} />
+                  </div>
+                  <span className="text-sm font-bold text-foreground-800">{link.label}</span>
+                  {link.current && (
+                    <span className="block text-[10px] text-emerald-600 font-bold mt-1">Vous êtes ici</span>
+                  )}
+                </a>
+              ))}
+            </div>
+          </div>
+        </section>
+
+    </hubLayout>
+  );
+}
+
+
+
+
+

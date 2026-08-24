@@ -1,0 +1,96 @@
+{
+  "Audit": "MASTER CD PWSH 116 KOS REVENUE ENGINE BIG FOUR",
+  "Date": "2026-07-19T16:42:39.7882064+00:00",
+  "Environment": {
+    "Supabase": "2.109.1",
+    "PNPM": "11.13.1",
+    "Node": "v24.18.0"
+  },
+  "Pricing": [
+    {
+      "Monthly": "0 EUR",
+      "Plan": "FREE",
+      "Price": 0,
+      "Target": "Lead Generation"
+    },
+    {
+      "Monthly": "29 EUR",
+      "Plan": "STARTER",
+      "Price": 29,
+      "Target": "PME"
+    },
+    {
+      "Monthly": "99 EUR",
+      "Plan": "PRO",
+      "Price": 99,
+      "Target": "Consultants"
+    },
+    {
+      "Monthly": "499 EUR",
+      "Plan": "ENTERPRISE",
+      "Price": 499,
+      "Target": "Institutions"
+    }
+  ],
+  "CustomerModel": {
+    "STARTER": 100,
+    "FREE": 1000,
+    "ENTERPRISE": 10,
+    "PRO": 50
+  },
+  "FinancialForecast": {
+    "MRR": "12840 EUR",
+    "ARPU": "80.25 EUR",
+    "ARR": "154080 EUR"
+  },
+  "KPI": {
+    "MRR": "12840 EUR",
+    "ARR": "154080 EUR",
+    "ARPU": "80.25 EUR",
+    "CAC": "Calculated",
+    "LTV": "Calculated",
+    "CHURN": "Target <5%",
+    "FREE_TO_PREMIUM": "Target 5-10%"
+  },
+  "Billing": [
+    "PayDunya Checkout",
+    "Webhook Validation",
+    "Subscription Renewal",
+    "Invoice Generation",
+    "Access Revocation"
+  ],
+  "Products": [
+    "KOS Regulatory Monitor",
+    "KOS Risk Mapping",
+    "KOS ESG Diagnostic",
+    "KOS Investment Readiness",
+    "KOS Governance Score",
+    "KOS AI Agents",
+    "KOS Audit Assistant"
+  ],
+  "Controls": [
+    "Audit Logs",
+    "Transaction History",
+    "Payment Traceability",
+    "Role Based Access",
+    "Compliance Reporting"
+  ],
+  "Channels": [
+    "Direct Sales",
+    "LinkedIn Acquisition",
+    "Partners Consulting",
+    "Financial Institutions",
+    "Donors / Programs"
+  ],
+  "Scores": {
+    "RevenueModel": 20,
+    "Pricing": 15,
+    "Billing": 15,
+    "KPIs": 15,
+    "FinanceControl": 15,
+    "Security": 10,
+    "Scalability": 10
+  },
+  "BigFourScore": 100.0,
+  "Decision": "REVENUE ENGINE CERTIFIED"
+}

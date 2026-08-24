@@ -1,0 +1,119 @@
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import { supabase } from '@/lib/supabase';
+
+export function useKOSAgrementOS() {
+  const [kosData.data, setData] = useState(kosAgrementOSData);
+  const [isLive, setIsLive] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const cancelledRef = useRef(false);
+  const [activeModule, setActiveModule] = useState<string>('file-builder');
+  const [expandedPrompt, setExpandedPrompt] = useState<string | null>(null);
+  const [showGantt, setShowGantt] = useState(false);
+  const [showPrompts, setShowPrompts] = useState(false);
+  const [showRex, setShowRex] = useState(false);
+  const [alertesLues, setAlertesLues] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    cancelledRef.current = false;
+
+    async function loadFromSupabase() {
+      try {
+        const { data: liveData, error: supabaseError } = await supabase
+          .from('kos_agrement_os')
+          .select('*')
+          .limit(1)
+          .single();
+
+        if (cancelledRef.current) return;
+
+        if (!supabaseError && liveData) {
+          setData(liveData as typeof kosAgrementOSData);
+          setIsLive(true);
+        }
+      } catch {
+        // Supabase unreachable — fallback to mock silently
+      } finally {
+        if (!cancelledRef.current) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadFromSupabase();
+
+    return () => {
+      cancelledRef.current = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    setAlertesLues(new Set(
+      kosData.data.projetActif.alertesIA.filter(a => a.lu).map(a => a.id)
+    ));
+  }, [kosData.data]);
+
+  const moduleActif = useMemo(
+    () => kosData.data.modules.find(m => m.id === activeModule) || kosData.data.modules[0],
+    [kosData.data.modules, activeModule]
+  );
+
+  const alertesNonLues = useMemo(
+    () => kosData.data.projetActif.alertesIA.filter(a => !alertesLues.has(a.id)).length,
+    [kosData.data.projetActif.alertesIA, alertesLues]
+  );
+
+  const marquerAlerteLue = useCallback((id: string) => {
+    setAlertesLues(prev => new Set([...prev, id]));
+  }, []);
+
+  const togglePrompt = useCallback((id: string) => {
+    setExpandedPrompt(prev => prev === id ? null : id);
+  }, []);
+
+  const toggleGantt = useCallback(() => setShowGantt(prev => !prev), []);
+  const togglePrompts = useCallback(() => setShowPrompts(prev => !prev), []);
+  const toggleRex = useCallback(() => setShowRex(prev => !prev), []);
+
+  const bigFourScore = useMemo(() => {
+    const passed = kosData.data.checklistBigFour.filter(c => c.statut).length;
+    return Math.round((passed / kosData.data.checklistBigFour.length) * 100);
+  }, [kosData.data.checklistBigFour]);
+
+  const erreursBloquantes = useMemo(() => {
+    const fb = kosData.data.modules.find(m => m.id === 'file-builder');
+    if (!fb || !fb.erreursAuscgie) return 0;
+    return fb.erreursAuscgie.filter(e => e.statut === 'ouvert' && e.criticite === 'Bloquant').length;
+  }, [kosData.data.modules]);
+
+  const retry = useCallback(() => {
+    setLoading(true);
+    setError(null);
+    setData(kosAgrementOSData);
+    setIsLive(false);
+  }, []);
+
+  return {
+    kosData.data,
+    activeModule,
+    setActiveModule,
+    moduleActif,
+    expandedPrompt,
+    togglePrompt,
+    showGantt,
+    toggleGantt,
+    showPrompts,
+    togglePrompts,
+    showRex,
+    toggleRex,
+    alertesNonLues,
+    alertesLues,
+    marquerAlerteLue,
+    bigFourScore,
+    erreursBloquantes,
+    isLive,
+    loading,
+    error,
+    retry,
+  };
+}

@@ -1,0 +1,9 @@
+.git
+node_modules
+dist
+backup_*
+backup-kos-pages
+release
+.env
+.env.local
+*.log

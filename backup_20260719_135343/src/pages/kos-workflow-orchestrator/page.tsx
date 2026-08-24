@@ -1,0 +1,705 @@
+import { useState, useMemo } from 'react';
+import hubLayout from '@/components/feature/hubLayout';
+import { SeoHead } from '@/components/feature/SeoHead';
+import { useKOSWorkflowOrchestrator } from '@/hooks/useKOSWorkflowOrchestrator';
+import type { GeneratedWorkflow } from '@/mocks/workflowOrchestrator';
+
+type OutputTab = 'steps' | 'n8n' | 'triggers' | 'io' | 'errors' | 'score';
+
+const COMPLEXITE_STYLES: Record<string, string> = {
+  critique: 'bg-red-50 text-red-700 border-red-200',
+  elevee: 'bg-amber-50 text-amber-700 border-amber-200',
+  moyenne: 'bg-sky-50 text-sky-700 border-sky-200',
+  faible: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+};
+
+const SCORE_COLOR = (score: number): string => {
+  if (score >= 90) return 'text-emerald-600';
+  if (score >= 75) return 'text-amber-600';
+  return 'text-red-600';
+};
+
+const SCORE_BG = (score: number): string => {
+  if (score >= 90) return 'bg-emerald-50 border-emerald-200';
+  if (score >= 75) return 'bg-amber-50 border-amber-200';
+  return 'bg-red-50 border-red-200';
+};
+
+export default function workflowOrchestratorPage() {
+  const {
+    availableScenarios,
+    agents,
+    kpis,
+    selectedWorkflow,
+    processing,
+    error,
+    selectScenario,
+    processCustom,
+  } = useKOSWorkflowOrchestrator();
+
+  const [activeOutputTab, setActiveOutputTab] = useState<OutputTab>('steps');
+  const [customRequirement, setCustomRequirement] = useState('');
+  const [customContexte, setCustomContexte] = useState('');
+  const [customAutorite, setCustomAutorite] = useState('COBAC');
+  const [customSecteur, setCustomSecteur] = useState('Banque');
+  const [inputMode, setInputMode] = useState<'select' | 'custom'>('select');
+  const [selectedScenarioId, setSelectedScenarioId] = useState<string>('');
+
+  const handleSelectScenario = (id: string) => {
+    setSelectedScenarioId(id);
+    selectScenario(id);
+    setActiveOutputTab('steps');
+  };
+
+  const handleCustomSubmit = () => {
+    if (!customRequirement.trim()) return;
+    processCustom(customRequirement, customContexte, customAutorite, customSecteur);
+  };
+
+  const outputTabs: { id: OutputTab; label: string; icon: string; desc: string }[] = [
+    { id: 'steps', label: '1. Workflow Steps', icon: 'ri-list-ordered', desc: 'Étapes séquentielles' },
+    { id: 'n8n', label: '2. n8n Nodes JSON', icon: 'ri-flow-chart', desc: 'Structure importable' },
+    { id: 'triggers', label: '3. Trigger Events', icon: 'ri-flashlight-line', desc: 'Déclencheurs' },
+    { id: 'io', label: '4. Data I/O', icon: 'ri-git-branch-line', desc: 'Entrées/Sorties par nœud' },
+    { id: 'errors', label: '5. Error Handling', icon: 'ri-shield-flash-line', desc: 'Résilience & Fallbacks' },
+    { id: 'score', label: '6. Automation Score', icon: 'ri-bar-chart-2-line', desc: '0-100' },
+  ];
+
+  const agentStats = useMemo(() => ({
+    total: agents.length,
+    active: agents.filter(a => a.statut === 'active').length,
+  }), [agents]);
+
+  return (
+    <hubLayout hubId={110}>
+      <SeoHead
+        title="KOS Workflow Orchestrator™ — Process Conformité → Workflows n8n Automatisés | KHEPRA EXPERTS"
+        description="Transformez vos exigences de conformité COBAC, BEAC, GABAC en workflows n8n exécutables. Steps, nodes JSON, triggers, data I/O, error handling, automation score 0-100. Big Four automation."
+        keywords="KOS Workflow Orchestrator, n8n compliance automation, COBAC workflow, BEAC NSFR automation, GABAC LBC/FT workflows, compliance process automation, CEMAC regulatory n8n"
+        canonicalPath="/kos-workflow-orchestrator"
+        ogType="website"
+        ogLocale="fr_FR"
+      />
+
+      {/* Hero */}
+      <section className="relative bg-foreground-950 overflow-hidden">
+        <div className="absolute inset-0">
+          <img
+            src="https://readdy.ai/api/search-image?query=Abstract%20automation%20and%20workflow%20orchestration%20visual%20with%20deep%20emerald%20green%20and%20warm%20bronze%20tones%2C%20structured%20process%20flow%20with%20connected%20nodes%20and%20decision%20trees%2C%20geometric%20data%20pipeline%20transformation%2C%20sophisticated%20enterprise%20automation%20aesthetic%2C%20elegant%20workflow%20visualization%20with%20glowing%20connection%20lines%2C%20no%20text%20no%20human%20figures%2C%20Big%20Four%20consulting%20grade%20visual%20identity&width=1920&height=520&seq=kos-wo-hero-2026&orientation=landscape"
+            alt=""
+            className="w-full h-full object-cover object-top opacity-15"
+            width={1920}
+            height={520}
+          />
+        </div>
+        <div className="absolute inset-0 bg-gradient-to-b from-foreground-950/65 via-foreground-950/82 to-foreground-950" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16 relative z-10">
+          <div className="text-center max-w-4xl mx-auto">
+            <div className="flex flex-wrap justify-center gap-3 mb-5">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/20 border border-emerald-400/30 backdrop-blur-sm">
+                <i className="ri-flow-chart text-emerald-400 text-sm" />
+                <span className="text-sm font-semibold text-emerald-300 uppercase tracking-wider">Workflow Orchestrator™ — n8n Engine</span>
+              </div>
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/20 border border-amber-400/30 backdrop-blur-sm">
+                <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                <span className="text-sm font-semibold text-amber-300 uppercase tracking-wider">{agentStats.active}/{agentStats.total} Agents Actifs</span>
+              </div>
+            </div>
+            <h1 className="font-heading text-3xl sm:text-5xl lg:text-5xl font-bold text-white mb-5 leading-tight">
+              Process de conformité → Workflows n8n exécutables.
+              <span className="block text-emerald-400 mt-2">COBAC · BEAC · GABAC · LBC/FT · SI Governance</span>
+            </h1>
+            <p className="text-base sm:text-lg text-gray-300 leading-relaxed mb-6 max-w-3xl mx-auto">
+              Transformez n'importe quelle exigence de conformité en <strong className="text-white">6 livrables opérationnels</strong> : étapes séquentielles, structure n8n JSON importable, triggers, data I/O, error handling, et score d'automatisation.
+              Score moyen <strong className="text-emerald-400">{kpis.score_automatisation_moyen}/100</strong>.
+              Compatible <strong className="text-amber-400">n8n {kpis.n8n_compatibility}</strong>.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Agent Banner */}
+      <section className="py-3 bg-emerald-50 border-b border-emerald-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-4 overflow-x-auto">
+            {agents.map(agent => (
+              <div key={agent.id} className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-emerald-200 whitespace-nowrap flex-shrink-0">
+                <i className={`${agent.icon} text-emerald-600 text-sm`} />
+                <span className="text-xs font-bold text-foreground-800">{agent.nom}</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" title="Actif" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Input Section */}
+      <section className="py-8 sm:py-10 bg-background-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-2 mb-5">
+            <button
+              onClick={() => setInputMode('select')}
+              className={`px-4 py-2 rounded-full text-sm font-bold cursor-pointer transition-all whitespace-nowrap ${inputMode === 'select' ? 'bg-foreground-950 text-background-50' : 'bg-background-50 border border-background-200 text-foreground-600 hover:border-foreground-300'}`}
+            >
+              <i className="ri-list-check mr-1.5" />Scénarios prêts
+            </button>
+            <button
+              onClick={() => setInputMode('custom')}
+              className={`px-4 py-2 rounded-full text-sm font-bold cursor-pointer transition-all whitespace-nowrap ${inputMode === 'custom' ? 'bg-foreground-950 text-background-50' : 'bg-background-50 border border-background-200 text-foreground-600 hover:border-foreground-300'}`}
+            >
+              <i className="ri-edit-line mr-1.5" />Personnalisé
+            </button>
+          </div>
+
+          {inputMode === 'select' ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {availableScenarios.map(scenario => {
+                const sev = COMPLEXITE_STYLES[scenario.complexite];
+                return (
+                  <button
+                    key={scenario.id}
+                    onClick={() => handleSelectScenario(scenario.id)}
+                    disabled={processing}
+                    className={`text-left p-4 rounded-2xl border transition-all cursor-pointer ${selectedScenarioId === scenario.id && selectedWorkflow ? 'border-emerald-300 bg-emerald-50/60 ring-2 ring-emerald-200' : 'border-background-200 bg-white hover:border-emerald-200 hover:bg-emerald-50/30'} ${processing ? 'opacity-60 pointer-events-none' : ''}`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-emerald-100">
+                        <i className="ri-flow-chart text-emerald-700 text-lg" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap mb-1">
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200 whitespace-nowrap">{scenario.autorite}</span>
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-background-100 text-foreground-500 border border-background-200 whitespace-nowrap">{scenario.secteur}</span>
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full border font-bold ${sev}`}>
+                            {scenario.complexite === 'critique' ? 'CRITIQUE' : scenario.complexite === 'elevee' ? 'ÉLEVÉE' : scenario.complexite === 'moyenne' ? 'MOYEN' : 'FAIBLE'}
+                          </span>
+                        </div>
+                        <h3 className="text-sm font-bold text-foreground-950 mb-1">{scenario.titre}</h3>
+                        <p className="text-[11px] text-foreground-500 line-clamp-2">{scenario.description}</p>
+                      </div>
+                      {processing && selectedScenarioId === scenario.id ? (
+                        <div className="w-6 h-6 border-2 border-emerald-300 border-t-emerald-600 rounded-full animate-spin flex-shrink-0 mt-2" />
+                      ) : (
+                        <i className="ri-arrow-right-line text-foreground-400 text-lg flex-shrink-0 mt-2" />
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="rounded-2xl bg-white border border-background-200 p-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                <div>
+                  <label className="text-[10px] font-bold text-foreground-500 uppercase tracking-wider mb-1 block">Autorité</label>
+                  <select value={customAutorite} onChange={e => setCustomAutorite(e.target.value)} className="w-full px-3 py-2 rounded-lg bg-background-50 border border-background-200 text-sm font-bold text-foreground-700 cursor-pointer">
+                    <option value="COBAC">COBAC</option>
+                    <option value="BEAC">BEAC</option>
+                    <option value="GABAC">GABAC</option>
+                    <option value="BCEAO">BCEAO</option>
+                    <option value="OHADA">OHADA</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[10px] font-bold text-foreground-500 uppercase tracking-wider mb-1 block">Secteur</label>
+                  <select value={customSecteur} onChange={e => setCustomSecteur(e.target.value)} className="w-full px-3 py-2 rounded-lg bg-background-50 border border-background-200 text-sm font-bold text-foreground-700 cursor-pointer">
+                    <option value="Banque">Banque</option>
+                    <option value="EMF">EMF (Microfinance)</option>
+                    <option value="Régulateur">Régulateur</option>
+                    <option value="Fintech">Fintech</option>
+                  </select>
+                </div>
+              </div>
+              <textarea
+                value={customRequirement}
+                onChange={e => setCustomRequirement(e.target.value)}
+                placeholder="Décrivez l'exigence de conformité à automatiser (ex: COBAC R-2026/03 Art.15 — Déclaration de Soupçons 48h)..."
+                rows={3}
+                className="w-full px-4 py-3 rounded-xl bg-background-50 border border-background-200 text-sm text-foreground-700 placeholder:text-foreground-300 font-mono resize-y mb-3"
+              />
+              <textarea
+                value={customContexte}
+                onChange={e => setCustomContexte(e.target.value)}
+                placeholder="Contexte : type d'institution, volume, processus actuel, systèmes en place..."
+                rows={2}
+                className="w-full px-4 py-3 rounded-xl bg-background-50 border border-background-200 text-sm text-foreground-700 placeholder:text-foreground-300 resize-y"
+              />
+              <div className="flex items-center justify-between mt-3">
+                <span className="text-[10px] text-foreground-400"><i className="ri-information-line mr-1" />Mode MOCK — Edge Function + n8n API requis pour la génération live</span>
+                <button
+                  onClick={handleCustomSubmit}
+                  disabled={!customRequirement.trim() || processing}
+                  className={`px-5 py-2.5 rounded-full text-sm font-bold cursor-pointer transition-all whitespace-nowrap ${customRequirement.trim() && !processing ? 'bg-foreground-950 text-background-50 hover:bg-foreground-800' : 'bg-background-200 text-foreground-400 cursor-not-allowed'}`}
+                >
+                  {processing ? (
+                    <span className="flex items-center gap-2"><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Génération...</span>
+                  ) : (
+                    <span><i className="ri-flow-chart mr-1.5" />Générer le Workflow</span>
+                  )}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {error && (
+            <div className="mt-4 p-4 rounded-xl bg-red-50 border border-red-200 flex items-start gap-3">
+              <i className="ri-error-warning-line text-red-600 text-lg flex-shrink-0 mt-0.5" />
+              <div>
+                <span className="text-sm font-bold text-red-700 block">{error}</span>
+                <span className="text-xs text-red-500 mt-1 block">Sélectionnez un scénario prétraité pour voir un workflow complet.</span>
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Processing */}
+      {processing && (
+        <section className="py-8 bg-emerald-50/50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div className="w-14 h-14 mx-auto mb-4 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin" />
+            <p className="text-sm font-bold text-foreground-800">KOS Workflow Orchestrator™ — Génération en cours...</p>
+            <p className="text-xs text-foreground-500 mt-1">Analyse du processus, génération des étapes, construction n8n JSON, configuration triggers, mapping I/O, stratégies d'erreur, scoring</p>
+          </div>
+        </section>
+      )}
+
+      {/* Output */}
+      {selectedWorkflow && !processing && (
+        <>
+          {/* Output Tabs */}
+          <section className="sticky top-20 z-30 bg-background-50 border-b border-background-200/70">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex gap-1 overflow-x-auto py-3">
+                {outputTabs.map(tab => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveOutputTab(tab.id)}
+                    className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-bold cursor-pointer transition-all whitespace-nowrap ${activeOutputTab === tab.id ? 'bg-foreground-950 text-background-50' : 'text-foreground-600 hover:bg-background-100 hover:text-foreground-900'}`}
+                    title={tab.desc}
+                  >
+                    <i className={`${tab.icon} text-base`} />
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* Processing Metadata */}
+          <section className="py-4 bg-background-50 border-b border-background-200/70">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex flex-wrap items-center gap-4 text-xs">
+                <span className="flex items-center gap-1.5 text-foreground-600">
+                  <i className="ri-robot-line text-emerald-600" />
+                  <span className="font-bold">{selectedWorkflow.processing.agent}</span>
+                </span>
+                <span className="flex items-center gap-1.5 text-foreground-500">
+                  <i className="ri-timer-line" />
+                  Généré en {selectedWorkflow.processing.generation_time_ms}ms
+                </span>
+                <span className="flex items-center gap-1.5 text-emerald-600 font-bold">
+                  <i className="ri-node-tree" />
+                  {selectedWorkflow.processing.nb_nodes} nœuds · {selectedWorkflow.processing.nb_steps} étapes
+                </span>
+                <span className="flex items-center gap-1.5 text-foreground-400">
+                  <i className="ri-time-line" />
+                  Runtime estimé {selectedWorkflow.processing.estimated_runtime_ms}ms
+                </span>
+                <span className="flex items-center gap-1.5 text-foreground-400">
+                  <i className="ri-loop-right-line" />
+                  ~{selectedWorkflow.processing.estimated_monthly_executions} exécutions/mois
+                </span>
+              </div>
+            </div>
+          </section>
+
+          {/* ═══ 1. WORKFLOW STEPS ═══ */}
+          {activeOutputTab === 'steps' && (
+            <section className="py-8 sm:py-10">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="rounded-3xl bg-white border border-background-200 p-6 sm:p-8 mb-6">
+                  <div className="flex items-center gap-3 mb-5">
+                    <div className="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center">
+                      <i className="ri-list-ordered text-emerald-700 text-2xl" />
+                    </div>
+                    <div>
+                      <h2 className="font-heading text-xl font-bold text-foreground-950">{selectedWorkflow.scenario.titre}</h2>
+                      <div className="flex items-center gap-2 mt-1 text-xs text-foreground-400">
+                        <span className="font-bold text-emerald-700">{selectedWorkflow.scenario.autorite}</span>
+                        <span>·</span>
+                        <span>{selectedWorkflow.scenario.secteur}</span>
+                        <span>·</span>
+                        <span>{selectedWorkflow.scenario.contexte.split('—')[0].trim()}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-4 rounded-xl bg-background-50 border border-background-100 mb-6">
+                    <p className="text-sm text-foreground-600 leading-relaxed"><strong className="text-foreground-800">Processus source :</strong> {selectedWorkflow.scenario.processus_source}</p>
+                  </div>
+                </div>
+
+                <div className="mb-5">
+                  <h3 className="font-heading text-lg font-bold text-foreground-950 mb-1">{selectedWorkflow.steps.length} Étapes Séquentielles</h3>
+                  <p className="text-sm text-foreground-500">Chaque étape est exécutable — dépendances, type de nœud, action concrète</p>
+                </div>
+
+                <div className="relative">
+                  <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-emerald-200" />
+                  <div className="space-y-4">
+                    {selectedWorkflow.steps.map(step => (
+                      <div key={step.step} className="relative pl-14">
+                        <div className={`absolute left-3 w-7 h-7 rounded-full flex items-center justify-center border-2 ${step.critical ? 'bg-red-50 border-red-300 text-red-700' : 'bg-emerald-50 border-emerald-300 text-emerald-700'} z-10`}>
+                          <span className="text-[10px] font-black">{step.step}</span>
+                        </div>
+                        <div className={`rounded-2xl bg-white border p-4 ${step.critical ? 'border-red-200' : 'border-background-200'}`}>
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 flex-wrap mb-1">
+                                <h4 className="text-sm font-bold text-foreground-950">{step.name}</h4>
+                                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200 font-mono">{step.node_type}</span>
+                                {step.critical && (
+                                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200 font-bold">CRITIQUE</span>
+                                )}
+                              </div>
+                              <p className="text-xs text-foreground-600 mb-2">{step.description}</p>
+                              <code className="text-[11px] bg-foreground-950 text-emerald-400 px-3 py-1.5 rounded-lg block font-mono">{step.action}</code>
+                              {step.depends_on.length > 0 && (
+                                <div className="mt-2 flex items-center gap-1 text-[10px] text-foreground-400">
+                                  <i className="ri-git-merge-line" />Dépend de : {step.depends_on.map(d => `Step ${d}`).join(', ')}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* ═══ 2. n8n NODE STRUCTURE ═══ */}
+          {activeOutputTab === 'n8n' && (
+            <section className="py-8 sm:py-10">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="mb-6">
+                  <h2 className="font-heading text-xl font-bold text-foreground-950 mb-1">{selectedWorkflow.n8n_structure.nodes.length} Nœuds n8n — Structure JSON Importable</h2>
+                  <p className="text-sm text-foreground-500">Format compatible n8n import direct (Ctrl+Imp → Import from JSON)</p>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                  {selectedWorkflow.n8n_structure.nodes.map(node => {
+                    const isTrigger = node.type.includes('ScheduleTrigger') || node.type.includes('scheduleTrigger');
+                    const isFunction = node.type.includes('function') || node.type.includes('Function');
+                    const isHttp = node.type.includes('httpRequest') || node.type.includes('HttpRequest');
+                    return (
+                      <div key={node.id} className={`rounded-2xl bg-white border p-4 ${isTrigger ? 'border-amber-200 bg-amber-50/30' : isFunction ? 'border-sky-200 bg-sky-50/20' : isHttp ? 'border-emerald-200 bg-emerald-50/20' : 'border-background-200'}`}>
+                        <div className="flex items-center gap-2 mb-3">
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isTrigger ? 'bg-amber-100 text-amber-700' : isFunction ? 'bg-sky-100 text-sky-700' : isHttp ? 'bg-emerald-100 text-emerald-700' : 'bg-background-100 text-foreground-500'}`}>
+                            <i className={`${isTrigger ? 'ri-time-line' : isFunction ? 'ri-code-line' : isHttp ? 'ri-link' : 'ri-git-commit-line'} text-sm`} />
+                          </div>
+                          <div>
+                            <span className="text-sm font-bold text-foreground-950 block">{node.name}</span>
+                            <span className="text-[10px] text-foreground-400 font-mono">{node.type.split('.').pop()}</span>
+                          </div>
+                        </div>
+                        <div className="rounded-xl bg-foreground-950 p-4 overflow-x-auto">
+                          <pre className="text-xs text-emerald-400 font-mono leading-relaxed whitespace-pre">
+{JSON.stringify({ id: node.id, type: node.type, position: node.position, parameters: node.parameters }, null, 2)}
+                          </pre>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="mt-5 flex justify-end">
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(JSON.stringify(selectedWorkflow.n8n_structure, null, 2));
+                    }}
+                    className="flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-foreground-950 text-background-50 text-sm font-bold hover:bg-foreground-800 transition-colors cursor-pointer whitespace-nowrap"
+                  >
+                    <i className="ri-file-copy-line" />Copier le workflow complet (JSON)
+                  </button>
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* ═══ 3. TRIGGER EVENTS ═══ */}
+          {activeOutputTab === 'triggers' && (
+            <section className="py-8 sm:py-10">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="rounded-3xl bg-white border border-background-200 p-6 sm:p-8">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center">
+                      <i className="ri-flashlight-line text-amber-700 text-2xl" />
+                    </div>
+                    <div>
+                      <h2 className="font-heading text-xl font-bold text-foreground-950">Trigger Configuration</h2>
+                      <p className="text-sm text-foreground-500">Comment et quand le workflow est déclenché</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                    <div className="p-5 rounded-2xl bg-amber-50 border border-amber-200">
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-200 text-amber-700 font-bold uppercase">{selectedWorkflow.trigger.type}</span>
+                        <span className="text-xs font-bold text-amber-700">Trigger Type</span>
+                      </div>
+                      <div className="rounded-lg bg-foreground-950 p-4 mb-3">
+                        <code className="text-xs text-amber-400 font-mono">{selectedWorkflow.trigger.config}</code>
+                      </div>
+                      <p className="text-xs text-foreground-600">{selectedWorkflow.trigger.description}</p>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="p-4 rounded-2xl bg-background-50 border border-background-200">
+                        <span className="text-[10px] font-bold text-foreground-400 uppercase tracking-wider block mb-1">Planification</span>
+                        <span className="text-sm text-foreground-700 font-bold">{selectedWorkflow.trigger.schedule}</span>
+                      </div>
+
+                      {selectedWorkflow.trigger.payload_sample && (
+                        <div className="p-4 rounded-2xl bg-background-50 border border-background-200">
+                          <span className="text-[10px] font-bold text-foreground-400 uppercase tracking-wider block mb-2">Payload Sample</span>
+                          <div className="rounded-lg bg-foreground-950 p-3">
+                            <pre className="text-[11px] text-emerald-400 font-mono leading-relaxed whitespace-pre">
+                              {JSON.stringify(selectedWorkflow.trigger.payload_sample, null, 2)}
+                            </pre>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-100">
+                        <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider block mb-1">Déclenchement Manuel</span>
+                        <span className="text-xs text-emerald-800">
+                          {selectedWorkflow.trigger.type === 'cron'
+                            ? 'Bouton "Force Run" dans le dashboard n8n → exécution immédiate sans attendre le cron.'
+                            : 'Webhook POST disponible pour déclenchement programmatique.'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* ═══ 4. DATA I/O ═══ */}
+          {activeOutputTab === 'io' && (
+            <section className="py-8 sm:py-10">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="mb-6">
+                  <h2 className="font-heading text-xl font-bold text-foreground-950 mb-1">{selectedWorkflow.node_io.length} Nœuds documentés — Entrées/Sorties</h2>
+                  <p className="text-sm text-foreground-500">Chaque nœud : inputs (source, type, required) → outputs (destination, format)</p>
+                </div>
+                <div className="space-y-4">
+                  {selectedWorkflow.node_io.map((nio, i) => (
+                    <div key={i} className="rounded-2xl bg-white border border-background-200 overflow-hidden">
+                      <div className="px-5 py-3 bg-emerald-50/50 border-b border-emerald-100 flex items-center gap-2">
+                        <i className="ri-git-branch-line text-emerald-700" />
+                        <span className="text-sm font-bold text-foreground-950">{nio.node_name}</span>
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-mono">{nio.node_type}</span>
+                      </div>
+                      <div className="p-5 grid grid-cols-1 lg:grid-cols-2 gap-5">
+                        <div>
+                          <span className="text-[10px] font-bold text-foreground-400 uppercase tracking-wider block mb-2">Inputs ({nio.inputs.length})</span>
+                          <div className="space-y-2">
+                            {nio.inputs.map((inp, j) => (
+                              <div key={j} className="p-3 rounded-xl bg-background-50 border border-background-100">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="text-xs font-bold text-foreground-800 font-mono">{inp.field}</span>
+                                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-sky-100 text-sky-700 font-mono">{inp.type}</span>
+                                  {inp.required && <span className="text-[10px] text-red-500 font-bold">• REQUIRED</span>}
+                                </div>
+                                <p className="text-[10px] text-foreground-500 mb-0.5">{inp.description}</p>
+                                <span className="text-[10px] text-foreground-400">Source : {inp.source}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <span className="text-[10px] font-bold text-foreground-400 uppercase tracking-wider block mb-2">Outputs ({nio.outputs.length})</span>
+                          <div className="space-y-2">
+                            {nio.outputs.map((outp, j) => (
+                              <div key={j} className="p-3 rounded-xl bg-background-50 border border-background-100">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="text-xs font-bold text-foreground-800 font-mono">{outp.field}</span>
+                                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 font-mono">{outp.type}</span>
+                                </div>
+                                <p className="text-[10px] text-foreground-500 mb-0.5">{outp.description}</p>
+                                <span className="text-[10px] text-foreground-400">→ {outp.destination}</span>
+                                <div className="mt-1 rounded bg-foreground-950 p-2">
+                                  <code className="text-[10px] text-emerald-400 font-mono break-all">{outp.format}</code>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* ═══ 5. ERROR HANDLING ═══ */}
+          {activeOutputTab === 'errors' && (
+            <section className="py-8 sm:py-10">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="mb-6">
+                  <h2 className="font-heading text-xl font-bold text-foreground-950 mb-1">{selectedWorkflow.error_handling.length} Stratégies de Résilience</h2>
+                  <p className="text-sm text-foreground-500">Détection, recovery, retry, fallback et alerting pour chaque nœud critique</p>
+                </div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  {selectedWorkflow.error_handling.map((eh, i) => (
+                    <div key={i} className="rounded-2xl bg-white border border-background-200 p-5">
+                      <div className="flex items-start gap-3 mb-4">
+                        <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center flex-shrink-0">
+                          <i className="ri-shield-flash-line text-red-600 text-lg" />
+                        </div>
+                        <div>
+                          <h3 className="text-sm font-bold text-foreground-950 mb-1">{eh.node_name}</h3>
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-50 text-red-700 border border-red-200 font-mono">{eh.error_type}</span>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center text-xs p-2 rounded-lg bg-background-50">
+                          <span className="text-foreground-500">Probabilité</span>
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${eh.probability === 'elevee' ? 'bg-red-100 text-red-700' : eh.probability === 'moyenne' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}`}>{eh.probability}</span>
+                        </div>
+                        <div className="p-2.5 rounded-lg bg-sky-50 border border-sky-100">
+                          <span className="text-[10px] font-bold text-sky-600 uppercase block mb-0.5">Détection</span>
+                          <span className="text-xs text-sky-800">{eh.detection}</span>
+                        </div>
+                        <div className="p-2.5 rounded-lg bg-emerald-50 border border-emerald-100">
+                          <span className="text-[10px] font-bold text-emerald-600 uppercase block mb-0.5">Recovery</span>
+                          <span className="text-xs text-emerald-800">{eh.recovery}</span>
+                        </div>
+                        <div className="p-2.5 rounded-lg bg-amber-50 border border-amber-100">
+                          <span className="text-[10px] font-bold text-amber-600 uppercase block mb-0.5">Retry Strategy</span>
+                          <span className="text-xs text-amber-800">{eh.retry_strategy}</span>
+                        </div>
+                        <div className="p-2.5 rounded-lg bg-red-50 border border-red-100">
+                          <span className="text-[10px] font-bold text-red-500 uppercase block mb-0.5">Fallback</span>
+                          <span className="text-xs text-red-700">{eh.fallback_action}</span>
+                        </div>
+                        <div className="p-2.5 rounded-lg bg-foreground-950">
+                          <span className="text-[10px] font-bold text-gray-400 uppercase block mb-0.5">Alert</span>
+                          <span className="text-xs text-amber-400 font-bold">{eh.alert_target}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* ═══ 6. AUTOMATION SCORE ═══ */}
+          {activeOutputTab === 'score' && (
+            <section className="py-8 sm:py-10">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="rounded-3xl bg-white border border-background-200 p-6 sm:p-8">
+                  <div className="text-center mb-8">
+                    <div className={`w-24 h-24 mx-auto mb-4 rounded-full ${SCORE_BG(selectedWorkflow.automation_score.overall)} flex items-center justify-center`}>
+                      <span className={`text-3xl font-black ${SCORE_COLOR(selectedWorkflow.automation_score.overall)}`}>{selectedWorkflow.automation_score.overall}</span>
+                    </div>
+                    <h2 className="font-heading text-xl font-bold text-foreground-950 mb-1">Score d'Automatisation</h2>
+                    <p className="text-sm text-foreground-500">Sur 100 — {selectedWorkflow.automation_score.benchmark}</p>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
+                    {Object.entries(selectedWorkflow.automation_score.categories).map(([key, value]) => (
+                      <div key={key} className="p-4 rounded-xl bg-background-50 border border-background-200">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-[10px] font-bold text-foreground-400 uppercase tracking-wider">{key.replace(/_/g, ' ')}</span>
+                          <span className={`text-lg font-black ${SCORE_COLOR(value)}`}>{value}</span>
+                        </div>
+                        <div className="w-full h-2 rounded-full bg-background-200 overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all ${value >= 90 ? 'bg-emerald-500' : value >= 75 ? 'bg-amber-500' : 'bg-red-500'}`}
+                            style={{ width: `${value}%` }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="p-5 rounded-2xl bg-emerald-50 border border-emerald-200">
+                    <div className="flex items-center gap-2 mb-2">
+                      <i className="ri-lightbulb-line text-emerald-700" />
+                      <span className="text-sm font-bold text-emerald-800">Recommandation</span>
+                    </div>
+                    <p className="text-xs text-emerald-700 leading-relaxed">{selectedWorkflow.automation_score.recommandation}</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+          )}
+        </>
+      )}
+
+      {/* Empty State */}
+      {!selectedWorkflow && !processing && !error && (
+        <section className="py-20 text-center">
+          <div className="max-w-md mx-auto px-4">
+            <div className="w-20 h-20 mx-auto mb-5 rounded-full bg-emerald-50 flex items-center justify-center">
+              <i className="ri-flow-chart text-emerald-500 text-3xl" />
+            </div>
+            <h2 className="font-heading text-xl font-bold text-foreground-950 mb-2">Prêt à orchestrer</h2>
+            <p className="text-sm text-foreground-500">Sélectionnez un scénario de conformité ci-dessus, ou décrivez votre propre exigence pour générer un workflow n8n exécutable complet.</p>
+            <div className="flex flex-wrap justify-center gap-2 mt-5">
+              <span className="text-[10px] px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">Steps</span>
+              <i className="ri-arrow-right-line text-foreground-300 self-center" />
+              <span className="text-[10px] px-2.5 py-1 rounded-full bg-sky-50 text-sky-700 border border-sky-200">n8n JSON</span>
+              <i className="ri-arrow-right-line text-foreground-300 self-center" />
+              <span className="text-[10px] px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200">Triggers</span>
+              <i className="ri-arrow-right-line text-foreground-300 self-center" />
+              <span className="text-[10px] px-2.5 py-1 rounded-full bg-red-50 text-red-700 border border-red-200">Error Handling</span>
+              <i className="ri-arrow-right-line text-foreground-300 self-center" />
+              <span className="text-[10px] px-2.5 py-1 rounded-full bg-foreground-100 text-foreground-600 border border-foreground-200 font-mono">Score 0-100</span>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Cross-link */}
+      <section className="py-12 sm:py-16 bg-background-50 border-t border-background-200/70">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8">
+            <h2 className="font-heading text-2xl sm:text-3xl font-bold text-foreground-950 mb-2">Écosystème Orchestrator — Accès Rapide</h2>
+            <p className="text-foreground-600">Navigation vers les modules connectés du KOS Automation & Compliance.</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[
+              { label: 'Workflow Orchestrator', path: '/kos-workflow-orchestrator', icon: 'ri-flow-chart', color: '#059669', current: true },
+              { label: 'Regulatory Brain', path: '/kos-regulatory-brain', icon: 'ri-brain-line', color: '#D97757' },
+              { label: 'Compliance Automates', path: '/kos-regulatory-compliance-automates', icon: 'ri-shield-check-line', color: '#059669' },
+              { label: 'Orchestrator Engine', path: '/kos-orchestrator-engine', icon: 'ri-settings-3-line', color: '#C2410C' },
+              { label: 'Automaton AI', path: '/kos-automaton', icon: 'ri-robot-line', color: '#0D7B5F' },
+              { label: 'Auto-Task Orchestrator', path: '/kos-auto-task-orchestrator', icon: 'ri-todo-line', color: '#8B3A4A' },
+              { label: 'Control Tower', path: '/kos-control-tower', icon: 'ri-radar-line', color: '#1A1A2E' },
+              { label: 'KOS Dashboard', path: '/kos-dashboard', icon: 'ri-dashboard-line', color: '#0D7B5F' },
+            ].map(link => (
+              <a key={link.path} href={link.path} className={`rounded-xl border p-4 text-center hover:shadow-md transition-all cursor-pointer block ${link.current ? 'border-emerald-300 bg-emerald-50/40 ring-2 ring-emerald-400' : 'border-background-200 bg-white hover:border-emerald-200'}`}>
+                <div className="w-10 h-10 mx-auto mb-2 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${link.color}15` }}>
+                  <i className={`${link.icon} text-lg`} style={{ color: link.color }} />
+                </div>
+                <span className="text-sm font-bold text-foreground-800">{link.label}</span>
+                {link.current && <span className="block text-[10px] text-emerald-700 font-bold mt-1">Vous êtes ici</span>}
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+    </hubLayout>
+  );
+}
+
+
+

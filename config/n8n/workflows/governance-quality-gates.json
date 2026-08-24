@@ -1,0 +1,245 @@
+{
+  "name": "KOS Governance Engine — Quality Gates",
+  "active": true,
+  "settings": {
+    "saveExecutionProgress": true,
+    "saveManualExecutions": true,
+    "timezone": "Africa/Douala",
+    "executionOrder": "v1"
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "hours", "hoursInterval": 2 }]
+        }
+      },
+      "id": "trigger-cron",
+      "name": "Every 2 Hours",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/governance_decisions?status=eq.rejected&order=created_at.desc&limit=20",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_ANON_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_ANON_KEY }}" }
+          ]
+        }
+      },
+      "id": "fetch-rejected-decisions",
+      "name": "Fetch Rejected Decisions",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [450, 200]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/quality_gates?passed=eq.false&checked_at=gt.NOW() - INTERVAL '7 days'&limit=20",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_ANON_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_ANON_KEY }}" }
+          ]
+        }
+      },
+      "id": "fetch-failed-quality",
+      "name": "Fetch Failed Quality Gates",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [450, 400]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/regulatory_compliance_checks?passed=eq.false&checked_at=gt.NOW() - INTERVAL '7 days'&limit=20",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_ANON_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_ANON_KEY }}" }
+          ]
+        }
+      },
+      "id": "fetch-failed-compliance",
+      "name": "Fetch Failed Compliance",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [450, 600]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ═══ KOS GOVERNANCE DASHBOARD SYNTHESIS ═══\nconst rejected = $input.all()[0]?.json || [];\nconst failedQuality = $input.all()[1]?.json || [];\nconst failedCompliance = $input.all()[2]?.json || [];\n\nconst now = new Date().toISOString();\nconst summary = {\n  timestamp: now,\n  rejected_decisions: rejected.length,\n  failed_quality_gates: failedQuality.length,\n  failed_compliance_checks: failedCompliance.length,\n  total_issues: rejected.length + failedQuality.length + failedCompliance.length,\n  risk_level: 'low',\n  requires_escalation: false,\n};\n\n// Risk level assessment\nif (summary.total_issues >= 10) {\n  summary.risk_level = 'high';\n  summary.requires_escalation = true;\n} else if (summary.total_issues >= 5) {\n  summary.risk_level = 'medium';\n  summary.requires_escalation = false;\n}\n\n// Collect entity details for remediation\nconst remediationQueue = [];\n\nfor (const d of rejected) {\n  remediationQueue.push({\n    type: 'rejected_decision',\n    entity_type: d.entity_type,\n    entity_id: d.entity_id,\n    score: d.overall_score,\n    decision_id: d.id,\n    created_at: d.created_at,\n  });\n}\n\nfor (const q of failedQuality) {\n  remediationQueue.push({\n    type: 'quality_gate',\n    entity_type: q.entity_type,\n    entity_id: q.entity_id,\n    score: q.quality_score,\n    created_at: q.checked_at,\n  });\n}\n\nfor (const c of failedCompliance) {\n  remediationQueue.push({\n    type: 'compliance_check',\n    regulator: c.regulator,\n    reference: c.reference,\n    score: c.compliance_score,\n    created_at: c.checked_at,\n  });\n}\n\nreturn { summary, remediationQueue };\n"
+      },
+      "id": "synthesize-governance",
+      "name": "Synthesize Governance Dashboard",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.summary.requires_escalation }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "check-escalation",
+      "name": "Requires Escalation?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://audit-service:3002/alert/critical",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "alerts", "value": "={{ JSON.stringify($json.remediationQueue.slice(0, 10)) }}" },
+            { "name": "triggered_by", "value": "KOS Governance Engine" },
+            { "name": "severity", "value": "={{ $json.summary.risk_level }}" },
+            { "name": "timestamp", "value": "={{ $now.toISOString() }}" }
+          ]
+        }
+      },
+      "id": "escalate-critical",
+      "name": "Escalate Critical Issues",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1050, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/remediation_logs",
+        "sendBody": true,
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_ANON_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_ANON_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "Prefer", "value": "return=minimal" }
+          ]
+        },
+        "bodyParameters": {
+          "parameters": [
+            { "name": "action_type", "value": "governance_auto_remediation" },
+            { "name": "status", "value": "pending" },
+            { "name": "details", "value": "={{ JSON.stringify($json) }}" }
+          ]
+        }
+      },
+      "id": "create-remediation-tasks",
+      "name": "Create Remediation Tasks",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1050, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://governance-engine:3004/quality-gate",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"entity_type\": \"governance_dashboard\",\n  \"entity_id\": \"dashboard-\" + Date.now(),\n  \"data\": $json.summary,\n  \"quality_dimensions\": [\"completeness\", \"timeliness\", \"consistency\"]\n}"
+      },
+      "id": "run-quality-gate",
+      "name": "Run Quality Gate (Local)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1250, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://memory-engine:3003/store",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"memory_type\": \"audit\",\n  \"title\": \"Governance Dashboard Snapshot\",\n  \"content\": JSON.stringify($json.summary),\n  \"tags\": [\"governance\", \"dashboard\", \"auto\"],\n  \"source\": \"n8n-governance-engine\",\n  \"confidence\": 0.95\n}"
+      },
+      "id": "store-memory",
+      "name": "Store Governance Memory",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1450, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://audit-service:3002/log",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "event", "value": "governance_cycle_complete" },
+            { "name": "service", "value": "n8n-governance-engine" },
+            { "name": "payload", "value": "={{ JSON.stringify($json.summary) }}" },
+            { "name": "timestamp", "value": "={{ $now.toISOString() }}" }
+          ]
+        }
+      },
+      "id": "audit-log",
+      "name": "Audit Trail",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1650, 300]
+    }
+  ],
+  "connections": {
+    "Every 2 Hours": {
+      "main": [
+        [
+          { "node": "Fetch Rejected Decisions", "type": "main", "index": 0 },
+          { "node": "Fetch Failed Quality Gates", "type": "main", "index": 0 },
+          { "node": "Fetch Failed Compliance", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Fetch Rejected Decisions": {
+      "main": [[ { "node": "Synthesize Governance Dashboard", "type": "main", "index": 0 } ]]
+    },
+    "Fetch Failed Quality Gates": {
+      "main": [[ { "node": "Synthesize Governance Dashboard", "type": "main", "index": 0 } ]]
+    },
+    "Fetch Failed Compliance": {
+      "main": [[ { "node": "Synthesize Governance Dashboard", "type": "main", "index": 0 } ]]
+    },
+    "Synthesize Governance Dashboard": {
+      "main": [[ { "node": "Requires Escalation?", "type": "main", "index": 0 } ]]
+    },
+    "Requires Escalation?": {
+      "main": [
+        [
+          { "node": "Escalate Critical Issues", "type": "main", "index": 0 },
+          { "node": "Create Remediation Tasks", "type": "main", "index": 0 }
+        ],
+        [{ "node": "Run Quality Gate (Local)", "type": "main", "index": 0 }]
+      ]
+    },
+    "Escalate Critical Issues": {
+      "main": [[ { "node": "Run Quality Gate (Local)", "type": "main", "index": 0 } ]]
+    },
+    "Create Remediation Tasks": {
+      "main": [[ { "node": "Run Quality Gate (Local)", "type": "main", "index": 0 } ]]
+    },
+    "Run Quality Gate (Local)": {
+      "main": [[ { "node": "Store Governance Memory", "type": "main", "index": 0 } ]]
+    },
+    "Store Governance Memory": {
+      "main": [[ { "node": "Audit Trail", "type": "main", "index": 0 } ]]
+    }
+  }
+}

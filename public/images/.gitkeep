@@ -1,0 +1,17 @@
+# Dossier pour les images statiques optimisées
+
+Ce dossier contient les images WebP optimisées pour améliorer les performances (Core Web Vitals).
+
+## Structure recommandée :
+- hero/ : Images hero des pages principales
+- services/ : Images des services
+- team/ : Photos de l'équipe
+- partners/ : Logos des partenaires
+- blog/ : Images des articles de blog
+- case-studies/ : Images des études de cas
+
+## Optimisation :
+- Format : WebP
+- Compression : 80-85% qualité
+- Dimensions explicites pour éviter CLS
+- Noms descriptifs pour le SEO

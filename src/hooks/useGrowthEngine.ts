@@ -1,0 +1,371 @@
+import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '@/lib/supabase';
+import {
+  commercialPipeline as mockPipeline,
+  revenueForecast as mockForecast,
+  revenueActuals as mockActuals,
+  predictiveLeadScores as mockScores,
+  nurturingSequences as mockSequences,
+  growthEngineKPIs as mockKPIs,
+} from '@/mocks/khepraGrowthEngine';
+import { logHookAudit, createAuditEntry, type HookAuditEntry } from '@/utils/hookAuditLogger';
+
+interface PipelineDeal {
+  id: string;
+  deal_name: string;
+  organization: string;
+  sector: string;
+  country: string;
+  pipeline_stage: string;
+  stage_label: string;
+  deal_value_fcfa: number;
+  win_probability: number;
+  expected_close_date: string;
+  days_in_pipeline: number;
+  lead_source: string;
+  assigned_to: string;
+  next_action: string | null;
+  competitors: string[];
+  differentiator: string | null;
+  risk_flags: string[];
+  created_at: string;
+  updated_at: string;
+}
+
+interface NurturingSequence {
+  id: string;
+  sequence_name: string;
+  sequence_type: string;
+  total_enrollments: number;
+  active_enrollments: number;
+  completed_enrollments: number;
+  unsubscribed: number;
+  open_rate: number;
+  click_rate: number;
+  response_rate: number;
+  conversion_rate: number;
+  avg_touches: number;
+  steps: { step: number; subject: string; delay_hours: number; open_rate: number; click_rate: number }[];
+  enrolled_leads: { lead: string; stage: string; days_since_last_action: number | null; status: string }[];
+  performance_30d: { opened: number; clicked: number; replied: number; converted: number };
+  status: string;
+  last_updated: string;
+}
+
+interface RevenueEntry {
+  month: string;
+  actual: number | null;
+  target: number;
+  forecast: number | null;
+  confidence: number | null;
+  deals_expected_close: number | null;
+  deals_pipeline_value: number | null;
+  weighted_pipeline: number | null;
+  notes: string | null;
+  forecast_type: string | null;
+}
+
+interface LeadScore {
+  id: string;
+  deal_ref: string;
+  deal_name: string;
+  organization: string;
+  predictive_score: number;
+  conversion_probability: number;
+  churn_risk: string;
+  churn_risk_label: string;
+  firmographic_score: number;
+  behavioral_score: number;
+  engagement_score: number;
+  regulatory_urgency_score: number;
+  scoring_factors: { factor: string; weight: number; score: number; impact: string }[];
+  next_best_action: string;
+  estimated_close_date: string;
+  pipeline_value_fcfa: number;
+  expected_revenue_fcfa: number;
+  last_scored_at: string;
+  score_trend: string;
+}
+
+interface GrowthKPIs {
+  total_pipeline: number;
+  weighted_pipeline: number;
+  deals_count: number;
+  avg_win_probability: number;
+  avg_deal_size: number;
+  avg_days_in_pipeline: number;
+  hot_deals: number;
+  warm_deals: number;
+  cold_deals: number;
+  deals_won_ytd: number;
+  deals_won_value_ytd: number;
+  deals_lost_ytd: number;
+  deals_lost_value_ytd: number;
+  win_rate_ytd: number;
+  revenue_actual_ytd: number;
+  revenue_target_ytd: number;
+  revenue_forecast_h2: number;
+  revenue_target_h2: number;
+  average_score: number;
+  high_score_leads: number;
+  medium_score_leads: number;
+  low_score_leads: number;
+  active_nurturing_enrollments: number;
+  nurturing_conversion_rate: number;
+  nurturing_avg_open_rate: number;
+  nurturing_avg_click_rate: number;
+}
+
+export interface GrowthAuditTrail {
+  pipeline: HookAuditEntry | null;
+  sequences: HookAuditEntry | null;
+  revenue: HookAuditEntry | null;
+  scores: HookAuditEntry | null;
+  kpis: HookAuditEntry | null;
+}
+
+interface UseGrowthEngineReturn {
+  pipeline: PipelineDeal[];
+  scores: LeadScore[];
+  sequences: NurturingSequence[];
+  forecast: RevenueEntry[];
+  actuals: RevenueEntry[];
+  kpis: GrowthKPIs;
+  loading: boolean;
+  error: string | null;
+  usingLiveData: boolean;
+  refresh: () => Promise<void>;
+  auditTrail: GrowthAuditTrail;
+}
+
+function parseKpiValue(value: number): number {
+  return Number(value) || 0;
+}
+
+function mapDbDeal(db: any): PipelineDeal {
+  return {
+    id: db.id,
+    deal_name: db.deal_name,
+    organization: db.organization,
+    sector: db.sector,
+    country: db.country,
+    pipeline_stage: db.pipeline_stage,
+    stage_label: db.stage_label,
+    deal_value_fcfa: Number(db.deal_value_fcfa),
+    win_probability: Number(db.win_probability),
+    expected_close_date: db.expected_close_date,
+    days_in_pipeline: Number(db.days_in_pipeline),
+    lead_source: db.lead_source,
+    assigned_to: db.assigned_to,
+    next_action: db.next_action || null,
+    competitors: Array.isArray(db.competitors) ? db.competitors : [],
+    differentiator: db.differentiator || null,
+    risk_flags: Array.isArray(db.risk_flags) ? db.risk_flags : [],
+    created_at: db.created_at,
+    updated_at: db.updated_at,
+  };
+}
+
+function mapDbSequence(db: any): NurturingSequence {
+  return {
+    id: db.id,
+    sequence_name: db.sequence_name,
+    sequence_type: db.sequence_type,
+    total_enrollments: Number(db.total_enrollments),
+    active_enrollments: Number(db.active_enrollments),
+    completed_enrollments: Number(db.completed_enrollments),
+    unsubscribed: Number(db.unsubscribed),
+    open_rate: Number(db.open_rate),
+    click_rate: Number(db.click_rate),
+    response_rate: Number(db.response_rate),
+    conversion_rate: Number(db.conversion_rate),
+    avg_touches: Number(db.avg_touches),
+    steps: Array.isArray(db.steps_data) ? db.steps_data : [],
+    enrolled_leads: Array.isArray(db.enrolled_leads_data) ? db.enrolled_leads_data : [],
+    performance_30d: typeof db.performance_30d === 'object' && db.performance_30d ? db.performance_30d : { opened: 0, clicked: 0, replied: 0, converted: 0 },
+    status: db.status,
+    last_updated: db.last_updated,
+  };
+}
+
+function mapDbScore(db: any, index: number): LeadScore {
+  const signals = typeof db.signals === 'object' && db.signals ? db.signals : {};
+  const scoringFactors = signals.scoring_factors || [];
+  return {
+    id: `SCR-${String(index + 1).padStart(3, '0')}`,
+    deal_ref: signals.deal_ref || '',
+    deal_name: signals.deal_name || db.lead_name || db.company,
+    organization: db.company || db.lead_name,
+    predictive_score: Number(db.predictive_score),
+    conversion_probability: Number(db.conversion_probability),
+    churn_risk: db.risk_of_churn || 'medium',
+    churn_risk_label: signals.churn_risk_label || (db.risk_of_churn === 'low' ? 'Faible' : db.risk_of_churn === 'high' ? 'Élevé' : 'Moyen'),
+    firmographic_score: Number(db.firmographic_score),
+    behavioral_score: Number(db.behavioral_score),
+    engagement_score: Number(db.engagement_score),
+    regulatory_urgency_score: Number(signals.regulatory_urgency_score) || 0,
+    scoring_factors: scoringFactors,
+    next_best_action: db.next_best_action || '',
+    estimated_close_date: signals.estimated_close_date || '',
+    pipeline_value_fcfa: Number(signals.pipeline_value_fcfa) || Number(db.estimated_value_fcfa) || 0,
+    expected_revenue_fcfa: Number(signals.expected_revenue_fcfa) || 0,
+    last_scored_at: db.analyzed_at || db.created_at || new Date().toISOString(),
+    score_trend: signals.score_trend || 'stable',
+  };
+}
+
+export function useGrowthEngine(): UseGrowthEngineReturn {
+  const [pipeline, setPipeline] = useState<PipelineDeal[]>(mockPipeline);
+  const [scores, setScores] = useState<LeadScore[]>(mockScores);
+  const [sequences, setSequences] = useState<NurturingSequence[]>(mockSequences);
+  const [forecast, setForecast] = useState<RevenueEntry[]>(mockForecast);
+  const [actuals, setActuals] = useState<RevenueEntry[]>(mockActuals);
+  const [kpis, setKpis] = useState<GrowthKPIs>(mockKPIs);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [usingLiveData, setUsingLiveData] = useState(false);
+  const [auditTrail, setAuditTrail] = useState<GrowthAuditTrail>({
+    pipeline: null, sequences: null, revenue: null, scores: null, kpis: null,
+  });
+
+  const loadAll = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    let liveUsed = false;
+    const startTime = performance.now();
+
+    try {
+      const [
+        dealsRes,
+        seqRes,
+        revRes,
+        kpiRes,
+        scoreRes,
+      ] = await Promise.all([
+        supabase.from('pipeline_deals').select('*').order('deal_value_fcfa', { ascending: false }),
+        supabase.from('nurturing_sequences').select('*').order('total_enrollments', { ascending: false }),
+        supabase.from('revenue_data').select('*').order('id', { ascending: true }),
+        supabase.from('growth_kpis').select('*'),
+        supabase.from('lead_scores').select('*').order('predictive_score', { ascending: false }),
+      ]);
+
+      const durationMs = Math.round(performance.now() - startTime);
+
+      const pEntry = !dealsRes.error && dealsRes.data && dealsRes.data.length > 0
+        ? createAuditEntry('useGrowthEngine', 'supabase', dealsRes.data.length, 'pipeline_deals', undefined, durationMs)
+        : createAuditEntry('useGrowthEngine', 'mock_fallback', mockPipeline.length, 'pipeline_deals', 'Empty or error', durationMs);
+
+      const sEntry = !seqRes.error && seqRes.data && seqRes.data.length > 0
+        ? createAuditEntry('useGrowthEngine', 'supabase', seqRes.data.length, 'nurturing_sequences', undefined, durationMs)
+        : createAuditEntry('useGrowthEngine', 'mock_fallback', mockSequences.length, 'nurturing_sequences', 'Empty or error', durationMs);
+
+      const rEntry = !revRes.error && revRes.data && revRes.data.length > 0
+        ? createAuditEntry('useGrowthEngine', 'supabase', revRes.data.length, 'revenue_data', undefined, durationMs)
+        : createAuditEntry('useGrowthEngine', 'mock_fallback', mockActuals.length, 'revenue_data', 'Empty or error', durationMs);
+
+      const scEntry = !scoreRes.error && scoreRes.data && scoreRes.data.length > 0
+        ? createAuditEntry('useGrowthEngine', 'supabase', scoreRes.data.length, 'lead_scores', undefined, durationMs)
+        : createAuditEntry('useGrowthEngine', 'mock_fallback', mockScores.length, 'lead_scores', 'Empty or error', durationMs);
+
+      const kEntry = !kpiRes.error && kpiRes.data && kpiRes.data.length > 0
+        ? createAuditEntry('useGrowthEngine', 'supabase', kpiRes.data.length, 'growth_kpis', undefined, durationMs)
+        : createAuditEntry('useGrowthEngine', 'mock_fallback', 0, 'growth_kpis', 'Empty or error', durationMs);
+
+      logHookAudit(pEntry);
+      logHookAudit(sEntry);
+      logHookAudit(rEntry);
+      logHookAudit(scEntry);
+      logHookAudit(kEntry);
+      setAuditTrail({ pipeline: pEntry, sequences: sEntry, revenue: rEntry, scores: scEntry, kpis: kEntry });
+
+      // Pipeline deals
+      if (!dealsRes.error && dealsRes.data && dealsRes.data.length > 0) {
+        setPipeline(dealsRes.data.map(mapDbDeal));
+        liveUsed = true;
+      }
+
+      // Nurturing sequences
+      if (!seqRes.error && seqRes.data && seqRes.data.length > 0) {
+        setSequences(seqRes.data.map(mapDbSequence));
+        liveUsed = true;
+      }
+
+      // Revenue data
+      if (!revRes.error && revRes.data && revRes.data.length > 0) {
+        const revEntries = revRes.data.map((r: any) => ({
+          month: r.month,
+          actual: r.actual ? Number(r.actual) : null,
+          target: Number(r.target),
+          forecast: r.forecast ? Number(r.forecast) : null,
+          confidence: r.confidence ? Number(r.confidence) : null,
+          deals_expected_close: r.deals_expected_close ? Number(r.deals_expected_close) : null,
+          deals_pipeline_value: r.deals_pipeline_value ? Number(r.deals_pipeline_value) : null,
+          weighted_pipeline: r.weighted_pipeline ? Number(r.weighted_pipeline) : null,
+          notes: r.notes || null,
+          forecast_type: r.forecast_type || null,
+        }));
+        setActuals(revEntries);
+        setForecast(revEntries.filter((r: RevenueEntry) => r.forecast !== null));
+        liveUsed = true;
+      }
+
+      // Lead scores
+      if (!scoreRes.error && scoreRes.data && scoreRes.data.length > 0) {
+        setScores(scoreRes.data.map(mapDbScore));
+        liveUsed = true;
+      }
+
+      // Growth KPIs
+      if (!kpiRes.error && kpiRes.data && kpiRes.data.length > 0) {
+        const kpiMap: Record<string, number> = {};
+        kpiRes.data.forEach((row: any) => {
+          kpiMap[row.key] = parseKpiValue(row.value);
+        });
+        setKpis({
+          total_pipeline: kpiMap.total_pipeline || 3770000000,
+          weighted_pipeline: kpiMap.weighted_pipeline || 1560500000,
+          deals_count: kpiMap.deals_count || 12,
+          avg_win_probability: kpiMap.avg_win_probability || 53.8,
+          avg_deal_size: kpiMap.avg_deal_size || 314166667,
+          avg_days_in_pipeline: kpiMap.avg_days_in_pipeline || 31,
+          hot_deals: kpiMap.hot_deals || 3,
+          warm_deals: kpiMap.warm_deals || 4,
+          cold_deals: kpiMap.cold_deals || 5,
+          deals_won_ytd: kpiMap.deals_won_ytd || 8,
+          deals_won_value_ytd: kpiMap.deals_won_value_ytd || 1920000000,
+          deals_lost_ytd: kpiMap.deals_lost_ytd || 4,
+          deals_lost_value_ytd: kpiMap.deals_lost_value_ytd || 680000000,
+          win_rate_ytd: kpiMap.win_rate_ytd || 66.7,
+          revenue_actual_ytd: kpiMap.revenue_actual_ytd || 1510000000,
+          revenue_target_ytd: kpiMap.revenue_target_ytd || 1540000000,
+          revenue_forecast_h2: kpiMap.revenue_forecast_h2 || 2475000000,
+          revenue_target_h2: kpiMap.revenue_target_h2 || 2080000000,
+          average_score: kpiMap.average_score || 74.3,
+          high_score_leads: kpiMap.high_score_leads || 3,
+          medium_score_leads: kpiMap.medium_score_leads || 5,
+          low_score_leads: kpiMap.low_score_leads || 4,
+          active_nurturing_enrollments: kpiMap.active_nurturing_enrollments || 2399,
+          nurturing_conversion_rate: kpiMap.nurturing_conversion_rate || 7.5,
+          nurturing_avg_open_rate: kpiMap.nurturing_avg_open_rate || 53,
+          nurturing_avg_click_rate: kpiMap.nurturing_avg_click_rate || 25,
+        });
+        liveUsed = true;
+      }
+    } catch (err: any) {
+      console.warn('[GrowthEngine] Supabase fetch failed, using mock data:', err.message);
+      setError(err.message);
+    } finally {
+      setUsingLiveData(liveUsed);
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadAll();
+  }, [loadAll]);
+
+  return { pipeline, scores, sequences, forecast, actuals, kpis, loading, error, usingLiveData, refresh: loadAll, auditTrail };
+}
+
+
+

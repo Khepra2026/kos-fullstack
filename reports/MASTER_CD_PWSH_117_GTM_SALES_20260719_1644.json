@@ -1,0 +1,93 @@
+{
+  "Audit": "MASTER CD PWSH 117 KOS GO TO MARKET SALES PIPELINE",
+  "Date": "2026-07-19T16:44:20.9288871+00:00",
+  "Environment": {
+    "Supabase": "2.109.1",
+    "PNPM": "11.13.1",
+    "Node": "v24.18.0"
+  },
+  "Segments": [
+    "PME Afrique Francophone",
+    "Institutions financières",
+    "Microfinance SFD/EMF",
+    "Cabinets Audit & Conseil",
+    "ONG / Programmes développement",
+    "Administrations"
+  ],
+  "SalesFunnel": {
+    "Leads": 1000,
+    "Qualified": 200,
+    "Demo": 80,
+    "Trial": 50,
+    "Paid": 20
+  },
+  "Offers": [
+    {
+      "Name": "FREE Diagnostic",
+      "Purpose": "Lead Generation",
+      "Price": "0 EUR"
+    },
+    {
+      "Name": "STARTER",
+      "Purpose": "PME",
+      "Price": "29 EUR/mois"
+    },
+    {
+      "Name": "PRO",
+      "Purpose": "Experts",
+      "Price": "99 EUR/mois"
+    },
+    {
+      "Name": "ENTERPRISE",
+      "Purpose": "Institutions",
+      "Price": "499 EUR/mois"
+    }
+  ],
+  "Channels": [
+    "LinkedIn Authority Marketing",
+    "SEO KOS Knowledge Hub",
+    "Webinars RegTech",
+    "Partnership Big Four",
+    "Institutions financières",
+    "Email Automation"
+  ],
+  "CRMStages": [
+    "Lead",
+    "Contacted",
+    "Discovery",
+    "Demo",
+    "Proposal",
+    "Negotiation",
+    "Won",
+    "Lost"
+  ],
+  "Automation": [
+    "Lead Capture",
+    "Email Sequence",
+    "Demo Booking",
+    "Trial Activation",
+    "Conversion Tracking",
+    "Customer Feedback"
+  ],
+  "KPIs": [
+    "MRR",
+    "ARR",
+    "CAC",
+    "LTV",
+    "Conversion Rate",
+    "Pipeline Value",
+    "Sales Cycle",
+    "Retention"
+  ],
+  "Scores": {
+    "MarketStrategy": 15,
+    "SalesPipeline": 15,
+    "CRM": 15,
+    "Acquisition": 15,
+    "Automation": 10,
+    "KPIs": 15,
+    "RevenueAlignment": 15
+  },
+  "BigFourScore": 100.0,
+  "Decision": "COMMERCIAL LAUNCH READY"
+}

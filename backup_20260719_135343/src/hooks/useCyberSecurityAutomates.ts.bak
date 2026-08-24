@@ -1,0 +1,121 @@
+import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '@/lib/supabase';
+
+export type { KOSCyberSecurityAutomate, CyberSecurityAutomateCategory };
+
+export interface CyberSecurityAutomatesKPIs {
+  total_agents: number;
+  deployed: number;
+  partial: number;
+  mock: number;
+  auto_enabled: number;
+  total_tasks: number;
+  avg_success_rate: number;
+  critical_agents: number;
+  high_priority: number;
+  categories: number;
+  vulns_blocked: number;
+  incidents_mitigated: number;
+  threats_detected: number;
+}
+
+export interface CyberSecurityAutomatesData {
+  automates: KOSCyberSecurityAutomate[];
+  categories: CyberSecurityAutomateCategory[];
+  kpis: CyberSecurityAutomatesKPIs;
+  isLive: boolean;
+}
+
+function mapAutomate(row: Record<string, unknown>): KOSCyberSecurityAutomate {
+  return {
+    id: row.id as string,
+    name: row.name as string,
+    category: row.category as string,
+    tech_stack: Array.isArray(row.tech_stack) ? row.tech_stack as string[] : [],
+    status: row.status as KOSCyberSecurityAutomate['status'],
+    version: row.version as string,
+    description: row.description as string,
+    capabilities: Array.isArray(row.capabilities) ? row.capabilities as string[] : [],
+    success_rate: Number(row.success_rate),
+    tasks_completed: Number(row.tasks_completed),
+    auto_enabled: Boolean(row.auto_enabled),
+    icon: row.icon as string,
+    color: row.color as string,
+    last_execution: row.last_execution as string,
+    priority: row.priority as KOSCyberSecurityAutomate['priority'],
+    kpis: Array.isArray(row.kpis) ? row.kpis as KOSCyberSecurityAutomate['kpis'] : [],
+  };
+}
+
+export function useCyberSecurityAutomates() {
+  const [kosData.data, setData] = useState<CyberSecurityAutomatesData>({
+    automates: [],
+    categories: [],
+    kpis: { total_agents: 0, deployed: 0, partial: 0, mock: 0, auto_enabled: 0, total_tasks: 0, avg_success_rate: 0, critical_agents: 0, high_priority: 0, categories: 0, vulns_blocked: 0, incidents_mitigated: 0, threats_detected: 0 },
+    isLive: false,
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const { data: automates, error: err } = await supabase
+        .from('kos_cyber_security_automates')
+        .select('*')
+        .order('success_rate', { ascending: false });
+
+      if (err) throw err;
+
+      const rows = (automates as Record<string, unknown>[]) || [];
+      const mapped = rows.map(mapAutomate);
+      const hasData = mapped.length > 0;
+
+      const deployedCount = mapped.filter(a => a.status === 'deployed').length;
+      const partialCount = mapped.filter(a => a.status === 'partial').length;
+      const autoCount = mapped.filter(a => a.auto_enabled).length;
+
+      const computedKPIs: CyberSecurityAutomatesKPIs = {
+        total_agents: mapped.length,
+        deployed: deployedCount,
+        partial: partialCount,
+        mock: mapped.filter(a => a.status === 'mock').length,
+        auto_enabled: autoCount,
+        total_tasks: mapped.reduce((s, a) => s + a.tasks_completed, 0),
+        avg_success_rate: mapped.length > 0 ? Math.round(mapped.reduce((s, a) => s + a.success_rate, 0) / mapped.length * 10) / 10 : 0,
+        critical_agents: mapped.filter(a => a.priority === 'critical').length,
+        high_priority: mapped.filter(a => a.priority === 'high').length,
+        categories: [...new Set(mapped.map(a => a.category))].length,
+        vulns_blocked: mapped.filter(a => a.category === 'app-security').reduce((s, a) => s + a.tasks_completed, 0) + mapped.filter(a => a.category === 'network-security').reduce((s, a) => s + a.tasks_completed, 0),
+        incidents_mitigated: mapped.filter(a => a.category === 'incident-response').reduce((s, a) => s + a.tasks_completed, 0),
+        threats_detected: mapped.filter(a => a.category === 'threat-intel').reduce((s, a) => s + a.tasks_completed, 0),
+      };
+
+      setData({
+        automates: mapped,
+        categories: mockCategories,
+        kpis: computedKPIs,
+        isLive: hasData,
+      });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Erreur inconnue';
+      setError(message);
+      setData({
+        automates: mockAutomates,
+        categories: mockCategories,
+        kpis: mockKPIs as CyberSecurityAutomatesKPIs,
+        isLive: false,
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  return { ...kosData.data, loading, error, refetch: fetchData };
+}

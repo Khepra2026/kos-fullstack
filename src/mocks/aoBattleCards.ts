@@ -1,0 +1,132 @@
+export const MOCK_AO_DATA = [
+  {
+    id: 'AO-001',
+    ref: 'AO-001/BCEAO/2026',
+    titre: 'Audit Contrôle Interne — Banque Centrale UEMOA',
+    organisme: 'BCEAO',
+    budget: '850 000 000 FCFA',
+    deadline: '15 Septembre 2026',
+    scoreKhepra: 96,
+    status: 'Critique',
+    forces: ['Expertise BCEAO reconnue — 5 missions similaires en 24 mois', 'Équipe dédiée disponible — 3 auditeurs certifiés COSO', 'Méthodologie propriétaire KOS Internal Control Framework™', 'Connaissance approfondie des circulaires 01/2017 et 03/2017'],
+    faiblesses: ['Délai de mobilisation : 3 semaines (concurrent A : 2 semaines)', 'Pas d\'antériorité directe avec cette direction BCEAO'],
+    concurrents: [
+      { nom: 'Concurrent A (Big Four)', forces: 'Présence permanente UEMOA, 12 auditeurs BCEAO certifiés', faiblesses: 'Coût 35% supérieur, équipe junior majoritaire, turnover élevé', prix: '1 150 000 000 FCFA' },
+      { nom: 'Concurrent B (Cabinet local)', forces: 'Prix agressif, connaissance terrain, réseau administration', faiblesses: 'Pas de méthodologie internationale, pas de certification COSO, équipe limitée', prix: '520 000 000 FCFA' },
+      { nom: 'Concurrent C (Spécialiste IT)', forces: 'Expertise cybersécurité, certification ISO 27001 lead auditor', faiblesses: 'Pas d\'expertise conformité bancaire, pas de références BCEAO', prix: '780 000 000 FCFA' },
+    ],
+    winThemes: [
+      'KOS Internal Control Framework™ : Méthodologie propriétaire alignée COSO 2013 + ISO 31000 + Circulaire BCEAO 01/2017',
+      'Value for Money : 30% moins cher que Big Four pour une qualité équivalente prouvée par 5 missions',
+      'Rapidité d\'exécution : 8 semaines vs 12 semaines (Concurrent A) grâce aux outils KOS automatisés',
+    ],
+    prixRecommande: '850 000 000 FCFA',
+    prixJustification: 'Aligné budget avec marge de 22%. Inclut diagnostic KOS offert (valeur 12M FCFA).',
+  },
+  {
+    id: 'AO-002',
+    ref: 'AO-002/GAFI/2026',
+    titre: 'Conformité LBC/FT — Groupe Bancaire Panafricain',
+    organisme: 'GAFI/GIABA',
+    budget: '620 000 000 FCFA',
+    deadline: '30 Août 2026',
+    scoreKhepra: 93,
+    status: 'Critique',
+    forces: ['Expertise LBC/FT — 8 mandats GAFI/GIABA en 3 ans', 'Outil KOS AML Screening™ — 40% plus rapide que la concurrence', 'Formation certifiante ACAMS incluse dans l\'offre', 'Connaissance des 40 Recommandations GAFI + textes UEMOA'],
+    faiblesses: ['Couverture CEMAC limitée (1 seul mandat)', 'Dépendance à 1 expert Lead LBC/FT'],
+    concurrents: [
+      { nom: 'Concurrent A (Big Four)', forces: 'Couverture panafricaine, 25 experts LBC/FT, partenariat WorldCheck', faiblesses: 'Prix premium, approche standardisée, délai 14 semaines', prix: '920 000 000 FCFA' },
+      { nom: 'Concurrent B (Spécialiste AML)', forces: 'Expertise technique GAFI, outil propriétaire de screening', faiblesses: 'Pas de présence Afrique, pas de connaissance BCEAO/COBAC', prix: '580 000 000 FCFA' },
+      { nom: 'Concurrent C (Cabinet juridique)', forces: 'Expertise juridique LBC/FT, réseau UEMOA', faiblesses: 'Pas de capacité IT/screening, pas d\'approche risque', prix: '440 000 000 FCFA' },
+    ],
+    winThemes: [
+      'Full-Service AML : Audit + Screening Tool + Formation certifiante en une offre intégrée',
+      'Rapidité : Résultats intermédiaires à J+15 grâce à KOS AML Screening™',
+      'Pérennité : Transfert de compétences via formation ACAMS + outil déployé en local',
+    ],
+    prixRecommande: '620 000 000 FCFA',
+    prixJustification: 'Prix compétitif vs Big Four (-33%). Offre intégrée justifiant le premium vs cabinets locaux.',
+  },
+  {
+    id: 'AO-003',
+    ref: 'AO-003/UEMOA/2026',
+    titre: 'Audit Organisationnel — Projet Régional UEMOA',
+    organisme: 'UEMOA',
+    budget: '480 000 000 FCFA',
+    deadline: '20 Octobre 2026',
+    scoreKhepra: 88,
+    status: 'Élevée',
+    forces: ['Expérience projets multilatéraux UEMOA/CEDEAO', 'Méthodologie KOS Transformation Framework™', 'Équipe bilingue FR/EN disponible', 'Bureau régional Lomé (hub UEMOA)'],
+    faiblesses: ['Moins de références que Big Four sur ce type de mission', 'Pas de bureau à Ouagadougou (siège UEMOA)'],
+    concurrents: [
+      { nom: 'Concurrent A (Big Four)', forces: '15+ projets UEMOA, bureau Ouagadougou, équipe dédiée secteur public', faiblesses: 'Prix très élevé, turnover consultants, approche standard', prix: '720 000 000 FCFA' },
+      { nom: 'Concurrent B (Cabinet régional)', forces: 'Ancrage local fort, réseau politique UEMOA', faiblesses: 'Méthodologie légère, pas d\'outils digitaux, délai long', prix: '350 000 000 FCFA' },
+    ],
+    winThemes: [
+      'Approche Transformation : Au-delà de l\'audit, une feuille de route opérationnelle',
+      'Rapport Qualité/Prix : Prestation Big Four à tarif adapté aux institutions régionales',
+      'Agilité : Équipe dédiée + outils KOS = livrables intermédiaires à J+20',
+    ],
+    prixRecommande: '480 000 000 FCFA',
+    prixJustification: 'Prix médian compétitif. Inclut un benchmark 5 institutions similaires (valeur 8M FCFA).',
+  },
+  {
+    id: 'AO-004',
+    ref: 'AO-004/BEPS/2026',
+    titre: 'Prix de Transfert — Multinationale Agroalimentaire',
+    organisme: 'OCDE/BEPS',
+    budget: '380 000 000 FCFA',
+    deadline: '25 Septembre 2026',
+    scoreKhepra: 91,
+    status: 'Critique',
+    forces: ['Expert Prix de Transfert — 12 mandats BEPS en Afrique', 'Outil KOS TP Benchmark™ — base de données UEMOA exclusive', 'Expérience secteur agroalimentaire (3 mandats similaires)'],
+    faiblesses: ['Pas de bureau dans le pays du siège du client', 'Documentation en anglais uniquement (client exige bilingue)'],
+    concurrents: [
+      { nom: 'Concurrent A (Big Four)', forces: 'Réseau mondial, benchmark 50 pays, documentation multilingue', faiblesses: 'Équipe junior UEMOA, prix 2x budget, délai 16 semaines', prix: '750 000 000 FCFA' },
+      { nom: 'Concurrent B (Économiste TP)', forces: 'Expertise technique pointue, publications académiques', faiblesses: 'Pas de capacité terrain Afrique, délai administratif long', prix: '310 000 000 FCFA' },
+    ],
+    winThemes: [
+      'Data UEMOA Exclusive : Base de benchmark prix de transfert la plus complète d\'Afrique francophone',
+      'Double Compétence : Prix de transfert + secteur agroalimentaire = compréhension métier',
+      'Documentation Bilingue : Livrables FR/EN inclus sans surcoût',
+    ],
+    prixRecommande: '380 000 000 FCFA',
+    prixJustification: 'Prix compétitif vs Big Four (-49%). Base de données UEMOA exclusive = avantage différenciant fort.',
+  },
+  {
+    id: 'AO-005',
+    ref: 'AO-005/BM/2026',
+    titre: 'Gouvernance SFD — Projet Inclusion Financière Banque Mondiale',
+    organisme: 'Banque Mondiale',
+    budget: '720 000 000 FCFA',
+    deadline: '10 Novembre 2026',
+    scoreKhepra: 85,
+    status: 'Élevée',
+    forces: ['Expertise MicroFinance — 22 instructions BCEAO maîtrisées', 'Expérience projets Banque Mondiale (procédures BM familières)', 'Approche Impact : alignement ODD + inclusion financière'],
+    faiblesses: ['Périmètre géographique large (5 pays) — mobilisation complexe', 'Exigences reporting BM lourdes (templates spécifiques)'],
+    concurrents: [
+      { nom: 'Concurrent A (Big Four)', forces: 'Expérience projets BM, équipe multi-pays, reporting conforme BM', faiblesses: 'Prix très élevé, sous-traitance massive, faible ancrage SFD', prix: '1 050 000 000 FCFA' },
+      { nom: 'Concurrent B (ONG/Consulting)', forces: 'Ancrage terrain fort, coûts bas, réseau SFD', faiblesses: 'Pas de méthodologie structurée, qualité livrables variable', prix: '380 000 000 FCFA' },
+    ],
+    winThemes: [
+      'Expertise SFD 360° : Réglementation + Gouvernance + Opérations = approche intégrée',
+      'Proven BM Track Record : KHEPRA a déjà livré 2 projets BM dans les délais et le budget',
+      'Innovation : Application mobile KOS pour collecte terrain + dashboard temps réel bailleur',
+    ],
+    prixRecommande: '720 000 000 FCFA',
+    prixJustification: 'Prix aligné budget. Proposition de value engineering : -12% si déploiement outil KOS mobile.',
+  },
+];
+
+export const BATTLE_CARD_STATS = {
+  totalAO: 51,
+  volumeTotal: '18 155 000 000 000 FCFA',
+  aoCritiques: 12,
+  winRate: '68%',
+  delaiReponse: '4.2 jours',
+};
+
+
+
+
+

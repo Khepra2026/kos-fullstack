@@ -1,0 +1,194 @@
+{
+  "name": "KOS ETL Data Lake Sync",
+  "active": true,
+  "settings": {
+    "saveExecutionProgress": true,
+    "saveManualExecutions": true,
+    "timezone": "Africa/Douala",
+    "executionOrder": "v1"
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "hours", "hoursInterval": 1 }]
+        }
+      },
+      "id": "trigger-cron",
+      "name": "Every Hour",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/regulations?select=*&order=updated_at.desc&limit=100",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_ANON_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_ANON_KEY }}" },
+            { "name": "Prefer", "value": "count=exact" }
+          ]
+        }
+      },
+      "id": "fetch-regulations",
+      "name": "Fetch Regulations (Supabase)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [450, 200]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/audit_logs?select=*&order=created_at.desc&limit=100",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_ANON_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_ANON_KEY }}" }
+          ]
+        }
+      },
+      "id": "fetch-audit-logs",
+      "name": "Fetch Audit Logs (Supabase)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [450, 400]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/rag_chunks?select=*&order=created_at.desc&limit=50",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_ANON_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_ANON_KEY }}" }
+          ]
+        }
+      },
+      "id": "fetch-rag-chunks",
+      "name": "Fetch RAG Chunks (Supabase)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [450, 600]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Merge and prepare for Data Lake storage\nconst regulations = $input.all()[0]?.json || [];\nconst auditLogs = $input.all()[1]?.json || [];\nconst ragChunks = $input.all()[2]?.json || [];\n\nconst batch = {\n  batch_id: `etl-${Date.now()}`,\n  timestamp: new Date().toISOString(),\n  regulations: {\n    count: regulations.length,\n    data: regulations\n  },\n  audit_logs: {\n    count: auditLogs.length,\n    data: auditLogs\n  },\n  rag_chunks: {\n    count: ragChunks.length,\n    data: ragChunks\n  },\n  total_records: regulations.length + auditLogs.length + ragChunks.length\n};\n\nreturn batch;\n"
+      },
+      "id": "merge-data",
+      "name": "Merge & Prepare",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://ingestion-service:3000/datalake/batch",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"batch_id\": $json.batch_id,\n  \"timestamp\": $json.timestamp,\n  \"zone\": \"raw\",\n  \"format\": \"jsonl\",\n  \"regulator\": \"supabase-registry\",\n  \"payload\": $json\n}"
+      },
+      "id": "store-raw",
+      "name": "Store RAW Zone",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [850, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://transform-service:3001/datalake/cleanse",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"batch_id\": $json.batch_id,\n  \"source\": \"raw\"\n}"
+      },
+      "id": "cleanse",
+      "name": "Transform to CLEAN Zone",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1050, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://audit-service:3002/datalake/govern",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"batch_id\": $json.batch_id,\n  \"framework\": \"COBAC+CEMAC+OHADA\"\n}"
+      },
+      "id": "govern",
+      "name": "Govern (GOVERNED Zone)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1250, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://audit-service:3002/audit/etl-complete",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"batch_id\": $json.batch_id,\n  \"records_synced\": $json.total_records,\n  \"timestamp\": $json.timestamp,\n  \"zones_updated\": [\"raw\", \"clean\", \"governed\"]\n}"
+      },
+      "id": "audit-trail",
+      "name": "Audit Trail",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1450, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://qdrant:6333/collections/audit_vectors/points",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"points\": [{\n    \"id\": $json.batch_id,\n    \"payload\": {\n      \"type\": \"etl_sync\",\n      \"records\": $json.total_records,\n      \"timestamp\": $json.timestamp\n    }\n  }]\n}"
+      },
+      "id": "index-qdrant",
+      "name": "Index to Qdrant Audit",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1650, 200]
+    }
+  ],
+  "connections": {
+    "Every Hour": {
+      "main": [
+        [
+          { "node": "Fetch Regulations (Supabase)", "type": "main", "index": 0 },
+          { "node": "Fetch Audit Logs (Supabase)", "type": "main", "index": 0 },
+          { "node": "Fetch RAG Chunks (Supabase)", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Fetch Regulations (Supabase)": {
+      "main": [[ { "node": "Merge & Prepare", "type": "main", "index": 0 } ]]
+    },
+    "Fetch Audit Logs (Supabase)": {
+      "main": [[ { "node": "Merge & Prepare", "type": "main", "index": 0 } ]]
+    },
+    "Fetch RAG Chunks (Supabase)": {
+      "main": [[ { "node": "Merge & Prepare", "type": "main", "index": 0 } ]]
+    },
+    "Merge & Prepare": {
+      "main": [[ { "node": "Store RAW Zone", "type": "main", "index": 0 } ]]
+    },
+    "Store RAW Zone": {
+      "main": [[ { "node": "Transform to CLEAN Zone", "type": "main", "index": 0 } ]]
+    },
+    "Transform to CLEAN Zone": {
+      "main": [[ { "node": "Govern (GOVERNED Zone)", "type": "main", "index": 0 } ]]
+    },
+    "Govern (GOVERNED Zone)": {
+      "main": [[ { "node": "Audit Trail", "type": "main", "index": 0 } ]]
+    },
+    "Audit Trail": {
+      "main": [[ { "node": "Index to Qdrant Audit", "type": "main", "index": 0 } ]]
+    }
+  }
+}

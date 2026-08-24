@@ -1,0 +1,92 @@
+import { Paragraph, TextRun, AlignmentType, HeadingLevel } from 'docx';
+import { heading1, heading2, item, separator } from '';
+
+export const annexAParagraphs: Paragraph[] = [
+  new Paragraph({
+    children: [new TextRun({ text: '', size: 1, font: 'Calibri' })],
+    spacing: { before: 800, after: 0 },
+    pageBreakBefore: true,
+  }),
+  new Paragraph({
+    children: [new TextRun({ text: 'ANNEXE A — CAHIER DES CHARGES DÉTAILLÉ PAR PAYS', bold: true, size: 26, font: 'Calibri', color: '1F4E3D' })],
+    heading: HeadingLevel.HEADING_1,
+    spacing: { before: 400, after: 200 },
+    alignment: AlignmentType.LEFT,
+  }),
+  new Paragraph({
+    children: [
+      new TextRun({
+        text: "Cette annexe constitue le cahier des charges détaillé pour chacun des sept (07) pays du périmètre. Elle précise, pour chaque pays, les livrables spécifiques, les délais contractuels, les ressources mobilisées, et les contraintes réglementaires majeures. En cas de divergence entre le corps du contrat et la présente annexe, celle-ci prévaut pour le pays concerné.",
+        size: 20,
+        font: 'Calibri',
+      }),
+    ],
+    spacing: { after: 300 },
+    alignment: AlignmentType.BOTH,
+  }),
+  heading2('A.1 — Togo (Pilote UEMOA)'),
+  item('Régulateur :', "Banque Centrale des États de l'Afrique de l'Ouest (BCEAO) — Agence nationale de Lomé, et Commission Bancaire de l'UEMOA ;", { after: 60, indent: 720 }),
+  item('Texte de référence :', "Instruction BCEAO n° 004-01-2014 relative aux Systèmes Financiers Décentralisés (SFD), arrêté ministériel sur les EMF de 2ème catégorie, loi n° 2016-007 sur le secteur de la microfinance ;", { after: 60, indent: 720 }),
+  item('Capital social minimum :', "500 000 000 FCFA ;", { after: 60, indent: 720 }),
+  item('Livrables spécifiques :', "Business Plan SYSCOHADA sur 5 ans, statuts conformes OHADA, manuel de crédit/scoring, manuel épargne, manuel comptable, contrôle interne (3 lignes de défense), PCA/PRA, dispositif LBC/FT, note technique SIG (souveraineté des données), dossier moralité actionnaires et dirigeants (KYC, casiers judiciaires, références bancaires), attestation de non-condamnation, PV de libération du capital ;", { after: 60, indent: 720 }),
+  item('Délai contractuel :', "12 mois à compter de la signature du contrat pour la vague 1 ;", { after: 60, indent: 720 }),
+  item('Ressources Khepra :', "1 Directeur de Mission (15 ans expérience BCEAO), 1 Expert réglementaire UEMOA, 1 Juriste OHADA, 1 Ingénieur financier SYSCOHADA, 1 Expert IT/SIG ;", { after: 60, indent: 720 }),
+  item('Contraintes majeures :', "Exigence de siège social opérationnel au Togo, obligation d'un CAC togolais agréé, enquête de moralité sur le terrain obligatoire, dépôt physique obligatoire à la BCEAO Lomé et au Ministère des Finances.", { after: 200, indent: 720 }),
+
+  heading2('A.2 — Bénin (Pilote UEMOA)'),
+  item('Régulateur :', "BCEAO — Agence nationale de Cotonou, Ministère des Finances du Bénin, Commission Bancaire de l'UEMOA ;", { after: 60, indent: 720 }),
+  item('Texte de référence :', "Instruction BCEAO n° 004-01-2014, loi n° 2008-19 sur la microfinance, décret n° 2010-495 sur les SFD ;", { after: 60, indent: 720 }),
+  item('Capital social minimum :', "500 000 000 FCFA ;", { after: 60, indent: 720 }),
+  item('Livrables spécifiques :', "Duplication du modèle togolais adapté au cadre béninois, avec adaptation des mentions légales (MFE, DGTCP), et conformité aux spécificités de la Direction Générale du Trésor et de la Comptabilité Publique ;", { after: 60, indent: 720 }),
+  item('Délai contractuel :', "10 mois à compter de la validation du modèle togolais (démarrage estimé : mois 4) ;", { after: 60, indent: 720 }),
+  item('Ressources Khepra :', "1 Expert réglementaire UEMOA, 1 Juriste OHADA, 1 Ingénieur financier ;", { after: 60, indent: 720 }),
+  item('Contraintes majeures :', "Obligation de domiciliation bancaire auprès d'une banque agréée au Bénin, enquête de moralité sur place par la BCEAO Cotonou, dépôt simultané au MFE et à la BCEAO.", { after: 200, indent: 720 }),
+
+  heading2('A.3 — Burkina Faso (Duplication UEMOA)'),
+  item('Régulateur :', "BCEAO — Agence nationale de Ouagadougou, Ministère de l'Économie et des Finances, Commission Bancaire de l'UEMOA ;", { after: 60, indent: 720 }),
+  item('Texte de référence :', "Instruction BCEAO n° 004-01-2014, loi n° 046-2012/AN sur la microfinance, décret n° 2013-1077/PRES/PM/MEF ;", { after: 60, indent: 720 }),
+  item('Capital social minimum :', "500 000 000 FCFA ;", { after: 60, indent: 720 }),
+  item('Livrables spécifiques :', "Adaptation du modèle validé aux spécificités burkinabè (décret sur les SFD, Direction de la Microfinance), avec ajustement des ratios prudentiels selon le contexte économique local ;", { after: 60, indent: 720 }),
+  item('Délai contractuel :', "10 mois (démarrage estimé : mois 6) ;", { after: 60, indent: 720 }),
+  item('Ressources Khepra :', "1 Expert réglementaire UEMOA, 1 Ingénieur financier, 1 Juriste OHADA ;", { after: 60, indent: 720 }),
+  item('Contraintes majeures :', "Contexte sécuritaire nécessitant une planification des déplacements sécurisée, enquête de moralité sur place par la BCEAO Ouagadougou.", { after: 200, indent: 720 }),
+
+  heading2('A.4 — Mali (Duplication UEMOA)'),
+  item('Régulateur :', "BCEAO — Agence nationale de Bamako, Ministère de l'Économie et des Finances, Commission Bancaire de l'UEMOA ;", { after: 60, indent: 720 }),
+  item('Texte de référence :', "Instruction BCEAO n° 004-01-2014, loi n° 10-049 sur les SFD, décret n° 10-556/P-RM ;", { after: 60, indent: 720 }),
+  item('Capital social minimum :', "500 000 000 FCFA ;", { after: 60, indent: 720 }),
+  item('Livrables spécifiques :', "Duplication structurée du modèle, avec adaptation aux exigences de la Direction de la Microfinance du Mali et ajustement des paramètres macroéconomiques (taux de change, inflation) ;", { after: 60, indent: 720 }),
+  item('Délai contractuel :', "10 mois (démarrage estimé : mois 6) ;", { after: 60, indent: 720 }),
+  item('Ressources Khepra :', "1 Expert réglementaire UEMOA, 1 Ingénieur financier, 1 Juriste OHADA ;", { after: 60, indent: 720 }),
+  item('Contraintes majeures :', "Délais de traitement administratifs plus longs, nécessité d'un accompagnement diplomatique renforcé auprès des autorités maliennes.", { after: 200, indent: 720 }),
+
+  heading2('A.5 — Cameroun (Pilote CEMAC)'),
+  item('Régulateur :', "Commission Bancaire de l'Afrique Centrale (COBAC), Banque des États de l'Afrique Centrale (BEAC) — Succursale de Yaoundé, Ministère des Finances du Cameroun ;", { after: 60, indent: 720 }),
+  item('Texte de référence :', "Règlement COBAC R-2017/05 relatif aux conditions d'agrément des EMF, R-2017/06 relatif aux normes prudentielles, R-2019/01 (contrôle interne), R-2018/01 (LBC/FT), R-2021/01 (PCA), loi n° 2017/011 sur la microfinance ;", { after: 60, indent: 720 }),
+  item('Capital social minimum :', "500 000 000 FCFA (ou équivalent selon les normes COBAC) ;", { after: 60, indent: 720 }),
+  item('Livrables spécifiques :', "Business Plan conforme COBAC/BEAC, statuts OHADA, manuel de crédit/scoring, manuel épargne, manuel comptable, contrôle interne (3 lignes de défense + conformité R-2019/01), PCA/PRA (conformité R-2021/01), dispositif LBC/FT (conformité R-2018/01), note technique SIG, dossier moralité, rapport de conformité préalable (gap analysis COBAC) ;", { after: 60, indent: 720 }),
+  item('Délai contractuel :', "14 mois (démarrage estimé : mois 8, en raison de la complexité CEMAC) ;", { after: 60, indent: 720 }),
+  item('Ressources Khepra :', "1 Directeur de Mission CEMAC (15 ans expérience COBAC), 1 Expert réglementaire COBAC, 1 Juriste OHADA, 1 Ingénieur financier BEAC, 1 Expert IT/SIG, 1 Expert LBC/FT ;", { after: 60, indent: 720 }),
+  item('Contraintes majeures :', "Double régulation (COBAC + BEAC), exigence de soumission aux deux autorités, dépôt physique à Yaoundé (COBAC) et électronique via le portail BEAC, nécessité d'un CAC camerounais agréé OHADA, enquête de moralité sur le terrain par la COBAC.", { after: 200, indent: 720 }),
+
+  heading2('A.6 — Gabon (Apprentissage CEMAC)'),
+  item('Régulateur :', "COBAC, BEAC — Succursale de Libreville, Ministère de l'Économie et de la Relance du Gabon ;", { after: 60, indent: 720 }),
+  item('Texte de référence :', "Règlements COBAC R-2017/05, R-2017/06, R-2019/01, R-2018/01, R-2021/01, loi n° 17/2008 sur la microfinance ;", { after: 60, indent: 720 }),
+  item('Capital social minimum :', "500 000 000 FCFA ;", { after: 60, indent: 720 }),
+  item('Livrables spécifiques :', "Application du modèle camerounais avec suivi spécifique des exigences du Ministère des Finances gabonais (direction de la microfinance), adaptation du dispositif LBC/FT aux spécificités gabonaises, et conformité aux directives de la CEMAC sur le financement inclusif ;", { after: 60, indent: 720 }),
+  item('Délai contractuel :', "12 mois (démarrage estimé : mois 10) ;", { after: 60, indent: 720 }),
+  item('Ressources Khepra :', "1 Expert réglementaire COBAC, 1 Ingénieur financier, 1 Juriste OHADA ;", { after: 60, indent: 720 }),
+  item('Contraintes majeures :', "Suivi spécifique des exigences du Ministère des Finances gabonais, dépôt à Libreville (COBAC) et via le portail BEAC, nécessité d'un accompagnement diplomatique auprès des autorités locales.", { after: 200, indent: 720 }),
+
+  heading2('A.7 — Congo-Brazzaville (Duplication CEMAC)'),
+  item('Régulateur :', "COBAC, BEAC — Succursale de Brazzaville, Ministère des Finances et du Budget du Congo ;", { after: 60, indent: 720 }),
+  item('Texte de référence :', "Règlements COBAC R-2017/05, R-2017/06, R-2019/01, R-2018/01, R-2021/01, loi n° 18-2002 sur la microfinance, décret n° 2016-278 ;", { after: 60, indent: 720 }),
+  item('Capital social minimum :', "500 000 000 FCFA ;", { after: 60, indent: 720 }),
+  item('Livrables spécifiques :', "Duplication structurée du modèle CEMAC, adaptation au cadre juridique congolais (décret sur les MF, Direction de la Microfinance), ajustement des ratios prudentiels et des scénarios macroéconomiques ;", { after: 60, indent: 720 }),
+  item('Délai contractuel :', "12 mois (démarrage estimé : mois 10) ;", { after: 60, indent: 720 }),
+  item('Ressources Khepra :', "1 Expert réglementaire COBAC, 1 Ingénieur financier, 1 Juriste OHADA ;", { after: 60, indent: 720 }),
+  item('Contraintes majeures :', "Délais administratifs importants, nécessité d'un accompagnement diplomatique renforcé auprès du Ministère des Finances congolais, dépôt à Brazzaville (COBAC) et via le portail BEAC.", { after: 300, indent: 720 }),
+];
+
+
+

@@ -1,0 +1,771 @@
+import { useState, useMemo } from 'react';
+import hubLayout from '@/components/feature/hubLayout';
+import {
+  automatesAudit,
+  auditSummary,
+  notificationCoverageMatrix,
+  AutomateAudit,
+  AutomateTool,
+  AutomateSkill,
+  AutomateGap,
+  AutomateNotificationCapability,
+} from '@/mocks/tenderAutomatesAudit';
+
+type DetailTab = 'overview' | 'tools' | 'skills' | 'gaps' | 'notifications';
+
+export default function tenderAutomatesAuditPage() {
+  const [selectedAutomate, setSelectedAutomate] = useState<AutomateAudit>(automatesAudit[0]);
+  const [activeDetailTab, setActiveDetailTab] = useState<DetailTab>('overview');
+  const [expandedTools, setExpandedTools] = useState(false);
+  const [expandedGaps, setExpandedGaps] = useState(false);
+  const [showGlobalMatrix, setShowGlobalMatrix] = useState(false);
+
+  const automate = selectedAutomate;
+
+  const totalToolsOperational = automatesAudit.reduce((s, a) => s + a.tools.filter(t => t.status === 'operational').length, 0);
+  const totalToolsPlanned = automatesAudit.reduce((s, a) => s + a.tools.filter(t => t.status === 'planned').length, 0);
+  const totalSkillsCertified = automatesAudit.reduce((s, a) => s + a.skills.filter(sk => sk.certified).length, 0);
+  const totalSkillsUncertified = automatesAudit.reduce((s, a) => s + a.skills.filter(sk => !sk.certified).length, 0);
+  const totalGapsOpen = automatesAudit.reduce((s, a) => s + a.gaps.filter(g => g.status === 'open').length, 0);
+
+  const getStatusConfig = (status: string) => {
+    const configs: Record<string, { bg: string; text: string; label: string; icon: string }> = {
+      optimal: { bg: 'bg-green-100', text: 'text-green-700', label: 'OPTIMAL', icon: 'ri-check-double-line' },
+      operational: { bg: 'bg-emerald-50', text: 'text-emerald-600', label: 'OPÉRATIONNEL', icon: 'ri-check-line' },
+      degraded: { bg: 'bg-yellow-100', text: 'text-yellow-700', label: 'DÉGRADÉ', icon: 'ri-alert-line' },
+      critical: { bg: 'bg-red-100', text: 'text-red-700', label: 'CRITIQUE', icon: 'ri-error-warning-line' },
+    };
+    return configs[status] || configs.operational;
+  };
+
+  const getToolStatusConfig = (status: string) => {
+    const configs: Record<string, { bg: string; text: string; label: string; dot: string }> = {
+      operational: { bg: 'bg-green-50', text: 'text-green-700', label: 'Opérationnel', dot: 'bg-green-500' },
+      degraded: { bg: 'bg-yellow-50', text: 'text-yellow-700', label: 'Dégradé', dot: 'bg-yellow-500' },
+      missing: { bg: 'bg-red-50', text: 'text-red-700', label: 'Manquant', dot: 'bg-red-500' },
+      planned: { bg: 'bg-secondary-50', text: 'text-secondary-600', label: 'Planifié', dot: 'bg-secondary-400' },
+    };
+    return configs[status] || configs.operational;
+  };
+
+  const getGapSeverityConfig = (severity: string) => {
+    const configs: Record<string, { bg: string; text: string; label: string; icon: string }> = {
+      critical: { bg: 'bg-red-100', text: 'text-red-700', label: 'CRITIQUE', icon: 'ri-error-warning-fill' },
+      major: { bg: 'bg-orange-100', text: 'text-orange-700', label: 'MAJEUR', icon: 'ri-alert-fill' },
+      minor: { bg: 'bg-yellow-100', text: 'text-yellow-700', label: 'MINEUR', icon: 'ri-information-fill' },
+    };
+    return configs[severity] || configs.minor;
+  };
+
+  const getReadinessColor = (score: number) => {
+    if (score >= 95) return 'text-green-600';
+    if (score >= 85) return 'text-emerald-500';
+    if (score >= 75) return 'text-yellow-600';
+    if (score >= 60) return 'text-orange-600';
+    return 'text-red-600';
+  };
+
+  const renderGauge = (score: number, label: string, size: number = 64) => {
+    const pct = Math.min(score, 100);
+    const r = (size - 10) / 2;
+    const circ = 2 * Math.PI * r;
+    const color = score >= 90 ? '#22c55e' : score >= 80 ? '#10b981' : score >= 70 ? '#f59e0b' : score >= 60 ? '#f97316' : '#ef4444';
+    return (
+      <div className="flex flex-col items-center gap-1">
+        <div className="relative" style={{ width: size, height: size }}>
+          <svg className="-rotate-90" style={{ width: size, height: size }} viewBox={`0 0 ${size} ${size}`}>
+            <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#e5e7eb" strokeWidth="6" />
+            <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth="6"
+              strokeDasharray={`${(pct / 100) * circ} ${circ}`} strokeLinecap="round" />
+          </svg>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="text-base font-bold text-foreground-950">{score}%</span>
+          </div>
+        </div>
+        <span className="text-[10px] text-foreground-500">{label}</span>
+      </div>
+    );
+  };
+
+  const renderMiniGauge = (score: number, size: number = 44) => {
+    const pct = Math.min(score, 100);
+    const r = (size - 6) / 2;
+    const circ = 2 * Math.PI * r;
+    const color = score >= 90 ? '#22c55e' : score >= 80 ? '#10b981' : score >= 70 ? '#f59e0b' : score >= 60 ? '#f97316' : '#ef4444';
+    return (
+      <div className="relative" style={{ width: size, height: size }}>
+        <svg className="-rotate-90" style={{ width: size, height: size }} viewBox={`0 0 ${size} ${size}`}>
+          <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#e5e7eb" strokeWidth="4" />
+          <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth="4"
+            strokeDasharray={`${(pct / 100) * circ} ${circ}`} strokeLinecap="round" />
+        </svg>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className="text-xs font-bold text-foreground-950">{score}</span>
+        </div>
+      </div>
+    );
+  };
+
+  const allTools = useMemo(() => {
+    return automatesAudit.flatMap(a => a.tools.map(t => ({ ...t, automate: a.name })));
+  }, []);
+
+  const allGaps = useMemo(() => {
+    return automatesAudit.flatMap(a => a.gaps.map(g => ({ ...g, automate: a.name })));
+  }, []);
+
+  return (
+    <hubLayout hubId={51} activeTab="overview" tabLabel="Audit Automates AO/AMI">
+      {/* ===== HERO ===== */}
+      <section className="relative bg-background-100 border-b border-background-200/70">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 py-10 md:py-14">
+          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
+            <div>
+              <div className="inline-flex flex-wrap items-center gap-2 px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-semibold mb-4">
+                <i className="ri-shield-check-line"></i>AUDIT DE READINESS — KOS Tender Intelligence Automates
+              </div>
+              <h1 className="text-2xl md:text-4xl font-heading font-bold text-foreground-950 tracking-tight">
+                Audit des Automates AO/AMI
+              </h1>
+              <p className="text-sm md:text-base text-foreground-600 mt-3 max-w-2xl">
+                Diagnostic exhaustif des 8 agents autonomes chargés de la veille, qualification et notification
+                des Appels d'Offres et Appels à Manifestation d'Intérêt. Vérification des outils, compétences
+                et capacités de notification pour la mission critique de détection AO/AMI.
+              </p>
+            </div>
+            <div className="flex items-center gap-4 flex-wrap">
+              <div className="flex items-center gap-3 px-5 py-3 bg-background-50 rounded-xl border border-background-200/70">
+                {renderGauge(auditSummary.global_readiness_score, 'Readiness Global', 72)}
+                <div className="text-center">
+                  <div className={`text-3xl font-bold ${getReadinessColor(auditSummary.global_readiness_score)}`}>{auditSummary.global_readiness_score}%</div>
+                  <div className="text-xs text-foreground-500">Score de Readiness</div>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="px-4 py-3 bg-background-50 rounded-lg border border-background-200/70 text-center">
+                  <div className="text-xl font-bold text-green-600">{auditSummary.optimal}</div>
+                  <div className="text-[10px] text-foreground-500">Optimaux</div>
+                </div>
+                <div className="px-4 py-3 bg-background-50 rounded-lg border border-background-200/70 text-center">
+                  <div className="text-xl font-bold text-emerald-600">{auditSummary.operational}</div>
+                  <div className="text-[10px] text-foreground-500">Opérationnels</div>
+                </div>
+                <div className="px-4 py-3 bg-background-50 rounded-lg border border-background-200/70 text-center">
+                  <div className="text-xl font-bold text-foreground-950">{totalToolsOperational}</div>
+                  <div className="text-[10px] text-foreground-500">Outils actifs</div>
+                </div>
+                <div className="px-4 py-3 bg-background-50 rounded-lg border border-background-200/70 text-center">
+                  <div className="text-xl font-bold text-orange-600">{totalGapsOpen}</div>
+                  <div className="text-[10px] text-foreground-500">Lacunes</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ===== GLOBAL VERDICT BAND ===== */}
+      <section className="bg-emerald-50 border-b border-emerald-200">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 py-5">
+          <div className="flex items-start gap-3">
+            <div className="w-8 h-8 flex items-center justify-center rounded-full bg-emerald-500 text-white flex-shrink-0 mt-0.5">
+              <i className="ri-check-line text-lg"></i>
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-emerald-800">Verdict Global — MISSION ASSURÉE</h3>
+              <p className="text-xs md:text-sm text-emerald-700 leading-relaxed mt-1">{auditSummary.verdict_global}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div className="max-w-7xl mx-auto px-4 md:px-6 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* ===== LEFT: AUTOMATES LIST ===== */}
+          <div className="lg:col-span-1 space-y-3">
+            <div className="flex items-center justify-between mb-2">
+              <div>
+                <h3 className="text-sm font-bold text-foreground-950">Les 8 Automates</h3>
+                <p className="text-xs text-foreground-500">Cliquez pour auditer en détail</p>
+              </div>
+              <button
+                onClick={() => setShowGlobalMatrix(!showGlobalMatrix)}
+                className="text-xs px-3 py-1.5 rounded-full border border-background-200/70 text-foreground-600 hover:bg-background-100 transition-colors cursor-pointer whitespace-nowrap"
+              >
+                <i className={`ri-${showGlobalMatrix ? 'close' : 'layout-grid'}-line mr-1`}></i>
+                {showGlobalMatrix ? 'Fermer matrice' : 'Vue matricielle'}
+              </button>
+            </div>
+            {!showGlobalMatrix && automatesAudit.map((a) => {
+              const statusConfig = getStatusConfig(a.status);
+              return (
+                <div
+                  key={a.id}
+                  onClick={() => { setSelectedAutomate(a); setActiveDetailTab('overview'); }}
+                  className={`p-4 rounded-lg border cursor-pointer transition-colors ${
+                    selectedAutomate?.id === a.id
+                      ? 'border-accent-300 bg-accent-50/50 shadow-sm'
+                      : 'border-background-200/70 bg-background-50 hover:border-background-300/60'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-8 h-8 flex items-center justify-center rounded-lg ${statusConfig.bg} ${statusConfig.text}`}>
+                        <i className={`${a.icon} text-lg`}></i>
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-semibold text-foreground-950 leading-tight">{a.name}</h4>
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${statusConfig.bg} ${statusConfig.text}`}>
+                          {statusConfig.label}
+                        </span>
+                      </div>
+                    </div>
+                    {renderMiniGauge(a.readiness_score)}
+                  </div>
+                  <p className="text-xs text-foreground-500 line-clamp-2 mt-1">{a.short_desc}</p>
+                  <div className="flex items-center gap-3 mt-2 pt-2 border-t border-background-200/70">
+                    <span className="text-[10px] text-foreground-400">
+                      <i className="ri-tools-line mr-1"></i>{a.tools.filter(t => t.status === 'operational').length} outils
+                    </span>
+                    <span className="text-[10px] text-foreground-400">
+                      <i className="ri-brain-line mr-1"></i>{a.skills.length} compétences
+                    </span>
+                    <span className="text-[10px] text-foreground-400">
+                      <i className="ri-error-warning-line mr-1"></i>{a.gaps.filter(g => g.status === 'open').length} lacunes
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* ===== GLOBAL MATRIX VIEW ===== */}
+            {showGlobalMatrix && (
+              <div className="space-y-6">
+                {/* Tools Matrix */}
+                <div className="p-4 bg-background-50 rounded-lg border border-background-200/70">
+                  <h4 className="text-xs font-bold text-foreground-950 mb-3 flex items-center gap-2">
+                    <i className="ri-tools-line text-accent-500"></i>Matrice des Outils ({totalToolsOperational}/{auditSummary.total_tools})
+                  </h4>
+                  <div className="space-y-2">
+                    {automatesAudit.map((a) => (
+                      <div key={a.id} className="flex items-center gap-2">
+                        <span className="text-[10px] text-foreground-500 w-20 truncate">{a.name.replace('KOS ', '').replace('™', '')}</span>
+                        <div className="flex-1 h-2 bg-background-200/70 rounded-full overflow-hidden flex">
+                          {(() => {
+                            const operational = a.tools.filter(t => t.status === 'operational').length;
+                            const planned = a.tools.filter(t => t.status === 'planned').length;
+                            const missing = a.tools.filter(t => t.status === 'missing').length;
+                            const total = a.tools.length;
+                            return (
+                              <>
+                                {operational > 0 && <div className="h-full bg-green-500" style={{ width: `${(operational / total) * 100}%` }}></div>}
+                                {planned > 0 && <div className="h-full bg-secondary-400" style={{ width: `${(planned / total) * 100}%` }}></div>}
+                                {missing > 0 && <div className="h-full bg-red-400" style={{ width: `${(missing / total) * 100}%` }}></div>}
+                              </>
+                            );
+                          })()}
+                        </div>
+                        <span className="text-[10px] font-bold text-foreground-950">{a.tools.filter(t => t.status === 'operational').length}/{a.tools.length}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex items-center gap-3 mt-3 pt-2 border-t border-background-200/70">
+                    <span className="text-[10px] text-foreground-400 flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500 inline-block"></span>Opérationnel</span>
+                    <span className="text-[10px] text-foreground-400 flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-secondary-400 inline-block"></span>Planifié</span>
+                    <span className="text-[10px] text-foreground-400 flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-400 inline-block"></span>Manquant</span>
+                  </div>
+                </div>
+
+                {/* Notification Coverage Matrix */}
+                <div className="p-4 bg-background-50 rounded-lg border border-background-200/70">
+                  <h4 className="text-xs font-bold text-foreground-950 mb-3 flex items-center gap-2">
+                    <i className="ri-notification-3-line text-accent-500"></i>Couverture des Canaux de Notification
+                  </h4>
+                  <div className="space-y-2">
+                    {notificationCoverageMatrix.map((nc) => (
+                      <div key={nc.channel} className="flex items-center gap-2">
+                        <span className="text-[10px] text-foreground-500 w-24">{nc.channel}</span>
+                        <div className="flex-1 h-2 bg-background-200/70 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full rounded-full ${nc.coverage_pct >= 75 ? 'bg-green-500' : nc.coverage_pct >= 50 ? 'bg-yellow-500' : nc.coverage_pct >= 25 ? 'bg-orange-500' : 'bg-red-400'}`}
+                            style={{ width: `${nc.coverage_pct}%` }}
+                          ></div>
+                        </div>
+                        <span className="text-[10px] font-bold text-foreground-950">{nc.active_automates}/{nc.total_automates}</span>
+                        <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
+                          nc.status === 'excellent' ? 'bg-green-100 text-green-700' :
+                          nc.status === 'bon' ? 'bg-emerald-50 text-emerald-600' :
+                          nc.status === 'moyen' ? 'bg-yellow-100 text-yellow-700' :
+                          nc.status === 'faible' ? 'bg-orange-100 text-orange-700' :
+                          'bg-red-100 text-red-700'
+                        }`}>{nc.status}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Skills Matrix */}
+                <div className="p-4 bg-background-50 rounded-lg border border-background-200/70">
+                  <h4 className="text-xs font-bold text-foreground-950 mb-3 flex items-center gap-2">
+                    <i className="ri-brain-line text-accent-500"></i>Compétences Certifiées ({totalSkillsCertified}/{totalSkillsCertified + totalSkillsUncertified})
+                  </h4>
+                  <div className="space-y-2">
+                    {automatesAudit.map((a) => (
+                      <div key={a.id} className="flex items-center gap-2">
+                        <span className="text-[10px] text-foreground-500 w-20 truncate">{a.name.replace('KOS ', '').replace('™', '')}</span>
+                        <div className="flex-1 h-2 bg-background-200/70 rounded-full overflow-hidden flex">
+                          {(() => {
+                            const certified = a.skills.filter(s => s.certified).length;
+                            const total = a.skills.length;
+                            return (
+                              <div className="h-full bg-green-500" style={{ width: `${(certified / total) * 100}%` }}></div>
+                            );
+                          })()}
+                        </div>
+                        <span className="text-[10px] font-bold text-foreground-950">{a.skills.filter(s => s.certified).length}/{a.skills.length}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* ===== RIGHT: DETAIL PANEL ===== */}
+          <div className="lg:col-span-2">
+            <div className="bg-background-50 rounded-xl border border-background-200/70 overflow-hidden">
+              {/* Automate Header */}
+              <div className="p-6 border-b border-background-200/70">
+                <div className="flex items-start justify-between flex-wrap gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-12 h-12 flex items-center justify-center rounded-xl ${getStatusConfig(automate.status).bg} ${getStatusConfig(automate.status).text}`}>
+                      <i className={`${automate.icon} text-2xl`}></i>
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-bold text-foreground-950">{automate.name}</h2>
+                      <p className="text-sm text-foreground-600">{automate.role}</p>
+                      <div className="flex items-center gap-2 mt-1 flex-wrap">
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${getStatusConfig(automate.status).bg} ${getStatusConfig(automate.status).text}`}>
+                          <i className={`${getStatusConfig(automate.status).icon} mr-1`}></i>
+                          {getStatusConfig(automate.status).label}
+                        </span>
+                        <span className="text-xs text-foreground-400">Uptime 30j : <strong className="text-foreground-950">{automate.uptime_30d}%</strong></span>
+                        <span className="text-xs text-foreground-400">Dernière activité : <strong className="text-foreground-950">{new Date(automate.last_activity).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</strong></span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-6">
+                    {renderGauge(automate.readiness_score, 'Readiness', 64)}
+                    {renderGauge(automate.reliability_score, 'Fiabilité', 64)}
+                  </div>
+                </div>
+              </div>
+
+              {/* Detail Tabs */}
+              <div className="flex border-b border-background-200/70 bg-background-100">
+                {([
+                  { id: 'overview' as DetailTab, label: 'Vue d\'ensemble', icon: 'ri-dashboard-line', count: null },
+                  { id: 'tools' as DetailTab, label: 'Outils', icon: 'ri-tools-line', count: automate.tools.length },
+                  { id: 'skills' as DetailTab, label: 'Compétences', icon: 'ri-brain-line', count: automate.skills.length },
+                  { id: 'gaps' as DetailTab, label: 'Lacunes', icon: 'ri-error-warning-line', count: automate.gaps.filter(g => g.status === 'open').length },
+                  { id: 'notifications' as DetailTab, label: 'Notifications', icon: 'ri-notification-3-line', count: automate.notification_capabilities.filter(n => n.status === 'active').length },
+                ]).map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveDetailTab(tab.id)}
+                    className={`whitespace-nowrap px-4 py-3 text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer border-b-2 ${
+                      activeDetailTab === tab.id
+                        ? 'border-accent-500 text-accent-600 bg-background-50'
+                        : 'border-transparent text-foreground-500 hover:text-foreground-700 hover:bg-background-50/50'
+                    }`}
+                  >
+                    <i className={tab.icon}></i>
+                    {tab.label}
+                    {tab.count !== null && (
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${
+                        activeDetailTab === tab.id ? 'bg-accent-100 text-accent-700' : 'bg-background-200/70 text-foreground-400'
+                      }`}>{tab.count}</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+
+              {/* Tab Content */}
+              <div className="p-6">
+                {/* OVERVIEW */}
+                {activeDetailTab === 'overview' && (
+                  <div className="space-y-6">
+                    <p className="text-sm text-foreground-600 leading-relaxed">{automate.short_desc}</p>
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                      <div className="p-3 bg-background-100 rounded-lg text-center">
+                        <div className="text-lg font-bold text-green-600">{automate.metrics.ao_detected_30d}</div>
+                        <div className="text-[10px] text-foreground-500">AO détectés /30j</div>
+                      </div>
+                      <div className="p-3 bg-background-100 rounded-lg text-center">
+                        <div className="text-lg font-bold text-accent-500">{automate.metrics.ao_qualified_30d}</div>
+                        <div className="text-[10px] text-foreground-500">AO qualifiés /30j</div>
+                      </div>
+                      <div className="p-3 bg-background-100 rounded-lg text-center">
+                        <div className="text-lg font-bold text-primary-500">{automate.metrics.alerts_sent_30d}</div>
+                        <div className="text-[10px] text-foreground-500">Alertes /30j</div>
+                      </div>
+                      <div className="p-3 bg-background-100 rounded-lg text-center">
+                        <div className="text-lg font-bold text-foreground-950">{automate.metrics.avg_response_time_ms < 1000 ? `${automate.metrics.avg_response_time_ms}ms` : `${(automate.metrics.avg_response_time_ms / 1000).toFixed(1)}s`}</div>
+                        <div className="text-[10px] text-foreground-500">Tps réponse moyen</div>
+                      </div>
+                      <div className="p-3 bg-background-100 rounded-lg text-center">
+                        <div className="text-lg font-bold text-foreground-950">{automate.metrics.false_positive_rate}%</div>
+                        <div className="text-[10px] text-foreground-500">Faux positifs</div>
+                      </div>
+                    </div>
+                    <div className="p-4 bg-emerald-50/50 rounded-lg border border-emerald-100">
+                      <h4 className="text-sm font-semibold text-emerald-800 mb-2 flex items-center gap-2">
+                        <i className="ri-check-double-line"></i>Verdict
+                      </h4>
+                      <p className="text-xs text-emerald-700 leading-relaxed">{automate.verdict}</p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="p-4 bg-background-100 rounded-lg border border-background-200/70">
+                        <h4 className="text-xs font-semibold text-foreground-950 mb-2">Top Outils</h4>
+                        {automate.tools.filter(t => t.criticality === 'vital').slice(0, 4).map((t) => (
+                          <div key={t.name} className="flex items-center gap-2 text-xs mt-1">
+                            <span className={`w-1.5 h-1.5 rounded-full ${getToolStatusConfig(t.status).dot}`}></span>
+                            <span className="text-foreground-600">{t.name}</span>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="p-4 bg-background-100 rounded-lg border border-background-200/70">
+                        <h4 className="text-xs font-semibold text-foreground-950 mb-2">Top Compétences</h4>
+                        {automate.skills.sort((a, b) => b.level - a.level).slice(0, 5).map((s) => (
+                          <div key={s.name} className="flex items-center justify-between text-xs mt-1">
+                            <span className="text-foreground-600 truncate max-w-[140px]">{s.name}</span>
+                            <span className="font-bold text-foreground-950">{s.level}%</span>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="p-4 bg-background-100 rounded-lg border border-background-200/70">
+                        <h4 className="text-xs font-semibold text-foreground-950 mb-2">Lacunes ouvertes</h4>
+                        {automate.gaps.filter(g => g.status === 'open').length === 0 ? (
+                          <p className="text-xs text-green-600">Aucune lacune ouverte</p>
+                        ) : (
+                          automate.gaps.filter(g => g.status === 'open').slice(0, 3).map((g) => {
+                            const sev = getGapSeverityConfig(g.severity);
+                            return (
+                              <div key={g.description} className="flex items-start gap-2 text-xs mt-1">
+                                <span className={`${sev.text} mt-0.5`}><i className={sev.icon}></i></span>
+                                <span className="text-foreground-600 line-clamp-2">{g.description}</span>
+                              </div>
+                            );
+                          })
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* TOOLS */}
+                {activeDetailTab === 'tools' && (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <div>
+                        <h4 className="text-sm font-bold text-foreground-950">Inventaire des Outils</h4>
+                        <p className="text-xs text-foreground-500">
+                          {automate.tools.filter(t => t.status === 'operational').length} opérationnels · {automate.tools.filter(t => t.status === 'planned').length} planifiés · {automate.tools.filter(t => t.status === 'missing').length} manquants
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => setExpandedTools(!expandedTools)}
+                        className="text-xs text-accent-600 hover:text-accent-700 cursor-pointer"
+                      >
+                        {expandedTools ? 'Réduire' : 'Tout déplier'}
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      {automate.tools.map((tool) => {
+                        const ts = getToolStatusConfig(tool.status);
+                        return (
+                          <div key={tool.name} className={`p-3 rounded-lg border ${tool.status === 'operational' ? 'border-green-200 bg-green-50/30' : tool.status === 'planned' ? 'border-secondary-200 bg-secondary-50/30' : 'border-red-200 bg-red-50/30'}`}>
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex items-center gap-2">
+                                <span className={`w-2 h-2 rounded-full flex-shrink-0 mt-1.5 ${ts.dot}`}></span>
+                                <div>
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <span className="text-sm font-semibold text-foreground-950">{tool.name}</span>
+                                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${ts.bg} ${ts.text}`}>{ts.label}</span>
+                                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-background-200/70 text-foreground-500">{tool.type}</span>
+                                    {tool.criticality === 'vital' && (
+                                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-red-100 text-red-700">VITAL</span>
+                                    )}
+                                  </div>
+                                  <p className="text-xs text-foreground-500 mt-1 leading-relaxed">{tool.description}</p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* SKILLS */}
+                {activeDetailTab === 'skills' && (
+                  <div className="space-y-3">
+                    <div className="mb-2">
+                      <h4 className="text-sm font-bold text-foreground-950">Matrice de Compétences</h4>
+                      <p className="text-xs text-foreground-500">
+                        {automate.skills.filter(s => s.certified).length} certifiées · {automate.skills.filter(s => !s.certified).length} non certifiées
+                      </p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {automate.skills.sort((a, b) => b.level - a.level).map((skill) => (
+                        <div key={skill.name} className="p-4 bg-background-50 rounded-lg border border-background-200/70">
+                          <div className="flex items-start justify-between mb-2">
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-semibold text-foreground-950">{skill.name}</span>
+                                {skill.certified && (
+                                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-green-100 text-green-700">
+                                    <i className="ri-check-line"></i> Certifié
+                                  </span>
+                                )}
+                              </div>
+                              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-secondary-100 text-secondary-700 mt-1 inline-block">{skill.category}</span>
+                            </div>
+                            <div className="text-right">
+                              <div className={`text-lg font-bold ${getReadinessColor(skill.level)}`}>{skill.level}%</div>
+                              <div className="text-[10px] text-foreground-400">Niveau</div>
+                            </div>
+                          </div>
+                          <div className="h-1.5 bg-background-200/70 rounded-full overflow-hidden mb-2">
+                            <div
+                              className={`h-full rounded-full ${skill.level >= 90 ? 'bg-green-500' : skill.level >= 80 ? 'bg-emerald-500' : skill.level >= 70 ? 'bg-yellow-500' : 'bg-orange-500'}`}
+                              style={{ width: `${skill.level}%` }}
+                            ></div>
+                          </div>
+                          <p className="text-xs text-foreground-500 leading-relaxed">{skill.description}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* GAPS */}
+                {activeDetailTab === 'gaps' && (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <div>
+                        <h4 className="text-sm font-bold text-foreground-950">Analyse des Lacunes</h4>
+                        <p className="text-xs text-foreground-500">
+                          {automate.gaps.filter(g => g.severity === 'critical').length} critiques · {automate.gaps.filter(g => g.severity === 'major').length} majeures · {automate.gaps.filter(g => g.severity === 'minor').length} mineures
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => setExpandedGaps(!expandedGaps)}
+                        className="text-xs text-accent-600 hover:text-accent-700 cursor-pointer"
+                      >
+                        {expandedGaps ? 'Réduire' : 'Tout déplier'}
+                      </button>
+                    </div>
+                    {automate.gaps.length === 0 ? (
+                      <div className="p-6 text-center bg-green-50/50 rounded-lg border border-green-100">
+                        <i className="ri-check-double-line text-3xl text-green-500 mb-2 block"></i>
+                        <p className="text-sm text-green-700 font-medium">Aucune lacune identifiée</p>
+                        <p className="text-xs text-green-600 mt-1">Cet automate est parfaitement outillé pour sa mission.</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {automate.gaps.sort((a, b) => {
+                          const order = { critical: 0, major: 1, minor: 2 };
+                          return (order[a.severity] || 3) - (order[b.severity] || 3);
+                        }).map((gap, idx) => {
+                          const sev = getGapSeverityConfig(gap.severity);
+                          return (
+                            <div key={idx} className={`p-4 rounded-lg border ${
+                              gap.severity === 'critical' ? 'border-red-200 bg-red-50/30' :
+                              gap.severity === 'major' ? 'border-orange-200 bg-orange-50/30' :
+                              'border-yellow-200 bg-yellow-50/30'
+                            }`}>
+                              <div className="flex items-start justify-between mb-2">
+                                <div className="flex items-center gap-2">
+                                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${sev.bg} ${sev.text}`}>
+                                    <i className={`${sev.icon} mr-1`}></i>{sev.label}
+                                  </span>
+                                  <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${
+                                    gap.status === 'open' ? 'bg-red-100 text-red-700' :
+                                    gap.status === 'in_progress' ? 'bg-yellow-100 text-yellow-700' :
+                                    'bg-green-100 text-green-700'
+                                  }`}>
+                                    {gap.status === 'open' ? 'Ouvert' : gap.status === 'in_progress' ? 'En cours' : 'Résolu'}
+                                  </span>
+                                </div>
+                                <span className="text-xs text-foreground-400">Effort : {gap.estimated_effort}</span>
+                              </div>
+                              <p className="text-sm font-semibold text-foreground-950 mb-1">{gap.description}</p>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
+                                <div>
+                                  <span className="text-[10px] text-foreground-400">Impact</span>
+                                  <p className="text-xs text-foreground-600">{gap.impact}</p>
+                                </div>
+                                <div>
+                                  <span className="text-[10px] text-foreground-400">Remédiation</span>
+                                  <p className="text-xs text-foreground-600">{gap.remediation}</p>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* NOTIFICATIONS */}
+                {activeDetailTab === 'notifications' && (
+                  <div className="space-y-3">
+                    <div className="mb-2">
+                      <h4 className="text-sm font-bold text-foreground-950">Capacités de Notification</h4>
+                      <p className="text-xs text-foreground-500">
+                        {automate.notification_capabilities.filter(n => n.status === 'active').length} canaux actifs · {automate.notification_capabilities.filter(n => n.status === 'not_configured').length} non configurés
+                      </p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {automate.notification_capabilities.map((nc) => (
+                        <div key={nc.channel} className={`p-4 rounded-lg border ${
+                          nc.status === 'active' ? 'border-green-200 bg-green-50/30' :
+                          nc.status === 'configured' ? 'border-yellow-200 bg-yellow-50/30' :
+                          'border-background-200/70 bg-background-50'
+                        }`}>
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <div className={`w-8 h-8 flex items-center justify-center rounded-lg ${
+                                nc.status === 'active' ? 'bg-green-100 text-green-700' :
+                                nc.status === 'configured' ? 'bg-yellow-100 text-yellow-700' :
+                                'bg-background-100 text-foreground-400'
+                              }`}>
+                                <i className={`${
+                                  nc.channel === 'Email' ? 'ri-mail-line' :
+                                  nc.channel === 'WhatsApp' ? 'ri-whatsapp-line' :
+                                  nc.channel === 'Telegram' ? 'ri-telegram-line' :
+                                  nc.channel === 'Teams' ? 'ri-microsoft-line' :
+                                  nc.channel === 'SMS' ? 'ri-smartphone-line' :
+                                  nc.channel === 'Slack' ? 'ri-slack-line' :
+                                  'ri-global-line'
+                                } text-lg`}></i>
+                              </div>
+                              <div>
+                                <span className="text-sm font-semibold text-foreground-950">{nc.channel}</span>
+                                <p className="text-[10px] text-foreground-500">{nc.format || 'Non configuré'}</p>
+                              </div>
+                            </div>
+                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
+                              nc.status === 'active' ? 'bg-green-100 text-green-700' :
+                              nc.status === 'configured' ? 'bg-yellow-100 text-yellow-700' :
+                              'bg-background-100 text-foreground-400'
+                            }`}>
+                              {nc.status === 'active' ? 'ACTIF' : nc.status === 'configured' ? 'Configuré' : 'Non configuré'}
+                            </span>
+                          </div>
+                          {nc.supported ? (
+                            <div className="flex items-center gap-2 text-xs text-foreground-500">
+                              <i className="ri-timer-line"></i>
+                              <span>Latence : <strong className="text-foreground-950">{nc.latency}</strong></span>
+                            </div>
+                          ) : (
+                            <p className="text-xs text-foreground-400 italic">Canal non supporté par cet automate</p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ===== BOTTOM: TOUS LES GAPS CRITIQUES ===== */}
+      <section className="border-t border-background-200/70 bg-background-100">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 py-10">
+          <h3 className="text-sm font-bold text-foreground-950 mb-6 flex items-center gap-2">
+            <i className="ri-error-warning-line text-orange-500"></i>
+            Synthèse des Lacunes Ouvertes ({totalGapsOpen})
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {allGaps.filter(g => g.status === 'open').sort((a, b) => {
+              const order: Record<string, number> = { critical: 0, major: 1, minor: 2 };
+              return (order[a.severity] || 3) - (order[b.severity] || 3);
+            }).map((gap, idx) => {
+              const sev = getGapSeverityConfig(gap.severity);
+              return (
+                <div key={idx} className={`p-4 rounded-lg border ${
+                  gap.severity === 'critical' ? 'border-red-200 bg-red-50/20' :
+                  gap.severity === 'major' ? 'border-orange-200 bg-orange-50/20' :
+                  'border-yellow-200 bg-yellow-50/20'
+                }`}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${sev.bg} ${sev.text}`}>
+                      {sev.label}
+                    </span>
+                    <span className="text-[10px] text-foreground-400">{gap.automate}</span>
+                  </div>
+                  <p className="text-xs font-semibold text-foreground-950 mb-1">{gap.description}</p>
+                  <p className="text-xs text-foreground-500">{gap.impact}</p>
+                  <div className="flex items-center justify-between mt-2 pt-2 border-t border-background-200/70">
+                    <span className="text-[10px] text-foreground-400">Effort : {gap.estimated_effort}</span>
+                    <span className="text-[10px] text-accent-600 font-medium">{gap.remediation.substring(0, 50)}...</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ===== BOTTOM KPI BAR ===== */}
+      <section className="border-t border-background-200/70 bg-background-50">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 py-6">
+          <h4 className="text-xs font-bold text-foreground-950 mb-4">RÉSUMÉ DE L'AUDIT — KOS TENDER INTELLIGENCE AUTOMATES</h4>
+          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-3">
+            <div className="p-3 bg-background-100 rounded-lg text-center">
+              <div className="text-lg font-bold text-green-600">{auditSummary.optimal + auditSummary.operational}/{auditSummary.total_automates}</div>
+              <div className="text-[10px] text-foreground-500">Automates OK</div>
+            </div>
+            <div className="p-3 bg-background-100 rounded-lg text-center">
+              <div className="text-lg font-bold text-foreground-950">{totalToolsOperational}/{auditSummary.total_tools}</div>
+              <div className="text-[10px] text-foreground-500">Outils Opérationnels</div>
+            </div>
+            <div className="p-3 bg-background-100 rounded-lg text-center">
+              <div className="text-lg font-bold text-green-600">{totalSkillsCertified}/{totalSkillsCertified + totalSkillsUncertified}</div>
+              <div className="text-[10px] text-foreground-500">Compétences Certifiées</div>
+            </div>
+            <div className="p-3 bg-background-100 rounded-lg text-center">
+              <div className="text-lg font-bold text-foreground-950">{auditSummary.notification_channels_active}</div>
+              <div className="text-[10px] text-foreground-500">Canaux Actifs</div>
+            </div>
+            <div className="p-3 bg-background-100 rounded-lg text-center">
+              <div className="text-lg font-bold text-orange-600">{auditSummary.gaps_major}</div>
+              <div className="text-[10px] text-foreground-500">Lacunes Majeures</div>
+            </div>
+            <div className="p-3 bg-background-100 rounded-lg text-center">
+              <div className="text-lg font-bold text-yellow-600">{auditSummary.gaps_minor}</div>
+              <div className="text-[10px] text-foreground-500">Lacunes Mineures</div>
+            </div>
+            <div className="p-3 bg-background-100 rounded-lg text-center">
+              <div className="text-lg font-bold text-foreground-950">{auditSummary.total_ao_detected_30d}</div>
+              <div className="text-[10px] text-foreground-500">AO détectés /30j</div>
+            </div>
+            <div className="p-3 bg-background-100 rounded-lg text-center">
+              <div className="text-lg font-bold text-accent-500">{auditSummary.estimated_annual_ao_capacity}</div>
+              <div className="text-[10px] text-foreground-500">Capacité Annuelle</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </hubLayout>
+  );
+}
+
+
+

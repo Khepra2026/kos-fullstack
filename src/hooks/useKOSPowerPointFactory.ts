@@ -1,0 +1,111 @@
+import { useState, useMemo, useCallback, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
+import {
+  POWERPOINT_DECKS,
+  POWERPOINT_FACTORY_KPIS,
+  POWERPOINT_FACTORY_STATS,
+} from '@/mocks/powerPointFactory';
+import type { PowerPointDeck } from '@/mocks/powerPointFactory';
+
+export function useKOSPowerPointFactory() {
+  const [activeAudience, setActiveAudience] = useState<string>('all');
+  const [formatFilter, setFormatFilter] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isLive, setIsLive] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function checkLive() {
+      try {
+        const { data, error } = await supabase
+          .from('deliverables')
+          .select('*')
+          .limit(1);
+        if (!cancelled && !error && data && data.length > 0) {
+          setIsLive(true);
+        }
+      } catch {
+        // fallback mock
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    checkLive();
+    return () => { cancelled = true; };
+  }, []);
+
+  const decks = useMemo(() => POWERPOINT_DECKS, []);
+
+  const getDeckById = useCallback((id: string) => decks.find(d => d.id === id) || null, [decks]);
+
+  const getDecksByAudience = useCallback((audience: string) => {
+    if (audience === 'all') return decks;
+    return decks.filter(d => d.audience === audience);
+  }, [decks]);
+
+  const getDecksByFormat = useCallback((format: string) => {
+    if (format === 'all') return decks;
+    const slideCount = parseInt(format, 10);
+    return decks.filter(d => d.slideCount === slideCount);
+  }, [decks]);
+
+  const searchDecks = useCallback((q: string) => {
+    const lower = q.toLowerCase();
+    return decks.filter(d =>
+      d.title.toLowerCase().includes(lower) ||
+      d.executiveSummary.toLowerCase().includes(lower) ||
+      d.domain.toLowerCase().includes(lower) ||
+      d.audienceLabel.toLowerCase().includes(lower)
+    );
+  }, [decks]);
+
+  const getDecksByDomain = useCallback((domain: string) => {
+    if (domain === 'all') return decks;
+    return decks.filter(d => d.domain.toLowerCase() === domain.toLowerCase());
+  }, [decks]);
+
+  const getKPIs = useCallback(() => POWERPOINT_FACTORY_KPIS, []);
+  const getStats = useCallback(() => POWERPOINT_FACTORY_STATS, []);
+
+  const availableAudiences = useMemo(() => [...new Set(decks.map(d => d.audience))], [decks]);
+  const availableFormats = useMemo(() => ['10', '20', '30', '50'], []);
+  const availableDomains = useMemo(() => [...new Set(decks.map(d => d.domain))], [decks]);
+
+  const deckSummary = useMemo(() => {
+    return decks.map(d => ({
+      ...d,
+      totalCharts: d.slides.filter(s => s.contentType === 'chart').length,
+      totalTables: d.slides.filter(s => s.contentType === 'table').length,
+      totalRecommendations: d.slides.filter(s => s.contentType === 'recommendation').length,
+    }));
+  }, [decks]);
+
+  return {
+    decks,
+    deckSummary,
+    activeAudience,
+    setActiveAudience,
+    formatFilter,
+    setFormatFilter,
+    searchQuery,
+    setSearchQuery,
+    getDeckById,
+    getDecksByAudience,
+    getDecksByFormat,
+    searchDecks,
+    getDecksByDomain,
+    kpis: POWERPOINT_FACTORY_KPIS,
+    getKPIs,
+    stats: POWERPOINT_FACTORY_STATS,
+    getStats,
+    availableAudiences,
+    availableFormats,
+    availableDomains,
+    isLive,
+    loading,
+  };
+}
+
+
+

@@ -1,0 +1,220 @@
+{
+  "name": "KOS Infrastructure Auto-Scaling — Resource Monitor",
+  "active": true,
+  "settings": {
+    "saveExecutionProgress": true,
+    "saveManualExecutions": true,
+    "timezone": "Africa/Douala",
+    "executionOrder": "v1"
+  },
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "minutes", "minutesInterval": 5 }]
+        }
+      },
+      "id": "trigger-scaling",
+      "name": "Every 5 Minutes — Resource Check",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "command": "docker stats --no-stream --format '{{json .}}' $(docker ps --filter 'name=kos-' --format '{{.Names}}') 2>/dev/null || echo '[]'"
+      },
+      "id": "docker-stats",
+      "name": "Get Docker Container Stats",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "command": "free -m | awk 'NR==2{printf \"%.1f\", $3/$2*100}'"
+      },
+      "id": "system-memory",
+      "name": "Get System Memory Usage",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [450, 500]
+    },
+    {
+      "parameters": {
+        "command": "df -h / | awk 'NR==2{print $5}' | tr -d '%'"
+      },
+      "id": "system-disk",
+      "name": "Get System Disk Usage",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [450, 700]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ═══ KOS INFRASTRUCTURE AUTO-SCALING ANALYZER ═══\nconst dockerRaw = $input.all()[0]?.json?.stdout || '';\nconst memUsage = parseFloat($input.all()[1]?.json?.stdout || '0');\nconst diskUsage = parseFloat($input.all()[2]?.json?.stdout || '0');\n\n// Parse Docker stats\nconst containers = [];\nif (dockerRaw.trim()) {\n  const lines = dockerRaw.trim().split('\\n');\n  for (const line of lines) {\n    try {\n      const stats = JSON.parse(line);\n      containers.push({\n        name: stats.Name,\n        cpu: parseFloat(stats.CPUPerc?.replace('%', '') || '0'),\n        memory: parseFloat(stats.MemPerc?.replace('%', '') || '0'),\n        memory_usage: stats.MemUsage?.split('/')[0]?.trim() || 'N/A',\n        net_io: stats.NetIO || 'N/A'\n      });\n    } catch(e) { /* skip malformed lines */ }\n  }\n}\n\nconst now = new Date().toISOString();\n\n// Thresholds\nconst CPU_CRITICAL = 85;\nconst MEM_CRITICAL = 85;\nconst MEM_WARNING = 70;\nconst DISK_CRITICAL = 90;\n\n// Identify stressed containers\nconst stressed = containers.filter(c => c.cpu > CPU_CRITICAL || c.memory > MEM_CRITICAL);\nconst warnings = containers.filter(c => (c.cpu > 50 && c.cpu <= CPU_CRITICAL) || (c.memory > MEM_WARNING && c.memory <= MEM_CRITICAL));\n\nconst analysis = {\n  timestamp: now,\n  system: {\n    memory_usage_percent: memUsage,\n    disk_usage_percent: diskUsage,\n    total_containers: containers.length\n  },\n  containers: containers,\n  alerts: {\n    critical: stressed,\n    warnings: warnings,\n    system_memory_critical: memUsage > MEM_CRITICAL,\n    system_disk_critical: diskUsage > DISK_CRITICAL,\n    action_required: stressed.length > 0 || memUsage > MEM_CRITICAL || diskUsage > DISK_CRITICAL\n  },\n  scaling_recommendations: []\n};\n\n// Generate scaling recommendations\nif (stressed.length > 0) {\n  for (const c of stressed) {\n    analysis.scaling_recommendations.push({\n      container: c.name,\n      action: 'scale_up',\n      reason: `CPU: ${c.cpu}% / Memory: ${c.memory}%`,\n      priority: 'high'\n    });\n  }\n}\n\nif (analysis.alerts.system_memory_critical) {\n  analysis.scaling_recommendations.push({\n    container: 'host',\n    action: 'alert_admin',\n    reason: `System memory at ${memUsage}%`,\n    priority: 'critical'\n  });\n}\n\nif (analysis.alerts.system_disk_critical) {\n  analysis.scaling_recommendations.push({\n    container: 'host',\n    action: 'cleanup_disk',\n    reason: `Disk usage at ${diskUsage}%`,\n    priority: 'critical'\n  });\n}\n\nreturn analysis;\n"
+      },
+      "id": "analyze-resources",
+      "name": "Analyze Resource Usage",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [650, 400]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            { "value1": "={{ $json.alerts.action_required }}", "value2": true }
+          ]
+        }
+      },
+      "id": "check-alerts",
+      "name": "Alerts Required?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [850, 400]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ═══ EXECUTE SCALING ACTIONS ═══\nconst analysis = $input.all()[0]?.json;\nconst recs = analysis.scaling_recommendations || [];\n\n// Filter high-priority actions\nconst urgent = recs.filter(r => r.priority === 'critical' || r.priority === 'high');\n\nreturn {\n  executed: urgent.length > 0,\n  recommendations: urgent,\n  timestamp: new Date().toISOString()\n};\n"
+      },
+      "id": "prepare-scaling",
+      "name": "Prepare Scaling Actions",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1050, 200]
+    },
+    {
+      "parameters": {
+        "command": "={{ 'docker compose --env-file /opt/kos-stack/.env.docker -f /opt/kos-stack/docker-compose.yml up -d --scale ingestion-service=3 --scale transform-service=3' }}"
+      },
+      "id": "scale-services",
+      "name": "Scale Services Up",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [1250, 200]
+    },
+    {
+      "parameters": {
+        "command": "={{ 'docker system prune -f --filter \"until=24h\" && docker volume prune -f' }}"
+      },
+      "id": "cleanup-disk",
+      "name": "Cleanup Docker Disk",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [1250, 400]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://memory-engine:3003/store",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ memory_type: 'infra_scaling', title: 'Auto-Scaling Event ' + new Date().toISOString(), content: JSON.stringify($json), tags: ['scaling', 'infrastructure', 'auto-healing'], source: 'n8n-auto-scaling-engine', confidence: 0.95 }) }}"
+      },
+      "id": "store-scaling-memory",
+      "name": "Store Scaling Memory",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1450, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://audit-service:3002/log",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "event", "value": "auto_scaling_executed" },
+            { "name": "service", "value": "n8n-auto-scaling-engine" },
+            { "name": "payload", "value": "={{ JSON.stringify($json) }}" },
+            { "name": "severity", "value": "={{ $json.recommendations[0]?.priority || 'low' }}" }
+          ]
+        }
+      },
+      "id": "audit-scaling-log",
+      "name": "Audit Trail — Scaling",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1650, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/monitoring_logs",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "={{ $env.SUPABASE_ANON_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_ANON_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "Prefer", "value": "return=minimal" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ event_type: 'resource_snapshot', details: $json, created_at: new Date().toISOString() }) }}"
+      },
+      "id": "log-snapshot-supabase",
+      "name": "Log Snapshot to Supabase",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1450, 500]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ═══ NO-OP — System healthy ═══\nreturn {\n  timestamp: new Date().toISOString(),\n  status: 'healthy',\n  message: 'All systems nominal — no scaling needed.'\n};\n"
+      },
+      "id": "no-op-scaling",
+      "name": "System Healthy — No Action",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1050, 600]
+    }
+  ],
+  "connections": {
+    "Every 5 Minutes — Resource Check": {
+      "main": [[
+        { "node": "Get Docker Container Stats", "type": "main", "index": 0 },
+        { "node": "Get System Memory Usage", "type": "main", "index": 0 },
+        { "node": "Get System Disk Usage", "type": "main", "index": 0 }
+      ]]
+    },
+    "Get Docker Container Stats": {
+      "main": [[{ "node": "Analyze Resource Usage", "type": "main", "index": 0 }]]
+    },
+    "Get System Memory Usage": {
+      "main": [[{ "node": "Analyze Resource Usage", "type": "main", "index": 0 }]]
+    },
+    "Get System Disk Usage": {
+      "main": [[{ "node": "Analyze Resource Usage", "type": "main", "index": 0 }]]
+    },
+    "Analyze Resource Usage": {
+      "main": [[{ "node": "Alerts Required?", "type": "main", "index": 0 }]]
+    },
+    "Alerts Required?": {
+      "main": [
+        [{ "node": "Prepare Scaling Actions", "type": "main", "index": 0 }],
+        [{ "node": "System Healthy — No Action", "type": "main", "index": 0 }]
+      ]
+    },
+    "Prepare Scaling Actions": {
+      "main": [[
+        { "node": "Scale Services Up", "type": "main", "index": 0 },
+        { "node": "Cleanup Docker Disk", "type": "main", "index": 0 }
+      ]]
+    },
+    "Scale Services Up": {
+      "main": [[{ "node": "Store Scaling Memory", "type": "main", "index": 0 }]]
+    },
+    "Cleanup Docker Disk": {
+      "main": [[{ "node": "Store Scaling Memory", "type": "main", "index": 0 }]]
+    },
+    "Store Scaling Memory": {
+      "main": [[{ "node": "Audit Trail — Scaling", "type": "main", "index": 0 }]]
+    },
+    "System Healthy — No Action": {
+      "main": [[{ "node": "Log Snapshot to Supabase", "type": "main", "index": 0 }]]
+    }
+  }
+}

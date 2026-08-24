@@ -1,0 +1,67 @@
+import { useState, useEffect, useCallback } from 'react';
+import {
+  autoKnowledgeStats,
+  regtrooperSystem,
+  clientBrainSystem,
+  predictiveGapSystem,
+} from '@/mocks/autoKnowledgeDevelopment';
+import type {
+  AutoKnowledgeStats,
+  RegtrooperSystem,
+  ClientBrainSystem,
+  PredictiveGapSystem,
+} from '@/mocks/autoKnowledgeDevelopment';
+
+interface UseKOSAutoKnowledgeDevelopmentReturn {
+  stats: AutoKnowledgeStats;
+  regtrooper: RegtrooperSystem;
+  clientBrain: ClientBrainSystem;
+  predictiveGap: PredictiveGapSystem;
+  loading: boolean;
+  error: string | null;
+  isLive: boolean;
+  refetch: () => void;
+}
+
+export function useKOSAutoKnowledgeDevelopment(): UseKOSAutoKnowledgeDevelopmentReturn {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isLive, setIsLive] = useState(false);
+
+  const loadData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { createClient } = await import('@/lib/supabase');
+      const supabase = createClient();
+      if (supabase) {
+        const { error: healthError } = await supabase.from('kos_execution_logs').select('id', { count: 'exact', head: true });
+        if (!healthError) {
+          setIsLive(true);
+        }
+      }
+    } catch {
+      setIsLive(false);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  return {
+    stats: autoKnowledgeStats,
+    regtrooper: regtrooperSystem,
+    clientBrain: clientBrainSystem,
+    predictiveGap: predictiveGapSystem,
+    loading,
+    error,
+    isLive,
+    refetch: loadData,
+  };
+}
+
+
+

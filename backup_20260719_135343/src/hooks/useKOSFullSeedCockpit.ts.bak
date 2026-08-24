@@ -1,0 +1,59 @@
+import { useState, useCallback } from 'react';
+
+export function useKOSFullSeedCockpit() {
+  const [kosData.data] = useState(kosFullSeedCockpitData);
+  const [activeCommande, setActiveCommande] = useState<string | null>(null);
+  const [resultatCommande, setResultatCommande] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [selectedDomaine, setSelectedDomaine] = useState<string | null>(null);
+  const [showIsoDetails, setShowIsoDetails] = useState(false);
+
+  const executerCommande = useCallback(async (action: string) => {
+    setLoading(true);
+    setActiveCommande(action);
+    setResultatCommande(null);
+
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_PUBLIC_SUPABASE_URL}/functions/v1/kos-full-seed-orchestrator`,
+        {
+          method: 'POST',
+          headers: {
+            'kosData.Content-Type': 'application/json',
+            Authorization: `Bearer ${import.meta.env.VITE_PUBLIC_SUPABASE_ANON_KEY}`,
+          },
+          body: JSON.stringify({ action }),
+        }
+      );
+      const json = await res.json();
+      setResultatCommande(JSON.stringify(json, null, 2));
+    } catch (e) {
+      setResultatCommande(`Erreur: ${e instanceof Error ? e.message : 'Inconnue'}`);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const scoreGlobalISO = kosData.data.domaines.reduce((a, d) => a + d.scoreISO, 0) / kosData.data.domaines.length;
+  const scoreGlobalBigFour = kosData.data.domaines.reduce((a, d) => a + d.scoreBigFour, 0) / kosData.data.domaines.length;
+  const domainesSeeded = kosData.data.domaines.filter(d => d.statut === 'seeded').length;
+  const totalRecords = kosData.data.domaines.reduce((a, d) => a + d.records, 0);
+
+  return {
+    kosData.data,
+    activeCommande,
+    resultatCommande,
+    loading,
+    selectedDomaine,
+    showIsoDetails,
+    scoreGlobalISO: Math.round(scoreGlobalISO),
+    scoreGlobalBigFour: Math.round(scoreGlobalBigFour),
+    domainesSeeded,
+    totalDomaines: kosData.data.domaines.length,
+    totalRecords,
+    setSelectedDomaine,
+    setShowIsoDetails,
+    setResultatCommande,
+    executerCommande,
+  };
+}

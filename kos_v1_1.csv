@@ -1,0 +1,4 @@
+Stream,Phase,Quarter,Lot,Statut,ResteKEuro,ResteJH,DateCible,Priorite,Owner
+S6,Monetize,Q3-2027,API Publique v1,Todo,8,10,2027-08-30,P0,CTO
+S6,Monetize,Q3-2027,White-label Portal,Todo,12,15,2027-09-15,P0,CTO
+S6,Monetize,Q3-2027,SLA + Support Pro,Todo,6,5,2027-09-30,P1,Lead Dev

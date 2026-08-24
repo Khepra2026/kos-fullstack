@@ -1,0 +1,323 @@
+{
+  "_meta": {
+    "lock_name": "KOS LinkedIn OAuth IMMUTABLE Lock Registry",
+    "canonical_domain": "https://khepraexperts.com",
+    "linkedin_page": "KHEPRA EXPERTS",
+    "linkedin_company_handle": "khepra-experts",
+    "generated": "2026-07-03T12:00:00+00:00",
+    "version": "2.0.0-LOCK",
+    "kos_signature": "KOS-LINKEDIN-LOCK-v2.0-20260703-IMMUTABLE",
+    "description": "Registry IMMUABLE de la connexion LinkedIn OAuth 2.0. TOUTE violation = BLOCK_PUBLISH. Ce fichier prime sur linkedin.json.",
+    "read_by": "kos-linkedin-oauth, kos-linkedin-publisher, kos-linkedin-bridge, validate-domain.sh",
+    "hash_algorithm": "SHA-256"
+  },
+  "oauth": {
+    "client_id_hash": "sha256:to_be_set_on_first_connect",
+    "redirect_uri": "locked:https://khepraexperts.com/linkedin-callback",
+    "redirect_uri_rule": "KOS refuse toute autre URI. Bloque le flux OAuth si mismatch. CI/CD bloque déploiement si détecté.",
+    "linkedin_dev_portal_actions": [
+      "1. LinkedIn Developers > KOS App > Products : Activer Share on LinkedIn + Sign In with LinkedIn",
+      "2. Auth > OAuth 2.0 settings : Ajouter redirect EXACT https://khepraexperts.com/linkedin-callback",
+      "3. Scopes : Cocher w_organization_social + rw_organization_admin. Sauvegarder.",
+      "4. Vérifier que essochamanu@gmail.com est Super Admin : https://www.linkedin.com/company/khepraexperts/admin/manage-admins/",
+      "5. Revenir sur /linkedin-connect et cliquer Connecter avec LinkedIn"
+    ],
+    "scopes_required": ["openid", "profile", "email", "w_member_social", "w_organization_social", "r_organization_social", "rw_organization_admin"],
+    "scopes_minimum_for_page": ["w_organization_social"],
+    "scopes_minimum_for_profile": ["w_member_social"],
+    "organization_urn": "urn:li:organization:TBD",
+    "organization_id": "TBD",
+    "admin_member_urn": "TBD",
+    "admin_email": "essochamanu@gmail.com",
+    "required_role": "ADMINISTRATOR",
+    "fallback_role": "DIRECT_SPONSORED_CONTENT_POSTER"
+  },
+  "token": {
+    "auto_refresh_enabled": true,
+    "auto_refresh_cron": "0 3 * * *",
+    "auto_refresh_rule": "Si expiry < 14 jours, silent refresh automatique à 03:00 UTC. Log dans token_health.log.",
+    "max_expiry_days": 14,
+    "refresh_retry_max": 3,
+    "refresh_backoff_ms": [2000, 5000, 15000],
+    "on_refresh_failure": "ALERTE email essochamanu@gmail.com + notification KOS dashboard",
+    "token_introspection_enabled": true,
+    "introspection_endpoint": "https://api.linkedin.com/v2/introspectToken",
+    "circuit_breaker": {
+      "max_401_retries": 1,
+      "max_429_retries": 3,
+      "max_5xx_retries": 3,
+      "max_consecutive_failures": 5,
+      "cooldown_seconds": 60,
+      "retry_strategy": "exponential_backoff",
+      "backoff_sequence_ms": [1000, 2000, 4000, 8000, 16000]
+    }
+  },
+  "mdp": {
+    "status": "PENDING",
+    "status_options": ["PENDING", "SUBMITTED", "UNDER_REVIEW", "APPROVED", "REJECTED"],
+    "video_strategy": "carrousel_until_mdp",
+    "strategy_note": "Tant que MDP n'est pas APPROVED, convertir automatiquement les vidéos en carrousel PDF 1080x1350 + lien YouTube non-répertorié. Switch auto à native_video dès mdp_ok=true.",
+    "application_url": "https://developer.linkedin.com/apply/marketing-developer-platform",
+    "application_name": "KOS — Publication auto rapports BCEAO certifiés SHA-256 pour Page KHEPRA EXPERTS",
+    "application_volume": "20 vidéos/mois",
+    "application_use_case": "Publication automatique de rapports réglementaires BCEAO/COBAC certifiés SHA-256 sur la page entreprise KHEPRA EXPERTS. Contenu 100% original, pas de re-posts. Cas d'usage : diffusion de contenu éducatif réglementaire pour les professionnels de la finance en Afrique francophone.",
+    "delai_estime": "2-4 semaines (review LinkedIn)",
+    "fallback_pendant_attente": "Carrousel PDF 5-10 slides + lien YouTube non-répertorié"
+  },
+  "publishing": {
+    "mode": "organization",
+    "fallback_mode": "member",
+    "default_visibility": "PUBLIC",
+    "lifecycle_state": "PUBLISHED",
+    "distribution_feed": "MAIN_FEED",
+    "commentary_legal_notice": "Ce post ne constitue pas un conseil juridique ou financier. Consultez un professionnel agréé.",
+    "auto_legal_notice_enabled": true,
+    "publish_interval_seconds": 1800,
+    "publish_interval_note": "30 minutes entre chaque publication automatique pour éviter throttling",
+    "retry_policy": {
+      "on_401": "auto_refresh_token_then_retry_once",
+      "on_429": "respect_retry_after_header_then_queue",
+      "on_5xx": "exponential_backoff_3_retries"
+    },
+    "post_publish_verification": {
+      "enabled": true,
+      "check_lifecycle_state": true,
+      "max_processing_wait_seconds": 300,
+      "alert_on_processing_timeout": true
+    },
+    "healthcheck": {
+      "enabled": true,
+      "schedule": "0 9 1 * *",
+      "schedule_note": "Tous les 1er du mois à 09:00 UTC",
+      "post_text": "Healthcheck KOS LinkedIn Connect™ OK — Connexion auto OAuth 2.0 vérifiée",
+      "visibility": "CONNECTIONS",
+      "note": "Post mensuel privé pour vérifier que la connexion fonctionne"
+    }
+  },
+  "publication_plan_14_drafts": {
+    "description": "Plan de publication immédiat des 14 brouillons dès connexion OAuth réussie",
+    "total_drafts": 14,
+    "scheduled_past_date": 5,
+    "drafts_pending": 9,
+    "strategy": "Publish-now pour les dates passées, intervalle 30min pour les brouillons",
+    "target": "J+7 : 14/14 publiés. 0 échec. File d'attente = 0. Mode = Automatique.",
+    "posts": [
+      {
+        "id": 1,
+        "status_avant": "Programmé 20/06 08:00",
+        "post_type": "insight",
+        "title": "Insight BCEAO — Évolution du ratio de solvabilité UEMOA 2026",
+        "action_auto": "Publish now (date passée)",
+        "visibility": "PUBLIC",
+        "hashtags": ["#BCEAO", "#UEMOA", "#Solvabilité", "#Banque", "#Afrique"],
+        "conformite": "OK — Chiffres sourcés Circulaire BCEAO",
+        "intervalle": "Immédiat J+0"
+      },
+      {
+        "id": 2,
+        "status_avant": "Programmé 20/06 12:00",
+        "post_type": "article",
+        "title": "Guide complet — Préparer son inspection COBAC en 2026",
+        "action_auto": "Publish now + pin comment avec lien guide",
+        "visibility": "PUBLIC",
+        "hashtags": ["#COBAC", "#CEMAC", "#Conformité", "#Audit", "#Inspection"],
+        "conformite": "OK — CTA commentaire conforme. Mention 'ne constitue pas un conseil' auto-ajoutée.",
+        "intervalle": "Immédiat J+0"
+      },
+      {
+        "id": 3,
+        "status_avant": "Programmé 16/06 08:00",
+        "post_type": "insight",
+        "title": "5 piliers de la gouvernance SFD — Instruction BCEAO",
+        "action_auto": "Publish now + carrousel 5 slides PDF du guide",
+        "visibility": "PUBLIC",
+        "hashtags": ["#SFD", "#Gouvernance", "#BCEAO", "#Microfinance"],
+        "conformite": "OK — Pas de promesse chiffrée. Contenu éducatif.",
+        "intervalle": "Immédiat J+0"
+      },
+      {
+        "id": 4,
+        "status_avant": "Programmé 16/06 12:00",
+        "post_type": "article",
+        "title": "Diagnostic Flash — Évaluez votre conformité BCEAO en 5 minutes",
+        "action_auto": "Publish now + lien diagnostic interactif",
+        "visibility": "PUBLIC",
+        "hashtags": ["#Diagnostic", "#Conformité", "#BCEAO", "#SFD", "#Banque"],
+        "conformite": "OK — Mention 'ne constitue pas un conseil' auto-ajoutée.",
+        "intervalle": "Immédiat J+0"
+      },
+      {
+        "id": 5,
+        "status_avant": "Programmé 18/06 08:00",
+        "post_type": "analyse",
+        "title": "Analyse — Impact des nouvelles normes IFRS 9 sur les banques UEMOA",
+        "action_auto": "Publish now + document LinkedIn natif",
+        "visibility": "PUBLIC",
+        "hashtags": ["#IFRS9", "#BCEAO", "#Banque", "#Comptabilité", "#UEMOA"],
+        "conformite": "OK — Source OCDE citée. Analyse objective.",
+        "intervalle": "Immédiat J+0"
+      },
+      {
+        "id": 6,
+        "status_avant": "Programmé 18/06 12:00",
+        "post_type": "question",
+        "title": "Quel est le plus grand défi de votre conformité réglementaire ?",
+        "action_auto": "Publish now + sondage LinkedIn natif",
+        "visibility": "PUBLIC",
+        "hashtags": ["#Conformité", "#Sondage", "#Régulation", "#Afrique"],
+        "conformite": "OK — Engagement conforme. Sondage non promotionnel.",
+        "intervalle": "Immédiat J+0"
+      },
+      {
+        "id": 7,
+        "status_avant": "Brouillon BCEAO 2026",
+        "post_type": "article",
+        "title": "BCEAO 2026 — Nouvelles exigences de fonds propres pour les SFD",
+        "action_auto": "Publish urgent J+0 08:00 — lead magnet #1",
+        "visibility": "PUBLIC",
+        "hashtags": ["#BCEAO", "#SFD", "#FondsPropres", "#Régulation", "#UEMOA"],
+        "conformite": "OK — Chiffres sourcés Circulaire. Données officielles.",
+        "intervalle": "J+0 08:00 UTC"
+      },
+      {
+        "id": 8,
+        "status_avant": "Brouillon Tier 1/Tier 2",
+        "post_type": "article",
+        "title": "Classification Tier 1 / Tier 2 — Guide pratique pour les établissements UEMOA",
+        "action_auto": "Publish J+1 08:00 UTC",
+        "visibility": "PUBLIC",
+        "hashtags": ["#Tier1", "#Tier2", "#BCEAO", "#FondsPropres", "#UEMOA"],
+        "conformite": "OK — Articles BCEAO cités. Sources officielles.",
+        "intervalle": "J+1 08:00 UTC"
+      },
+      {
+        "id": 9,
+        "status_avant": "Brouillon Inspection",
+        "post_type": "article",
+        "title": "Checklist ultime — Préparer une inspection COBAC sans stress",
+        "action_auto": "Publish J+2 08:00 UTC",
+        "visibility": "PUBLIC",
+        "hashtags": ["#COBAC", "#Inspection", "#Checklist", "#CEMAC", "#Conformité"],
+        "conformite": "OK — Pas de garantie résultat. Checklist éducative.",
+        "intervalle": "J+2 08:00 UTC"
+      },
+      {
+        "id": 10,
+        "status_avant": "Brouillon SHA-256",
+        "post_type": "article",
+        "title": "Certification SHA-256 — Pourquoi KOS sécurise chaque livrable réglementaire",
+        "action_auto": "Publish J+3 08:00 UTC",
+        "visibility": "PUBLIC",
+        "hashtags": ["#SHA256", "#Sécurité", "#Certification", "#Conformité", "#ISO30401"],
+        "conformite": "OK — ISO 30401 = preuve. Contenu technique vérifié.",
+        "intervalle": "J+3 08:00 UTC"
+      },
+      {
+        "id": 11,
+        "status_avant": "Brouillon LBC/FT",
+        "post_type": "insight",
+        "title": "LBC/FT — Nouvelles recommandations GAFI 2026 pour l'Afrique francophone",
+        "action_auto": "Convertir en carrousel 7 slides + publish J+4 08:00 UTC",
+        "visibility": "PUBLIC",
+        "hashtags": ["#LBCFT", "#GAFI", "#Compliance", "#BCEAO", "#COBAC"],
+        "conformite": "OK — CTA diagnostic. Contenu informatif GAFI.",
+        "intervalle": "J+4 08:00 UTC"
+      },
+      {
+        "id": 12,
+        "status_avant": "Brouillon Agrément SFD",
+        "post_type": "insight",
+        "title": "Agrément SFD — Taux de succès 85% avec un dossier conforme BCEAO",
+        "action_auto": "Publish + vidéo si MDP OK sinon carrousel PDF. J+5 08:00 UTC",
+        "visibility": "PUBLIC",
+        "hashtags": ["#Agrément", "#SFD", "#BCEAO", "#Microfinance", "#Conformité"],
+        "conformite": "OK — Taux 85% = donnée historique KHEPRA, pas promesse.",
+        "intervalle": "J+5 08:00 UTC"
+      },
+      {
+        "id": 13,
+        "status_avant": "Brouillon Due Diligence",
+        "post_type": "question",
+        "title": "Due Diligence — Connaissez-vous les 4 pièges qui font échouer un deal ?",
+        "action_auto": "Publish + sondage 4 options. J+6 08:00 UTC",
+        "visibility": "PUBLIC",
+        "hashtags": ["#DueDiligence", "#MA", "#Investissement", "#Afrique", "#Finance"],
+        "conformite": "OK — Sondage éducatif. Pas de conseil transactionnel.",
+        "intervalle": "J+6 08:00 UTC"
+      },
+      {
+        "id": 14,
+        "status_avant": "Brouillon Transformation",
+        "post_type": "analyse",
+        "title": "Transformation digitale des SFD — Retour d'expérience UEMOA 2025-2026",
+        "action_auto": "Publish + lien email contact. J+7 08:00 UTC",
+        "visibility": "PUBLIC",
+        "hashtags": ["#TransformationDigitale", "#SFD", "#UEMOA", "#Innovation", "#Fintech"],
+        "conformite": "OK — Contenu cas d'usage réel. Pas promotionnel.",
+        "intervalle": "J+7 08:00 UTC"
+      }
+    ]
+  },
+  "zero_recidive": {
+    "description": "Verrouillage 0 récidive — KOS ne se déconnecte plus jamais",
+    "rules": [
+      {
+        "rule": "R1 — AUTO-REFRESH TOKEN J-14",
+        "action": "KOS > External API Config : Activer Auto-refresh token J-14. Cron 03:00 UTC.",
+        "status": "ACTIVE",
+        "violation_action": "BLOCK_PUBLISH"
+      },
+      {
+        "rule": "R2 — WEBHOOK LINKEDIN RÉVOCATION",
+        "action": "Ajouter Webhook LinkedIn : https://khepraexperts.com/webhooks/linkedin pour détection révocation token.",
+        "status": "PENDING",
+        "violation_action": "ALERT_EMAIL"
+      },
+      {
+        "rule": "R3 — HEALTHCHECK MENSUEL",
+        "action": "Test mensuel : KOS poste 'Healthcheck KOS LinkedIn Connect™ OK' en privé visibility=CONNECTIONS.",
+        "status": "ACTIVE",
+        "violation_action": "ALERT_DASHBOARD"
+      },
+      {
+        "rule": "R4 — CI/CD BLOCK",
+        "action": "validate-domain.sh bloque le build si redirect_uri != khepraexperts.com ou si Disallow: / détecté.",
+        "status": "ACTIVE",
+        "violation_action": "BLOCK_DEPLOY"
+      },
+      {
+        "rule": "R5 — NOINDEX FORBIDDEN",
+        "action": "Aucune page /linkedin-callback ou /linkedin-connect ne doit avoir noindex. CI/CD vérifie.",
+        "status": "ACTIVE",
+        "violation_action": "BLOCK_DEPLOY"
+      }
+    ]
+  },
+  "enforcement": {
+    "block_publish_if": [
+      "token_expired_and_no_refresh",
+      "scope_missing_w_organization_social",
+      "user_not_admin_of_page",
+      "redirect_uri_mismatch",
+      "circuit_breaker_open",
+      "noindex_detected_on_callback",
+      "disallow_root_in_robots"
+    ],
+    "alert_email": "essochamanu@gmail.com",
+    "alert_on": ["token_expiry_7d", "mdp_rejected", "publish_failure_3x", "scope_revoked", "webhook_revocation", "healthcheck_failure"],
+    "slack_webhook_url": null
+  },
+  "logs": {
+    "token_health_log": "token_health.log",
+    "publish_log": "publish_audit.log",
+    "diagnostic_log": "diagnostic.log",
+    "auto_refresh_log": "auto_refresh.log",
+    "healthcheck_log": "healthcheck.log",
+    "last_diagnostic": null,
+    "last_successful_post": null,
+    "last_successful_post_urn": null,
+    "last_token_refresh": null,
+    "last_healthcheck": null
+  },
+  "hash": "sha256:to_be_computed"
+}

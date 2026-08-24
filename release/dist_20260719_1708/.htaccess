@@ -1,0 +1,23 @@
+# ════════════════════════════════════════════════════════════════════
+# KHEPRA EXPERTS — Apache Anti-Parasite Rules
+# Tue toute requête vers example.com → 301 khepraexperts.com
+# ════════════════════════════════════════════════════════════════════
+RewriteEngine On
+
+# ── ANTI-PARASITE : example.com → khepraexperts.com ──
+RewriteCond %{HTTP_HOST} ^example\.com [NC,OR]
+RewriteCond %{HTTP_HOST} ^www\.example\.com [NC]
+RewriteRule ^(.*)$ https://khepraexperts.com/$1 [L,R=301]
+
+# ── CANONICAL : Force HTTPS + non-www ──
+RewriteCond %{HTTP_HOST} ^www\.khepraexperts\.com [NC]
+RewriteRule ^(.*)$ https://khepraexperts.com/$1 [L,R=301]
+
+RewriteCond %{HTTPS} off
+RewriteCond %{HTTP_HOST} ^khepraexperts\.com [NC]
+RewriteRule ^(.*)$ https://khepraexperts.com/$1 [L,R=301]
+
+# ── SPA Fallback ──
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.html [L]

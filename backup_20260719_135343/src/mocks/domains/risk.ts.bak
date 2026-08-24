@@ -1,0 +1,17 @@
+/**
+ * KOS MOCK DOMAIN: Risk (Gestion des Risques)
+ * Covers: risk assessments, security scans, resilience, enterprise risk
+ */
+
+export * from '@/mocks/kosEnterpriseRiskResilience';
+export * from '@/mocks/kosEnterpriseSecurityFull';
+export * from '@/mocks/kosEnterpriseSecurityResilience';
+export * from '@/mocks/kosFullSystemSecurityScan';
+export * from '@/mocks/kosRiskDiligence';
+export * from '@/mocks/kosRiskKriHeatmap';
+export * from '@/mocks/kosSecurityDashboard';
+export * from '@/mocks/kosSysOpsHealthResiliency';
+export * from '@/mocks/securityScan';
+export * from '@/mocks/kosGlobalAgentScan';
+export * from '@/mocks/kosGlobalAgentScanAgents';
+export * from '@/mocks/kosSystemScanResults';

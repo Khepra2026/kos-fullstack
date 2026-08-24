@@ -1,0 +1,131 @@
+import { useState, useMemo, useCallback, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
+import {
+  INTERVIEW_ROLES,
+  INTERVIEW_QAS,
+  INTERVIEW_SYNTHESES,
+  FORMAT_CONFIGS,
+  INTERVIEW_FACTORY_KPIS,
+  INTERVIEW_FACTORY_STATS,
+} from '@/mocks/interviewFactory';
+import type { ExpertRole, InterviewQA, InterviewSynthesis } from '@/mocks/interviewFactory';
+
+export function useKOSInterviewFactory() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [roleFilter, setRoleFilter] = useState('all');
+  const [difficultyFilter, setDifficultyFilter] = useState('all');
+  const [isLive, setIsLive] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function checkLive() {
+      try {
+        const { data, error } = await supabase
+          .from('deliverables')
+          .select('*')
+          .limit(1);
+        if (!cancelled && !error && data && data.length > 0) {
+          setIsLive(true);
+        }
+      } catch {
+        // fallback mock
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    checkLive();
+    return () => { cancelled = true; };
+  }, []);
+
+  const roles = useMemo(() => INTERVIEW_ROLES, []);
+  const qas = useMemo(() => INTERVIEW_QAS, []);
+  const syntheses = useMemo(() => INTERVIEW_SYNTHESES, []);
+  const formats = useMemo(() => FORMAT_CONFIGS, []);
+
+  const getRoleById = useCallback((id: string) => roles.find(r => r.id === id) || null, [roles]);
+
+  const searchRoles = useCallback((q: string) => {
+    const lower = q.toLowerCase();
+    return roles.filter(r =>
+      r.title.toLowerCase().includes(lower) ||
+      r.fullTitle.toLowerCase().includes(lower) ||
+      r.expertise.some(e => e.toLowerCase().includes(lower)) ||
+      r.topics.some(t => t.toLowerCase().includes(lower))
+    );
+  }, [roles]);
+
+  const getQAByRole = useCallback((roleId: string) => {
+    return qas.filter(q => q.roleId === roleId);
+  }, [qas]);
+
+  const getFilteredQAs = useCallback((roleId: string, diff: string) => {
+    let filtered = qas;
+    if (roleId !== 'all') filtered = filtered.filter(q => q.roleId === roleId);
+    if (diff !== 'all') filtered = filtered.filter(q => q.difficulty === diff);
+    return filtered;
+  }, [qas]);
+
+  const searchQAs = useCallback((q: string) => {
+    const lower = q.toLowerCase();
+    return qas.filter(qa =>
+      qa.question.toLowerCase().includes(lower) ||
+      qa.answerExpert.toLowerCase().includes(lower) ||
+      qa.keywords.some(k => k.toLowerCase().includes(lower))
+    );
+  }, [qas]);
+
+  const getQAById = useCallback((id: string) => qas.find(q => q.id === id) || null, [qas]);
+
+  const getSynthesesByFormat = useCallback((format: string) => {
+    if (format === 'all') return syntheses;
+    return syntheses.filter(s => s.format === format);
+  }, [syntheses]);
+
+  const getFormatConfigs = useCallback(() => formats, [formats]);
+
+  const getKPIs = useCallback(() => INTERVIEW_FACTORY_KPIS, []);
+  const getStats = useCallback(() => INTERVIEW_FACTORY_STATS, []);
+
+  const availableRoles = useMemo(() => roles.map(r => ({ id: r.id, title: r.title, color: r.color })), [roles]);
+  const availableFormats = useMemo(() => [...new Set(syntheses.map(s => s.format))], [syntheses]);
+
+  const qaCountByRole = useMemo(() => {
+    const map: Record<string, number> = {};
+    roles.forEach(r => { map[r.id] = qas.filter(q => q.roleId === r.id).length; });
+    return map;
+  }, [roles, qas]);
+
+  return {
+    roles,
+    qas,
+    syntheses,
+    formats,
+    searchQuery,
+    setSearchQuery,
+    roleFilter,
+    setRoleFilter,
+    difficultyFilter,
+    setDifficultyFilter,
+    getRoleById,
+    searchRoles,
+    getQAByRole,
+    getFilteredQAs,
+    searchQAs,
+    getQAById,
+    getSynthesesByFormat,
+    getFormatConfigs,
+    getKPIs,
+    getStats,
+    availableRoles,
+    availableFormats,
+    qaCountByRole,
+    stats: INTERVIEW_FACTORY_STATS,
+    kpis: INTERVIEW_FACTORY_KPIS,
+    isLive,
+    loading,
+  };
+}
+
+
+

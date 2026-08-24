@@ -1,0 +1,1012 @@
+import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import hubLayout from '@/components/feature/hubLayout';
+import { SeoHead } from '@/components/feature/SeoHead';
+import { supabase } from '@/lib/supabase';
+import {
+  MDP_CHECKLIST,
+  MDP_FORM_FIELDS,
+  MDP_VIDEO_SCRIPT,
+  MDP_QUICK_STATUS,
+  MDP_AGENTS,
+  MDP_AUTOMATOR_STATS,
+} from '@/mocks/mDPAutomator';
+import type { MDPChecklistStep, MDPFormField, MDPVideoScriptStep, MDPAgentTier } from '@/mocks/mDPAutomator';
+
+function getChecklistStatusBadge(status: string) {
+  switch (status) {
+    case 'completed': return { bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-700', label: 'Complété', dot: 'bg-emerald-500', line: 'bg-emerald-500' };
+    case 'in_progress': return { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700', label: 'En cours', dot: 'bg-amber-500', line: 'bg-amber-400' };
+    case 'pending': return { bg: 'bg-slate-50', border: 'border-slate-200', text: 'text-slate-500', label: 'En attente', dot: 'bg-slate-300', line: 'bg-background-200' };
+    case 'blocked': return { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-700', label: 'Bloqué', dot: 'bg-red-500', line: 'bg-red-300' };
+    default: return { bg: 'bg-gray-50', border: 'border-gray-200', text: 'text-gray-700', label: 'N/A', dot: 'bg-gray-500', line: 'bg-background-100' };
+  }
+}
+
+function getAgentStatusBadge(status: string) {
+  switch (status) {
+    case 'active': return { bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-700', label: 'Activé', dot: 'bg-emerald-500' };
+    case 'standby': return { bg: 'bg-amber-50', border: 'border-amber-200', text: 'text-amber-700', label: 'En veille', dot: 'bg-amber-500' };
+    case 'blocked': return { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-700', label: 'Bloqué', dot: 'bg-red-500' };
+    default: return { bg: 'bg-gray-50', border: 'border-gray-200', text: 'text-gray-700', label: 'N/A', dot: 'bg-gray-500' };
+  }
+}
+
+type TabId = 'checklist' | 'form' | 'script' | 'agents' | 'resources';
+
+export default function mDPAutomatorPage() {
+  const { i18n } = useTranslation();
+  const lang = i18n.language.startsWith('en') ? 'en' : 'fr';
+  const [activeTab, setActiveTab] = useState<TabId>('checklist');
+  const [expandedStep, setExpandedStep] = useState<string | null>(null);
+  const [expandedAgent, setExpandedAgent] = useState<string | null>(null);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [showScriptActions, setShowScriptActions] = useState(false);
+  const [snapshotStatus, setSnapshotStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [snapshotMessage, setSnapshotMessage] = useState('');
+  const [snapshotResult, setSnapshotResult] = useState<Record<string, unknown> | null>(null);
+  const [showSnapshotEdit, setShowSnapshotEdit] = useState(false);
+  const [editFollowers, setEditFollowers] = useState('2840');
+  const [editEmployees, setEditEmployees] = useState('25');
+  const [editIndustry, setEditIndustry] = useState('Business Consulting and Services');
+  const [editDescription, setEditDescription] = useState('Cabinet de conseil de référence en Afrique francophone — Régulation financière, Prix de transfert, Gouvernance & Risques.');
+  const [editTagline, setEditTagline] = useState('KHEPRA EXPERTS — Conseil en Régulation Financière & Gouvernance | UEMOA · CEMAC · 15 pays');
+
+  const stats = MDP_AUTOMATOR_STATS;
+
+  const handleCopy = (text: string, field: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopiedField(field);
+      setTimeout(() => setCopiedField(null), 2000);
+    });
+  };
+
+  const handleCaptureSnapshot = async () => {
+    setSnapshotStatus('loading');
+    setSnapshotMessage('Scan des sources publiques en cours...');
+    setSnapshotResult(null);
+
+    try {
+      // Step 1: Fetch from KOS Bridge
+      const { data: bridgeData, error: bridgeError } = await supabase.functions.invoke('kos-linkedin-master', {
+        body: { action: 'fetch', profile_type: 'company' },
+      });
+
+      if (bridgeError) throw new Error(bridgeError.message || 'Bridge fetch failed');
+
+      // Step 2: Capture to Supabase
+      const snapshotPayload = {
+        profile_type: 'company',
+        followers: bridgeData.followers || parseInt(editFollowers, 10) || 0,
+        employee_count: bridgeData.employee_count || parseInt(editEmployees, 10) || null,
+        industry: bridgeData.industry || editIndustry,
+        description: bridgeData.description || editDescription,
+        tagline: editTagline,
+        company_name: bridgeData.company_name || 'KHEPRA EXPERTS',
+        logo_url: bridgeData.logo_url || null,
+      };
+
+      const { data: captureData, error: captureError } = await supabase.functions.invoke('kos-linkedin-master', {
+        body: {
+          action: 'capture',
+          ...snapshotPayload,
+        },
+      });
+
+      if (captureError) throw new Error(captureError.message || 'Capture failed');
+
+      setSnapshotResult({
+        bridge: bridgeData,
+        capture: captureData,
+      });
+      setSnapshotStatus('success');
+      setSnapshotMessage(`Snapshot capturé avec succès ! ${bridgeData.followers || editFollowers} followers, industrie: ${bridgeData.industry || editIndustry}`);
+      setShowSnapshotEdit(false);
+    } catch (err) {
+      setSnapshotStatus('error');
+      setSnapshotMessage(err instanceof Error ? err.message : 'Erreur lors de la capture');
+    }
+  };
+
+  const tabs: { id: TabId; label: string; icon: string; count?: string }[] = [
+    { id: 'checklist', label: 'Checklist 10 Étapes', icon: 'ri-list-check', count: `${stats.completedSteps}/${stats.totalSteps}` },
+    { id: 'form', label: 'Formulaire MDP', icon: 'ri-survey-line', count: String(MDP_FORM_FIELDS.length) },
+    { id: 'script', label: 'Script Vidéo', icon: 'ri-vidicon-line', count: '7 scènes' },
+    { id: 'agents', label: 'Agents KOS', icon: 'ri-robot-line', count: String(stats.totalAgents) },
+    { id: 'resources', label: 'Ressources', icon: 'ri-folder-line' },
+  ];
+
+  return (
+    <hubLayout hubId={46}>
+      <SeoHead
+        title="KOS MDP Automator™ — LinkedIn Marketing Developer Platform | KHEPRA EXPERTS"
+        description="KOS MDP Automator — Automate de candidature LinkedIn Marketing Developer Platform. 10 étapes automatisées, 4 agents KOS spécialisés, script vidéo, formulaire pré-rempli. Scoring de progression. Dashboard de connectivité API sociale."
+        keywords="KOS MDP Automator, LinkedIn MDP, Marketing Developer Platform, API LinkedIn, candidature MDP, automatisation, KHEPRA EXPERTS"
+        canonicalPath="/kos-mdp-automator"
+        ogType="website"
+        ogLocale={lang === 'fr' ? 'fr_FR' : 'en_US'}
+      />
+
+        {/* Hero */}
+        <section className="relative pt-32 pb-16 sm:pt-40 sm:pb-20 overflow-hidden bg-foreground-950">
+          <div className="absolute inset-0">
+            <img
+              src="https://readdy.ai/api/search-image?query=abstract%20sophisticated%20dark%20corporate%20command%20center%20with%20interconnected%20glowing%20nodes%20representing%20automated%20workflow%20orchestration%20for%20API%20integration%20application%20process%20warm%20amber%20and%20emerald%20green%20accent%20lines%20connecting%20distributed%20intelligence%20hubs%20across%20a%20deep%20charcoal%20gradient%20field%20premium%20corporate%20technology%20aesthetic%20with%20subtle%20geometric%20network%20patterns%20representing%20automated%20compliance%20and%20certification%20processes%20no%20text%20no%20human%20figures&width=1920&height=600&seq=kos-mdp-automator-hero&orientation=landscape"
+              alt=""
+              className="w-full h-full object-cover object-center opacity-18"
+              width="1920"
+              height="600"
+            />
+          </div>
+          <div className="absolute inset-0 bg-gradient-to-b from-foreground-950/60 via-foreground-950/80 to-foreground-950" />
+
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div className="text-center max-w-4xl mx-auto">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent-500/20 border border-accent-400/30 backdrop-blur-sm mb-6">
+                <i className="ri-cpu-line text-accent-400 text-sm" />
+                <span className="text-sm font-semibold text-accent-300 uppercase tracking-wider">
+                  KOS MDP Automator™ — LinkedIn Marketing Developer Platform
+                </span>
+              </div>
+              <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
+                Candidature MDP.
+                <span className="block text-accent-400 mt-2">Orchestrée. Automatisée. Tracée.</span>
+              </h1>
+              <p className="text-lg sm:text-xl text-gray-300 leading-relaxed mb-8 max-w-3xl mx-auto">
+                4 agents KOS · 10 étapes de candidature · Script vidéo minute par minute · Formulaire LinkedIn pré-rempli.{' '}
+                <strong className="text-white">Du dossier MDP au dashboard 100% live, chaque étape est orchestrée par KOS.</strong>
+              </p>
+              <div className="flex flex-wrap justify-center gap-3">
+                <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/20 border border-emerald-400/30 backdrop-blur-sm">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                  <span className="text-sm text-emerald-300 font-semibold">{stats.completedSteps} étapes complétées</span>
+                </div>
+                <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/20 border border-amber-400/30 backdrop-blur-sm">
+                  <span className="w-2 h-2 rounded-full bg-amber-500" />
+                  <span className="text-sm text-amber-300 font-semibold">{stats.inProgressSteps} en cours</span>
+                </div>
+                <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-red-500/20 border border-red-400/30 backdrop-blur-sm">
+                  <span className="w-2 h-2 rounded-full bg-red-500" />
+                  <span className="text-sm text-red-300 font-semibold">{stats.blockedSteps} bloquées (MDP requis)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Tab Navigation */}
+        <section className="sticky top-20 z-30 bg-white border-b border-background-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex gap-1 overflow-x-auto py-3">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-bold cursor-pointer transition-all whitespace-nowrap ${
+                    activeTab === tab.id
+                      ? 'bg-foreground-950 text-white'
+                      : 'text-foreground-600 hover:bg-background-100 hover:text-foreground-900'
+                  }`}
+                >
+                  <i className={`${tab.icon} text-base`} />
+                  {tab.label}
+                  {tab.count && (
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${activeTab === tab.id ? 'bg-white/20' : 'bg-background-200'}`}>
+                      {tab.count}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* === TAB: CHECKLIST === */}
+        {activeTab === 'checklist' && (
+          <>
+            {/* Progress Overview */}
+            <section className="py-8 sm:py-10">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                {/* Quick Status Cards */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 mb-10">
+                  {MDP_QUICK_STATUS.map((card, i) => (
+                    <div key={card.label} className="rounded-xl bg-white border border-background-200 p-4 text-center group hover:shadow-md transition-all">
+                      <div className="w-9 h-9 mx-auto mb-2 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${card.color}15` }}>
+                        <i className={`${card.icon} text-sm`} style={{ color: card.color }} />
+                      </div>
+                      <p className="text-xs font-bold text-foreground-950 mb-0.5">{card.label}</p>
+                      <p className={`text-sm font-bold ${card.statusColor}`}>{card.status}</p>
+                      <p className="text-[10px] text-foreground-400 mt-0.5">{card.detail}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* KOS LinkedIn Bridge — Capture Snapshot */}
+                <div className="rounded-2xl bg-gradient-to-r from-emerald-50 to-white border border-emerald-200 p-6 mb-8">
+                  <div className="flex items-start justify-between gap-4 flex-col sm:flex-row">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="w-10 h-10 rounded-xl bg-emerald-100 border border-emerald-200 flex items-center justify-center">
+                          <i className="ri-link-unlink-m text-emerald-600 text-lg" />
+                        </div>
+                        <div>
+                          <h3 className="font-heading text-lg font-bold text-foreground-950">KOS LinkedIn Bridge — Capture Snapshot</h3>
+                          <p className="text-xs text-foreground-500">OEmbed + OpenGraph + Google Cache → Supabase linkedin_snapshots</p>
+                        </div>
+                      </div>
+                      <p className="text-sm text-foreground-600 leading-relaxed mb-3">
+                        Capture les données publiques de la Page LinkedIn KHEPRA EXPERTS depuis 3 sources indépendantes.
+                        Le snapshot alimente automatiquement le dashboard <strong>/agents-experts</strong> — la carte LinkedIn passe du rouge au vert sans attendre le MDP.
+                      </p>
+
+                      {snapshotStatus === 'idle' && !showSnapshotEdit && (
+                        <button
+                          onClick={() => setShowSnapshotEdit(true)}
+                          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-500 text-white font-bold text-sm hover:bg-emerald-600 transition-colors cursor-pointer whitespace-nowrap"
+                        >
+                          <i className="ri-camera-line text-lg" />
+                          Capturer un Snapshot maintenant
+                        </button>
+                      )}
+
+                      {snapshotStatus === 'loading' && (
+                        <div className="flex items-center gap-3">
+                          <div className="w-5 h-5 rounded-full border-2 border-emerald-400 border-t-transparent animate-spin" />
+                          <span className="text-sm text-emerald-700 font-medium">{snapshotMessage}</span>
+                        </div>
+                      )}
+
+                      {snapshotStatus === 'success' && (
+                        <div>
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="w-6 h-6 rounded-full bg-emerald-100 border border-emerald-200 flex items-center justify-center">
+                              <i className="ri-check-line text-emerald-500 text-sm" />
+                            </span>
+                            <span className="text-sm text-emerald-700 font-semibold">{snapshotMessage}</span>
+                          </div>
+                          {snapshotResult && (
+                            <div className="flex flex-wrap gap-2 mt-2">
+                              {(snapshotResult.bridge as Record<string, unknown>)?.sources_detail && (
+                                <>
+                                  {((snapshotResult.bridge as Record<string, unknown>)?.sources_detail as Record<string, boolean>)?.oembed && (
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-accent-50 border border-accent-200 text-accent-700 whitespace-nowrap">
+                                      <i className="ri-check-line text-[10px]" />OEmbed
+                                    </span>
+                                  )}
+                                  {((snapshotResult.bridge as Record<string, unknown>)?.sources_detail as Record<string, boolean>)?.opengraph && (
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 border border-amber-200 text-amber-700 whitespace-nowrap">
+                                      <i className="ri-check-line text-[10px]" />OpenGraph
+                                    </span>
+                                  )}
+                                  {((snapshotResult.bridge as Record<string, unknown>)?.sources_detail as Record<string, boolean>)?.snapshot && (
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 border border-emerald-200 text-emerald-700 whitespace-nowrap">
+                                      <i className="ri-check-line text-[10px]" />Snapshot
+                                    </span>
+                                  )}
+                                </>
+                              )}
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-foreground-50 border border-background-200 text-foreground-600 whitespace-nowrap">
+                                Confiance: {(snapshotResult.bridge as Record<string, unknown>)?.confidence || '—'}%
+                              </span>
+                            </div>
+                          )}
+                          <button
+                            onClick={() => { setSnapshotStatus('idle'); setSnapshotResult(null); }}
+                            className="mt-3 text-xs text-foreground-400 hover:text-foreground-600 transition-colors flex items-center gap-1 cursor-pointer"
+                          >
+                            <i className="ri-refresh-line" />Nouveau snapshot
+                          </button>
+                        </div>
+                      )}
+
+                      {snapshotStatus === 'error' && (
+                        <div>
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="w-6 h-6 rounded-full bg-red-100 border border-red-200 flex items-center justify-center">
+                              <i className="ri-error-warning-line text-red-500 text-sm" />
+                            </span>
+                            <span className="text-sm text-red-700 font-medium">{snapshotMessage}</span>
+                          </div>
+                          <button
+                            onClick={() => setSnapshotStatus('idle')}
+                            className="text-xs text-foreground-400 hover:text-foreground-600 transition-colors flex items-center gap-1 cursor-pointer"
+                          >
+                            <i className="ri-restart-line" />Réessayer
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex-shrink-0">
+                      <a
+                        href="/agents-experts"
+                        className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-foreground-950 text-white font-bold text-sm hover:bg-foreground-800 transition-colors cursor-pointer whitespace-nowrap"
+                      >
+                        <i className="ri-dashboard-line text-lg" />
+                        Voir le Dashboard Live →
+                      </a>
+                    </div>
+                  </div>
+
+                  {/* Inline Snapshot Editor */}
+                  {showSnapshotEdit && snapshotStatus !== 'success' && (
+                    <div className="mt-5 pt-5 border-t border-emerald-200">
+                      <div className="flex items-center gap-2 mb-3">
+                        <i className="ri-edit-line text-foreground-400 text-sm" />
+                        <span className="text-xs font-bold text-foreground-400 uppercase tracking-wider">Valeurs manuelles (fallback si les sources publiques échouent)</span>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
+                        <div>
+                          <label className="block text-[10px] font-bold text-foreground-400 uppercase tracking-wider mb-1">Followers</label>
+                          <input
+                            type="number"
+                            value={editFollowers}
+                            onChange={(e) => setEditFollowers(e.target.value)}
+                            className="w-full px-3 py-2 text-sm rounded-lg border border-background-200 bg-white text-foreground-900 focus:outline-none focus:border-emerald-300 transition-colors"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-foreground-400 uppercase tracking-wider mb-1">Employés</label>
+                          <input
+                            type="number"
+                            value={editEmployees}
+                            onChange={(e) => setEditEmployees(e.target.value)}
+                            className="w-full px-3 py-2 text-sm rounded-lg border border-background-200 bg-white text-foreground-900 focus:outline-none focus:border-emerald-300 transition-colors"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-foreground-400 uppercase tracking-wider mb-1">Industrie</label>
+                          <input
+                            type="text"
+                            value={editIndustry}
+                            onChange={(e) => setEditIndustry(e.target.value)}
+                            className="w-full px-3 py-2 text-sm rounded-lg border border-background-200 bg-white text-foreground-900 focus:outline-none focus:border-emerald-300 transition-colors"
+                          />
+                        </div>
+                        <div className="sm:col-span-2 lg:col-span-2">
+                          <label className="block text-[10px] font-bold text-foreground-400 uppercase tracking-wider mb-1">Description</label>
+                          <input
+                            type="text"
+                            value={editDescription}
+                            onChange={(e) => setEditDescription(e.target.value)}
+                            className="w-full px-3 py-2 text-sm rounded-lg border border-background-200 bg-white text-foreground-900 focus:outline-none focus:border-emerald-300 transition-colors"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-foreground-400 uppercase tracking-wider mb-1">Tagline</label>
+                          <input
+                            type="text"
+                            value={editTagline}
+                            onChange={(e) => setEditTagline(e.target.value)}
+                            className="w-full px-3 py-2 text-sm rounded-lg border border-background-200 bg-white text-foreground-900 focus:outline-none focus:border-emerald-300 transition-colors"
+                          />
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={handleCaptureSnapshot}
+                          disabled={snapshotStatus === 'loading'}
+                          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-500 text-white font-bold text-sm hover:bg-emerald-600 transition-colors cursor-pointer whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {snapshotStatus === 'loading' ? (
+                            <>
+                              <div className="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                              Capture en cours...
+                            </>
+                          ) : (
+                            <>
+                              <i className="ri-camera-line text-lg" />
+                              Scanner & Capturer maintenant
+                            </>
+                          )}
+                        </button>
+                        <button
+                          onClick={() => setShowSnapshotEdit(false)}
+                          className="text-xs text-foreground-400 hover:text-foreground-600 transition-colors cursor-pointer"
+                        >
+                          Annuler
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Progress Bar */}
+                <div className="rounded-2xl bg-white border border-background-200 p-6 mb-8">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-heading text-lg font-bold text-foreground-950 flex items-center gap-2">
+                      <i className="ri-bar-chart-line text-accent-500" />
+                      Progression Globale
+                    </h3>
+                    <span className="text-2xl font-bold font-heading text-accent-600">{stats.progressPercent}%</span>
+                  </div>
+                  <div className="w-full h-3 rounded-full bg-background-200 overflow-hidden mb-3">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-sky-500 to-emerald-500 transition-all duration-700"
+                      style={{ width: `${stats.progressPercent}%` }}
+                    />
+                  </div>
+                  <div className="flex flex-wrap items-center gap-4 text-xs text-foreground-400">
+                    <span className="flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                      {stats.completedSteps} complétées
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-amber-500" />
+                      {stats.inProgressSteps} en cours
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-slate-300" />
+                      {stats.pendingSteps} en attente
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-red-500" />
+                      {stats.blockedSteps} bloquées
+                    </span>
+                    <span className="ml-auto text-foreground-500 font-medium">
+                      Temps humain estimé : {stats.estimatedHumanTime}
+                    </span>
+                  </div>
+                </div>
+
+                {/* 10-Step Checklist */}
+                <div className="text-center mb-8">
+                  <h2 className="font-heading text-3xl sm:text-4xl font-bold text-foreground-950 mb-2">
+                    Checklist de Candidature — 10 Étapes
+                  </h2>
+                  <p className="text-foreground-600 max-w-2xl mx-auto">
+                    De la vérification de l&apos;app LinkedIn au dashboard 100% live. Chaque étape est tracée et monitorée.
+                  </p>
+                </div>
+
+                <div className="space-y-4">
+                  {MDP_CHECKLIST.map((step, i) => {
+                    const statusStyle = getChecklistStatusBadge(step.status);
+                    const isExpanded = expandedStep === step.id;
+                    return (
+                      <div key={step.id} className="relative">
+                        {i < MDP_CHECKLIST.length - 1 && (
+                          <div className={`absolute left-[26px] top-16 bottom-0 w-0.5 hidden md:block ${statusStyle.line}`} />
+                        )}
+                        <div className={`rounded-2xl border overflow-hidden transition-all duration-300 ${
+                          isExpanded ? 'border-foreground-300 bg-white shadow-lg' : `${statusStyle.bg} ${statusStyle.border}`
+                        }`}>
+                          <button
+                            onClick={() => setExpandedStep(isExpanded ? null : step.id)}
+                            className="w-full p-4 sm:p-5 text-left flex items-start gap-4 cursor-pointer"
+                          >
+                            <div className="flex flex-col items-center flex-shrink-0">
+                              <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ backgroundColor: `${step.color}15` }}>
+                                <i className={`${step.icon} text-xl`} style={{ color: step.color }} />
+                              </div>
+                              <span className="text-2xl font-bold font-heading mt-1.5" style={{ color: step.color }}>{step.num}</span>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-3 mb-1.5 flex-wrap">
+                                <h3 className="font-heading text-base font-bold text-foreground-950">{step.title}</h3>
+                                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold flex-shrink-0 ${statusStyle.bg} ${statusStyle.border} ${statusStyle.text}`}>
+                                  <span className={`w-1.5 h-1.5 rounded-full ${statusStyle.dot}`} />
+                                  {statusStyle.label}
+                                </span>
+                                {step.automated && (
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-50 border border-sky-200 text-sky-700 flex-shrink-0">
+                                    <i className="ri-robot-line text-[10px]" />Auto
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-sm text-foreground-600 leading-relaxed line-clamp-2">{step.description}</p>
+                              <div className="flex items-center gap-3 mt-2 text-xs text-foreground-400">
+                                <span className="flex items-center gap-1">
+                                  <i className="ri-time-line" />
+                                  {step.duration}
+                                </span>
+                                <span className="flex items-center gap-1">
+                                  <i className="ri-file-list-3-line" />
+                                  {step.deliverables.length} livrables
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex-shrink-0 pt-1">
+                              <i className={`ri-${isExpanded ? 'subtract' : 'add'}-line text-foreground-400 text-lg`} />
+                            </div>
+                          </button>
+                          {isExpanded && (
+                            <div className="px-5 pb-5 border-t border-background-200 pt-4">
+                              <p className="text-sm text-foreground-600 leading-relaxed mb-4">{step.description}</p>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                  <h5 className="text-xs font-bold text-foreground-400 uppercase tracking-wider mb-2">Livrables</h5>
+                                  <ul className="space-y-1.5">
+                                    {step.deliverables.map((d, j) => (
+                                      <li key={j} className="flex items-start gap-2 text-xs text-foreground-600">
+                                        <i className="ri-checkbox-circle-line text-emerald-500 flex-shrink-0 mt-px" />
+                                        {d}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                                <div>
+                                  <h5 className="text-xs font-bold text-foreground-400 uppercase tracking-wider mb-2">Actions</h5>
+                                  {step.actionUrl && (
+                                    <a
+                                      href={step.actionUrl}
+                                      target={step.actionUrl.startsWith('http') ? '_blank' : undefined}
+                                      rel={step.actionUrl.startsWith('http') ? 'noopener noreferrer' : undefined}
+                                      className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-accent-50 border border-accent-200 text-sm font-semibold text-accent-700 hover:bg-accent-100 transition-colors cursor-pointer whitespace-nowrap"
+                                    >
+                                      <i className="ri-external-link-line" />
+                                      {step.actionUrl.startsWith('http') ? 'Ouvrir le Developer Portal' : 'Voir le Dashboard'}
+                                    </a>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </section>
+          </>
+        )}
+
+        {/* === TAB: FORM === */}
+        {activeTab === 'form' && (
+          <section className="py-10 sm:py-14">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="text-center mb-10">
+                <h2 className="font-heading text-3xl sm:text-4xl font-bold text-foreground-950 mb-4">
+                  Formulaire de Candidature MDP — Pré-rempli
+                </h2>
+                <p className="text-foreground-600 max-w-2xl mx-auto">
+                  {MDP_FORM_FIELDS.length} champs. Copiez-collez directement dans le Developer Portal LinkedIn. Cliquez sur un champ pour le copier.
+                </p>
+                <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-50 border border-amber-200">
+                  <i className="ri-information-line text-amber-500 text-sm" />
+                  <span className="text-xs text-amber-700">Le champ &ldquo;Video Demo URL&rdquo; doit être rempli après l&apos;enregistrement de la vidéo.</span>
+                </div>
+              </div>
+
+              <div className="max-w-4xl mx-auto space-y-4">
+                {MDP_FORM_FIELDS.map((field) => (
+                  <div
+                    key={field.field}
+                    className={`rounded-2xl border p-5 transition-all duration-300 group ${
+                      field.copyable
+                        ? 'bg-white border-background-200 hover:border-sky-300 hover:shadow-md cursor-pointer'
+                        : 'bg-amber-50/60 border-amber-200'
+                    }`}
+                    onClick={() => field.copyable && handleCopy(field.value, field.field)}
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-xs font-bold text-foreground-400 uppercase tracking-wider">{field.field}</span>
+                          {field.copyable ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-50 border border-sky-200 text-sky-700">
+                              <i className="ri-file-copy-line text-[10px]" />
+                              Cliquer pour copier
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 border border-amber-200 text-amber-700">
+                              <i className="ri-time-line text-[10px]" />
+                              À compléter
+                            </span>
+                          )}
+                        </div>
+                        <p className={`text-sm leading-relaxed ${field.copyable ? 'text-foreground-800 font-medium' : 'text-foreground-500 italic'}`}>
+                          {field.value}
+                        </p>
+                      </div>
+                      {field.copyable && (
+                        <div className="flex-shrink-0 pt-1">
+                          <i className={`text-lg ${copiedField === field.field ? 'ri-check-line text-emerald-500' : 'ri-file-copy-line text-foreground-300 group-hover:text-accent-500'}`} />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {copiedField && (
+                <div className="fixed bottom-6 right-6 z-[99999] animate-slide-up">
+                  <div className="flex items-center gap-3 px-5 py-3 rounded-2xl bg-emerald-600 text-white shadow-2xl">
+                    <i className="ri-check-double-line text-lg" />
+                    <span className="text-sm font-semibold">Copié : {copiedField}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </section>
+        )}
+
+        {/* === TAB: SCRIPT === */}
+        {activeTab === 'script' && (
+          <section className="py-10 sm:py-14">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="text-center mb-10">
+                <h2 className="font-heading text-3xl sm:text-4xl font-bold text-foreground-950 mb-4">
+                  Script Vidéo de Démonstration — 3 Minutes
+                </h2>
+                <p className="text-foreground-600 max-w-2xl mx-auto mb-4">
+                  7 scènes chronométrées. Suivez le script mot pour mot. La vidéo est l&apos;élément le plus important de la candidature MDP.
+                </p>
+                <div className="flex flex-wrap justify-center gap-3">
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent-50 border border-accent-200 text-xs font-semibold text-accent-700">
+                    <i className="ri-timer-line" /> Durée totale : 3 minutes
+                  </div>
+                  <button
+                    onClick={() => setShowScriptActions(!showScriptActions)}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200 text-xs font-semibold text-amber-700 hover:bg-amber-100 transition-colors cursor-pointer whitespace-nowrap"
+                  >
+                    <i className={showScriptActions ? 'ri-eye-off-line' : 'ri-eye-line'} />
+                    {showScriptActions ? 'Masquer actions' : 'Afficher instructions de tournage'}
+                  </button>
+                </div>
+              </div>
+
+              <div className="max-w-5xl mx-auto">
+                {/* Timeline header */}
+                <div className="rounded-2xl bg-foreground-950 p-5 sm:p-6 text-white mb-8">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-xl bg-accent-500/20 border border-accent-400/30 flex items-center justify-center">
+                      <i className="ri-timer-line text-accent-400 text-lg" />
+                    </div>
+                    <div>
+                      <h3 className="font-heading text-lg font-bold">Instructions d&apos;Enregistrement</h3>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    {[
+                      { icon: 'ri-computer-line', label: 'Ouvrir /agents-experts sur votre navigateur' },
+                      { icon: 'ri-record-circle-line', label: 'Utiliser Loom, OBS ou QuickTime' },
+                      { icon: 'ri-mic-line', label: 'Parler clairement, en français' },
+                      { icon: 'ri-fullscreen-line', label: 'Montrer l\'écran complet avec l\'URL visible' },
+                      { icon: 'ri-timer-2-line', label: 'Durée : 2-3 minutes maximum' },
+                      { icon: 'ri-youtube-line', label: 'Héberger sur YouTube (non listée) ou Loom' },
+                    ].map((item, i) => (
+                      <div key={i} className="flex items-center gap-2 text-sm text-gray-300">
+                        <i className={`${item.icon} text-accent-400 flex-shrink-0`} />
+                        <span>{item.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Script timeline */}
+                <div className="space-y-4">
+                  {MDP_VIDEO_SCRIPT.map((scene, i) => (
+                    <div key={scene.timestamp} className="rounded-2xl bg-white border border-background-200 overflow-hidden hover:shadow-md transition-all">
+                      <div className="p-5 sm:p-6">
+                        <div className="flex items-start gap-4">
+                          <div className="flex-shrink-0 text-center">
+                            <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-1" style={{ backgroundColor: '#0891B2' + '15' }}>
+                              <i className={`${scene.icon} text-accent-600 text-lg`} />
+                            </div>
+                            <span className="text-xs font-bold text-accent-600">{scene.duration}</span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-3 mb-2 flex-wrap">
+                              <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-accent-100 border border-accent-200 text-accent-700">{scene.timestamp}</span>
+                              <h4 className="font-heading text-base font-bold text-foreground-950">Scène {i + 1} — {scene.title}</h4>
+                            </div>
+                            <div className="p-4 rounded-xl bg-background-50 border border-background-200 mb-3">
+                              <p className="text-sm text-foreground-700 leading-relaxed italic">&ldquo;{scene.script}&rdquo;</p>
+                            </div>
+                            {showScriptActions && (
+                              <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-50 border border-amber-200">
+                                <i className="ri-lightbulb-line text-amber-500 text-sm mt-0.5 flex-shrink-0" />
+                                <p className="text-xs text-amber-700 leading-relaxed">{scene.action}</p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* CTA */}
+                <div className="mt-8 text-center">
+                  <a
+                    href="/agents-experts"
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-accent-500 text-white font-bold text-sm hover:bg-accent-600 transition-colors cursor-pointer whitespace-nowrap"
+                  >
+                    <i className="ri-dashboard-line text-lg" />
+                    Ouvrir le Dashboard pour enregistrer
+                  </a>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* === TAB: AGENTS === */}
+        {activeTab === 'agents' && (
+          <section className="py-10 sm:py-14">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="text-center mb-10">
+                <h2 className="font-heading text-3xl sm:text-4xl font-bold text-foreground-950 mb-4">
+                  4 Agents KOS — Équipe MDP
+                </h2>
+                <p className="text-foreground-600 max-w-2xl mx-auto">
+                  {stats.activeAgents} agents activés, {stats.standbyAgents} en veille. Chaque agent a des responsabilités, KPIs et livrables spécifiques.
+                </p>
+              </div>
+
+              {/* Agents Stats */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-10">
+                {[
+                  { label: 'Agents Actifs', value: String(stats.activeAgents), icon: 'ri-robot-line', color: '#86BC25' },
+                  { label: 'En Veille', value: String(stats.standbyAgents), icon: 'ri-moon-line', color: '#E8C547' },
+                  { label: 'Score Moyen', value: '7.95/10', icon: 'ri-bar-chart-line', color: '#4F46E5' },
+                  { label: 'KPIs Monitorés', value: '12', icon: 'ri-dashboard-line', color: '#0891B2' },
+                ].map((stat, i) => (
+                  <div key={i} className="rounded-xl bg-white border border-background-200 p-4 text-center">
+                    <div className="w-8 h-8 mx-auto mb-2 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${stat.color}15` }}>
+                      <i className={`${stat.icon} text-sm`} style={{ color: stat.color }} />
+                    </div>
+                    <span className="block text-lg font-bold text-foreground-950 font-heading">{stat.value}</span>
+                    <span className="text-[10px] text-foreground-400">{stat.label}</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="space-y-4">
+                {MDP_AGENTS.map((agent) => {
+                  const badge = getAgentStatusBadge(agent.status);
+                  const isExpanded = expandedAgent === agent.id;
+                  const scoreColor = agent.score >= 8 ? '#86BC25' : agent.score >= 6 ? '#E8C547' : '#C2410C';
+                  return (
+                    <div
+                      key={agent.id}
+                      className={`rounded-2xl border transition-all duration-300 ${
+                        isExpanded ? 'border-foreground-300 bg-white shadow-lg' : 'border-background-200 bg-white hover:border-foreground-200 hover:shadow-md'
+                      }`}
+                    >
+                      <button
+                        onClick={() => setExpandedAgent(isExpanded ? null : agent.id)}
+                        className="w-full p-4 sm:p-5 text-left flex items-start gap-4 cursor-pointer"
+                      >
+                        <div className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${agent.color}15` }}>
+                          <i className={`${agent.icon} text-lg`} style={{ color: agent.color }} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1 flex-wrap">
+                            <h3 className="text-base font-bold text-foreground-950">{agent.name}</h3>
+                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold flex-shrink-0 ${badge.bg} ${badge.border} ${badge.text}`}>
+                              <span className={`w-1.5 h-1.5 rounded-full ${badge.dot}`} />
+                              {badge.label}
+                            </span>
+                          </div>
+                          <p className="text-sm text-foreground-500 line-clamp-1">{agent.mission}</p>
+                          <div className="flex items-center gap-3 mt-1.5 text-xs">
+                            <span className="flex items-center gap-1">
+                              <span className="font-bold font-heading text-base" style={{ color: scoreColor }}>{agent.score.toFixed(1)}</span>
+                              <span className="text-foreground-400">/10</span>
+                            </span>
+                            <span className="text-foreground-400">
+                              <i className="ri-list-check mr-1" />{agent.responsibilities.length} responsabilités
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex-shrink-0 pt-1">
+                          <i className={`ri-${isExpanded ? 'subtract' : 'add'}-line text-foreground-400 text-lg`} />
+                        </div>
+                      </button>
+                      {isExpanded && (
+                        <div className="px-5 pb-5 border-t border-background-200 pt-4">
+                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                            <div>
+                              <h5 className="text-xs font-bold text-foreground-400 uppercase tracking-wider mb-2">Responsabilités</h5>
+                              <ul className="space-y-1.5">
+                                {agent.responsibilities.map((r, j) => (
+                                  <li key={j} className="flex items-start gap-2 text-xs text-foreground-600">
+                                    <i className="ri-arrow-right-s-line text-foreground-400 flex-shrink-0 mt-px" />
+                                    {r}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                            <div>
+                              <h5 className="text-xs font-bold text-foreground-400 uppercase tracking-wider mb-2">KPIs</h5>
+                              <div className="space-y-2">
+                                {agent.kpis.map((kpi, j) => (
+                                  <div key={j} className="flex items-center justify-between p-2.5 rounded-lg bg-background-50 border border-background-100">
+                                    <div className="flex items-center gap-2">
+                                      <i className={`${kpi.icon} text-xs`} style={{ color: agent.color }} />
+                                      <span className="text-xs text-foreground-600">{kpi.label}</span>
+                                    </div>
+                                    <div className="flex items-baseline gap-1">
+                                      <span className="text-sm font-bold text-foreground-950">{kpi.current}</span>
+                                      <span className="text-[10px] text-foreground-400">/ {kpi.target}</span>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Cross-engine link */}
+              <div className="mt-10 rounded-2xl bg-gradient-to-r from-sky-50 to-white border border-sky-200 p-6 text-center">
+                <h3 className="font-heading text-lg font-bold text-foreground-950 mb-2">Connectivité API Live</h3>
+                <p className="text-sm text-foreground-600 mb-4">
+                  Le dashboard Social Metrics Live sur /agents-experts affiche en temps réel l&apos;état des APIs LinkedIn et Twitter. L&apos;Edge Function social-metrics orchestre tous les appels.
+                </p>
+                <a
+                  href="/agents-experts"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-sky-500 text-white font-bold text-sm hover:bg-sky-600 transition-colors cursor-pointer whitespace-nowrap"
+                >
+                  <i className="ri-dashboard-line" />
+                  Voir le Dashboard Live
+                </a>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* === TAB: RESOURCES === */}
+        {activeTab === 'resources' && (
+          <section className="py-10 sm:py-14">
+            <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="text-center mb-10">
+                <h2 className="font-heading text-3xl sm:text-4xl font-bold text-foreground-950 mb-4">
+                  Ressources & Liens
+                </h2>
+                <p className="text-foreground-600 max-w-2xl mx-auto">
+                  Toutes les ressources nécessaires pour la candidature MDP, centralisées et accessibles.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                {[
+                  {
+                    title: 'Dossier MDP Complet',
+                    description: 'Document de candidature complet avec toutes les sections : résumé, présentation, architecture technique, FAQ.',
+                    icon: 'ri-article-line',
+                    color: '#4F46E5',
+                    url: '#',
+                    badge: 'Généré par KOS',
+                  },
+                  {
+                    title: 'Dashboard Social Metrics Live',
+                    description: 'Visualisez en temps réel les métriques sociales. C\'est le dashboard que vous devez montrer dans la vidéo.',
+                    icon: 'ri-dashboard-line',
+                    color: '#86BC25',
+                    url: '/agents-experts',
+                    badge: 'Page active',
+                  },
+                  {
+                    title: 'LinkedIn Developer Portal',
+                    description: 'Accédez à votre app KHEPRA EXPERTS API. C\'est ici que vous soumettez la candidature MDP.',
+                    icon: 'ri-external-link-line',
+                    color: '#0891B2',
+                    url: 'https://developer.linkedin.com/',
+                    badge: 'Lien externe',
+                  },
+                  {
+                    title: 'Privacy Policy',
+                    description: 'Notre politique de confidentialité. LinkedIn vérifie cette page lors de l\'évaluation de la candidature.',
+                    icon: 'ri-shield-check-line',
+                    color: '#8B3040',
+                    url: 'https://khepraexperts.com/privacy',
+                    badge: 'En ligne',
+                  },
+                  {
+                    title: 'Conditions Générales d\'Utilisation',
+                    description: 'Nos CGU. LinkedIn exige que cette page soit accessible publiquement.',
+                    icon: 'ri-scales-3-line',
+                    color: '#9B7B2C',
+                    url: 'https://khepraexperts.com/cgu',
+                    badge: 'En ligne',
+                  },
+                  {
+                    title: 'Supabase Edge Function — social-metrics',
+                    description: 'Code source de l\'Edge Function qui interroge les APIs LinkedIn et Twitter. Le cœur technique de l\'intégration.',
+                    icon: 'ri-code-line',
+                    color: '#C2410C',
+                    url: '#',
+                    badge: 'Actif',
+                  },
+                ].map((resource, i) => (
+                  <a
+                    key={i}
+                    href={resource.url}
+                    target={resource.url.startsWith('http') ? '_blank' : undefined}
+                    rel={resource.url.startsWith('http') ? 'noopener noreferrer' : undefined}
+                    className="rounded-2xl bg-white border border-background-200 p-6 hover:shadow-md hover:border-foreground-200 transition-all cursor-pointer block group"
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${resource.color}15` }}>
+                        <i className={`${resource.icon} text-lg`} style={{ color: resource.color }} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <h3 className="font-heading text-base font-bold text-foreground-950">{resource.title}</h3>
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-accent-50 border border-accent-200 text-accent-700 whitespace-nowrap">
+                            {resource.badge}
+                          </span>
+                        </div>
+                        <p className="text-sm text-foreground-500 leading-relaxed">{resource.description}</p>
+                      </div>
+                      <div className="flex-shrink-0 pt-1">
+                        <i className="ri-arrow-right-s-line text-foreground-300 group-hover:text-foreground-600 text-lg" />
+                      </div>
+                    </div>
+                  </a>
+                ))}
+              </div>
+
+              {/* FAQ Quick Reference */}
+              <div className="mt-10 rounded-2xl bg-amber-50/60 border border-amber-200 p-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-xl bg-amber-100 border border-amber-200 flex items-center justify-center">
+                    <i className="ri-question-answer-line text-amber-600 text-lg" />
+                  </div>
+                  <h3 className="font-heading text-lg font-bold text-foreground-950">FAQ — Questions fréquentes sur le MDP</h3>
+                </div>
+                <div className="space-y-3">
+                  {[
+                    { q: "Pourquoi LinkedIn exige-t-il le MDP pour les données d'organisation ?", a: "LinkedIn a durci l'accès aux données d'organisation en 2023-2024 pour protéger les pages entreprise contre le scraping non autorisé. Le MDP garantit que seules les applications légitimes accèdent à ces données." },
+                    { q: "Combien de temps prend l'approbation MDP ?", a: "Typiquement 2 à 4 semaines. LinkedIn peut demander des clarifications, donc surveillez les emails." },
+                    { q: "Que faire si la candidature est refusée ?", a: "LinkedIn fournit généralement une raison. Les causes courantes : use case pas assez clair, vidéo de démonstration insuffisante, ou privacy policy manquante. On ajuste et on re-soumet." },
+                    { q: "L'absence de MDP impacte-t-elle le Profil Fondateur ?", a: "Non. Le Profil Fondateur utilise /v2/me qui fonctionne avec OAuth2 standard. Le token actuel fonctionne parfaitement." },
+                  ].map((faq, i) => (
+                    <div key={i} className="rounded-xl bg-white border border-background-200 p-4">
+                      <p className="text-sm font-bold text-foreground-950 mb-1">{faq.q}</p>
+                      <p className="text-xs text-foreground-600 leading-relaxed">{faq.a}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Cross-link to other KOS Engines */}
+        <section className="py-12 sm:py-16 bg-white border-t border-background-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-8">
+              <h2 className="font-heading text-2xl sm:text-3xl font-bold text-foreground-950 mb-2">
+                Écosystème KOS Complet
+              </h2>
+              <p className="text-foreground-600">Les moteurs autonomes interconnectés.</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+              {[
+                { label: 'Agents Experts', path: '/agents-experts', icon: 'ri-robot-line', color: '#86BC25' },
+                { label: 'Unified Autopilot', path: '/kos-unified-autopilot', icon: 'ri-cpu-line', color: '#E8C547' },
+                { label: 'Orchestrator Engine', path: '/kos-orchestrator-engine', icon: 'ri-git-branch-line', color: '#4F46E5' },
+                { label: 'Task Orchestrator', path: '/kos-auto-task-orchestrator', icon: 'ri-list-check', color: '#E8C547' },
+                { label: 'Quality System', path: '/kos-autonomous-quality-system', icon: 'ri-shield-check-line', color: '#8B3040' },
+
+              ].map((link) => (
+                <a
+                  key={link.path}
+                  href={link.path}
+                  className="rounded-xl border border-background-200 bg-background-50 p-4 text-center hover:shadow-md hover:border-foreground-200 transition-all cursor-pointer block"
+                >
+                  <div className="w-10 h-10 mx-auto mb-2 rounded-xl flex items-center justify-center" style={{ backgroundColor: `${link.color}15` }}>
+                    <i className={`${link.icon} text-lg`} style={{ color: link.color }} />
+                  </div>
+                  <span className="text-sm font-bold text-foreground-800">{link.label}</span>
+                </a>
+              ))}
+            </div>
+          </div>
+        </section>
+
+    </hubLayout>
+  );
+}
+
+
+

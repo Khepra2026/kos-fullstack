@@ -1,0 +1,21 @@
+const common = {
+  faq: {
+    title: 'Mvông é bingilan a yong', badge: 'FAQ',
+    description: 'Yen mbôngan mvông é bingilan a yong ane nkôban bia a zôé éyoñ, kôn abum a éyoñ, nkukuma a yob a sa, bité a ndiá a mfôn, été a fê.',
+    q1: 'Amu zé é nyi a ku mfê KHEPRA EXPERTS a ne a kalara y\'éyoñ a Afiri ?',
+    a1: 'KHEPRA EXPERTS a ne kalara Afiri asu a nji mbu 22 a mvus a Afiri Ouest a Afiri Centre.',
+    q2: 'Mvông ôsu é nyi a wulu a kalara y\'éyoñ ?',
+    a2: 'Bi wulu PME, bô mbé, kalara éyoñ nê tap, kalara nê tap, ONG, kalara nkukuma a kalara minsôn a Afiri.',
+  },
+  contact: { title: 'Lôndô bia', subtitle: 'Di nkôban éyoñ ényiñ, kôn abum éyoñ a été bité a yob a sa', name: 'Dzoé asu', email: 'Email', phone: 'Téléfon', company: 'Kalara', message: 'Ntsina', submit: 'Lôm', sending: 'A lôm…', success: 'Ntsina a lôm bèn ! Bi da kôban wo a metua 24.', error: 'Ntsina a vô. Bôngô bôngô jak.', address: 'Adrès', addressText: 'Lomé, Togo' },
+  footer: { tagline: 'Mvus wôé a kalara y\'éyoñ, kôn abum éyoñ, nkukuma a été bité a ndiá mfôn asu abui a ne a wulu Afiri', quickLinks: 'Zen ane Mful', services: 'Ésaé', about: 'Ane bia', blog: 'Blog', contact: 'Lôndô', legalLinks: 'Kalom a Mfôn', privacy: 'Nkal a Nson', terms: 'Mfôn a Jômbô', followUs: 'Zam bia', rights: 'Ndôman a sili bèn.' },
+  common: { learnMore: 'Yên a bi' },
+  cta: { diagnostic_free: 'Kôn abum asu', diagnostic_subtitle: 'Mbôngan a metua 2 · A ne yi bèn' },
+  leadMagnet: { whitepaper: { title: 'Liti Kala a Fufup', description: 'Kôn abum a ndiá a bi akôé.', button: 'Liti Kala a Fufup' }, webinar: { title: 'Ke Webinaire a vô', description: 'Nkôban a bivôé bia.', button: 'Tili asu Webinaire' }, diagnostic: { title: 'Kôn Abum Éyoñ Asu', description: 'Metua 30 a mfa a kôn abum.', button: 'Tôé kôn abum' }, newsletter: { title: 'Yên Nkal a Nson Bia', description: 'Kôn abum asu jô, a email wôé.', button: 'Tili asu Nkal a Nson' } },
+  monitoring: { title: 'Zam Bèn a Tékiniki', subtitle: 'Ntsina 404 a metua mbôngan', loading: 'Dzi ndéman…', retry: 'Jak jak', timeRange: { '24h': 'Metua 24', '7d': 'Môs 7', '30d': 'Môs 30' }, stats: { total404: 'Ntsina 404', total404Sub: 'Nkana a dzi', totalErrors: 'Ntsina HTTP/JS', totalErrorsSub: 'Bingilan a script', avgResponse: 'Metua API', avgResponseSub: 'ms', avgPageLoad: 'Dzi nkana', avgPageLoadSub: 'ms' }, notFound: { title: 'URL 404 a yob', subtitle: 'Nkana a dzi a yong', url: 'URL', count: 'Alu', empty: 'Ntsina 404 a dzi' }, performance: { title: 'Metua Mbôngan API', subtitle: 'Mfê a yob', tooltipAvg: 'Mfê', tooltipMax: 'Yob', tooltipCount: 'Bingilan', empty: 'Nde man a dzi' }, topErrors: { title: 'Ntsina a yob', subtitle: 'Ntsina a ne a yong', empty: 'Ntsina a dzi' }, errorLog: { title: 'Kalara Ntsina', subtitle: 'Ntsina a mfum', type: 'Ané', message: 'Ntsina', url: 'URL', date: 'Dô', empty: 'Ntsina mfum a dzi' }, navigation: { title: 'Zen', subtitle: 'Metua dzi nkana', empty: 'Nde man a dzi' } },
+  dashboard: { login: { title: 'Tableau de Bord', subtitle: 'Ke asu bané é ba kal', passwordLabel: 'Dzoé a sin', passwordPlaceholder: 'Tili dzoé a sin', loginButton: 'Ke', incorrectPassword: 'Dzoé a sin a ne yi bèn' }, header: { title: 'Tableau de Bord', subtitle: 'Zam a été ésaé', timeRange: { '7d': 'Môs 7', '30d': 'Môs 30', '90d': 'Môs 90', all: 'Bivôé asu' }, refreshButton: 'Bôngô' }, loading: 'Dzi ndéman…', kpis: { totalLeads: { title: 'Leads asu', subtitle: 'mfa' } }, pipeline: { title: 'Pipeline zen' }, sources: { title: 'Ane bivôé' }, formTypes: { title: 'Ésaé ane nkal formulaire', ofTotal: 'bivôé asu' }, recentLeads: { title: 'Leads a mfum', table: { date: 'Dô', contact: 'Môr', organization: 'Kalara', type: 'Ané', score: 'Alu', status: 'Ané', source: 'Ane' } }, status: { new: 'Mfa', meeting_scheduled: 'Ndôman a bông', qualified: 'A ne bèn', converted: 'A bông', lost: 'A ke' }, formType: { contact: 'Lôndô', diagnostic: 'Kôn abum', expert: 'Mfa', newsletter: 'Nkal a Nson' }, metrics: { toolCompletions: { title: 'Bivôé é bi man', subtitle: 'Bikôn abum' } }, diagnostics: { title: 'Bikôn Abum a Mfum', table: { date: 'Dô', tool: 'Bivôé', score: 'Alu' } }, downloads: { title: 'Biliti a Mfum', table: { date: 'Dô', resource: 'Bivôé', contact: 'Môr', country: 'Sial' }, unknownResource: 'Bivôé bi jimi bèn' }, noData: 'Nde man a dzi', retry: 'Jak jak' },
+};
+export default common;
+
+
+

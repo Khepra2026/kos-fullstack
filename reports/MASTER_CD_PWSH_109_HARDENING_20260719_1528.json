@@ -1,0 +1,18 @@
+{
+  "PNPM": "11.13.1",
+  "GitIgnore": true,
+  "Supabase": "2.109.1",
+  "Build": "PASS",
+  "EnvironmentFiles": 7,
+  "Node": "v24.18.0",
+  "Date": "7/19/2026 3:28:33 PM",
+  "Audit": "MASTER CD PWSH 109 PRODUCTION HARDENING",
+  "SecretFindings": [
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "SECRET",
+    "PASSWORD"
+  ],
+  "EdgeFunctions": 177,
+  "Status": "HARDENING REQUIRED",
+  "Score": 85
+}

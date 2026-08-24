@@ -1,0 +1,483 @@
+import { useState, useMemo } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { SeoHead } from '@/components/feature/SeoHead';
+import { Navigation } from '@/pages/home/components/Navigation';
+import { Footer } from '@/pages/home/components/Footer';
+import {
+  regulatoryHealthKPIs,
+  textesSousReserve,
+  validatorRuns,
+  qaArticleTests,
+  reliabilityDistribution,
+  cronJobs,
+  edgeFunctions,
+} from '@/mocks/regulatoryHealthDashboard';
+
+function HealthGauge({ score, maxScore, label }: { score: number; maxScore: number; label: string }) {
+  const radius = 44;
+  const circumference = 2 * Math.PI * radius;
+  const percentage = (score / maxScore) * 100;
+  const offset = circumference - (percentage / 100) * circumference;
+
+  const getColor = (pct: number) => {
+    if (pct >= 90) return 'oklch(var(--primary-500))';
+    if (pct >= 75) return 'oklch(var(--accent-500))';
+    if (pct >= 50) return 'oklch(var(--secondary-500))';
+    return '#ef4444';
+  };
+
+  return (
+    <div className="relative w-28 h-28 flex items-center justify-center">
+      <svg width="112" height="112" viewBox="0 0 112 112" className="-rotate-90">
+        <circle cx="56" cy="56" r={radius} fill="none" stroke="oklch(var(--background-200))" strokeWidth="7" />
+        <circle
+          cx="56" cy="56" r={radius} fill="none" stroke={getColor(percentage)}
+          strokeWidth="7" strokeLinecap="round"
+          strokeDasharray={circumference} strokeDashoffset={offset}
+          className="transition-all duration-1000 ease-out"
+        />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span className="text-xl font-bold text-foreground-950 font-heading">{score}</span>
+        <span className="text-[10px] text-foreground-500 font-body">/ {maxScore}</span>
+      </div>
+    </div>
+  );
+}
+
+function KPICard({ kpi }: { kpi: typeof regulatoryHealthKPIs[0] }) {
+  return (
+    <div className="p-5 bg-background-50 rounded-xl border border-background-200/70 hover:border-accent-300/60 transition-colors">
+      <div className="flex items-start justify-between mb-3">
+        <div className={`w-10 h-10 flex items-center justify-center rounded-lg ${kpi.colorClass}`}>
+          <i className={`${kpi.icon} text-lg`}></i>
+        </div>
+        {kpi.trend === 'up' ? (
+          <span className="flex items-center gap-0.5 text-xs font-semibold text-emerald-600"><i className="ri-arrow-up-line text-xs"></i></span>
+        ) : kpi.trend === 'down' ? (
+          <span className="flex items-center gap-0.5 text-xs font-semibold text-red-600"><i className="ri-arrow-down-line text-xs"></i></span>
+        ) : (
+          <span className="flex items-center gap-0.5 text-xs font-semibold text-foreground-500"><i className="ri-subtract-line text-xs"></i></span>
+        )}
+      </div>
+      <div className="text-2xl font-bold text-foreground-950 font-heading mb-1">{kpi.value}</div>
+      <p className="text-sm font-semibold text-foreground-700 font-body mb-1">{kpi.label}</p>
+      <p className="text-xs text-foreground-500 font-body">{kpi.trendLabel}</p>
+    </div>
+  );
+}
+
+function TextSousReserveRow({ texte }: { texte: typeof textesSousReserve[0] }) {
+  const getBadge = (fiabilite: number) => {
+    if (fiabilite >= 65) return 'bg-amber-50 text-amber-700 border-amber-200';
+    if (fiabilite >= 55) return 'bg-amber-50/60 text-amber-600 border-amber-100';
+    return 'bg-red-50 text-red-700 border-red-200';
+  };
+
+  return (
+    <div className="flex items-center gap-4 p-3 rounded-lg hover:bg-background-100 transition-colors">
+      <div className="w-9 h-9 flex items-center justify-center rounded-lg flex-shrink-0 bg-amber-100">
+        <i className="ri-timer-line text-amber-600"></i>
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 mb-0.5">
+          <span className="text-xs font-bold text-foreground-950">{texte.autorite}</span>
+          <span className="text-xs font-semibold text-foreground-600">{texte.reference}</span>
+          <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium border ${getBadge(texte.fiabilite)}`}>
+            {texte.fiabilite}/100
+          </span>
+        </div>
+        <p className="text-xs text-foreground-500 line-clamp-1">{texte.titre}</p>
+        <p className="text-[10px] text-foreground-400 mt-0.5">{texte.statut}</p>
+      </div>
+      <span className="text-[10px] text-foreground-400 whitespace-nowrap">{texte.derniereVerification}</span>
+    </div>
+  );
+}
+
+function TimelineEntry({ run, isLast }: { run: typeof validatorRuns[0]; isLast: boolean }) {
+  return (
+    <div className="flex gap-4">
+      <div className="flex flex-col items-center flex-shrink-0">
+        <div className={`w-2.5 h-2.5 rounded-full mt-1.5 ${run.score >= 80 ? 'bg-emerald-500' : run.score >= 60 ? 'bg-amber-500' : 'bg-red-500'}`}></div>
+        {!isLast && <div className="w-0.5 flex-1 bg-background-200 my-1"></div>}
+      </div>
+      <div className="flex-1 min-w-0 pb-5">
+        <div className="flex items-center gap-2 mb-1">
+          <span className="text-xs font-bold text-foreground-950">{run.action}</span>
+          <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold ${run.score >= 80 ? 'bg-emerald-100 text-emerald-700' : run.score >= 60 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
+            {run.score}/100
+          </span>
+        </div>
+        <p className="text-xs text-foreground-600 mb-1">{run.resultat}</p>
+        <div className="flex items-center gap-2 text-[10px] text-foreground-400">
+          <span className="flex items-center gap-1"><i className="ri-robot-2-line"></i>{run.agent}</span>
+          <span>{new Date(run.date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function QAArticleCard({ test }: { test: typeof qaArticleTests[0] }) {
+  const navigate = useNavigate();
+  const getJuridictionColor = (j: string) => {
+    switch (j) {
+      case 'BCEAO': return 'bg-primary-100 text-primary-700 border-primary-200';
+      case 'COBAC': return 'bg-red-100 text-red-700 border-red-200';
+      case 'GAFI': return 'bg-accent-100 text-accent-700 border-accent-200';
+      case 'OHADA': return 'bg-secondary-100 text-secondary-700 border-secondary-200';
+      default: return 'bg-background-100 text-foreground-600 border-background-200';
+    }
+  };
+
+  return (
+    <a
+      href={`/blog/${test.slug}/`}
+      onClick={(e) => { e.preventDefault(); navigate(`/blog/${test.slug}/`); }}
+      className="block p-4 bg-background-50 rounded-xl border border-background-200/70 hover:border-accent-300/60 transition-all group cursor-pointer"
+    >
+      <div className="flex items-center justify-between mb-2">
+        <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold border ${getJuridictionColor(test.juridiction)}`}>
+          {test.juridiction}
+        </span>
+        {test.score > 0 ? (
+          <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">{test.score}/100</span>
+        ) : (
+          <span className="flex items-center gap-1 text-[10px] text-amber-600">
+            <i className="ri-loader-4-line animate-spin"></i>
+            En attente
+          </span>
+        )}
+      </div>
+      <p className="text-sm font-semibold text-foreground-950 group-hover:text-accent-700 transition-colors line-clamp-2 leading-snug mb-2">{test.article}</p>
+      <div className="flex items-center gap-3 text-xs text-foreground-500">
+        <span><strong>{test.citations}</strong> citations</span>
+        {test.score > 0 && <span><strong>{test.actions_correctives}</strong> actions correctives</span>}
+      </div>
+    </a>
+  );
+}
+
+export default function regulatoryHealthDashboard() {
+  const [activeTab, setActiveTab] = useState<'overview' | 'textes' | 'qa' | 'infra'>('overview');
+
+  const tabs = [
+    { id: 'overview' as const, label: 'Vue d\'ensemble', icon: 'ri-dashboard-line' },
+    { id: 'textes' as const, label: 'Textes sous réserve', icon: 'ri-timer-line', count: 10 },
+    { id: 'qa' as const, label: 'Tests QA Articles', icon: 'ri-sparkling-line', count: 4 },
+    { id: 'infra' as const, label: 'Infrastructure', icon: 'ri-server-line' },
+  ];
+
+  return (
+    <div className="min-h-screen bg-background-50">
+      <SeoHead
+        title="KOS Regulatory Health — Tableau de Bord Conformité Réglementaire"
+        description="Dashboard temps réel de la santé réglementaire KOS : indice global, textes sous réserve, scans automatiques, tests QA."
+        keywords="KOS, Regulatory Health, Conformité, BCEAO, COBAC, GAFI, OHADA, Dashboard"
+        canonicalPath="/kos-regulatory-health/"
+      />
+      <Navigation />
+
+      {/* Hero */}
+      <section className="relative bg-background-100 border-b border-background-200/70 pt-20">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 md:py-12">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-3 flex-wrap">
+                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-primary-100 text-primary-700 font-body tracking-wide">
+                  KOS REGULATORY ZERO-DEFECT PROTOCOL™
+                </span>
+                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 font-body">
+                  SURVEILLANCE — Indice 82/100
+                </span>
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500 text-white">
+                  <span className="w-2 h-2 rounded-full bg-white"></span>
+                  3 Cron Jobs Actifs
+                </span>
+              </div>
+              <h1 className="text-3xl md:text-4xl font-bold text-foreground-950 mb-3 font-heading">
+                KOS Regulatory Health
+              </h1>
+              <p className="text-base text-foreground-600 max-w-2xl font-body">
+                Tableau de bord temps réel de la conformité réglementaire KOS. 136 textes en base, 4 juridictions couvertes (BCEAO, COBAC, GAFI, OHADA),
+                3 Edge Functions de validation, audit trimestriel automatique. <strong className="text-emerald-600">Pipeline Zero-Defect opérationnel depuis le 27 Juin 2026.</strong>
+              </p>
+            </div>
+            <div className="flex-shrink-0 flex items-center gap-6">
+              <HealthGauge score={82} maxScore={100} label="Indice Global" />
+              <div className="text-center">
+                <div className="text-2xl font-bold text-foreground-950 font-heading">136</div>
+                <div className="text-xs text-foreground-500 font-body">textes en base</div>
+                <div className="text-xs text-emerald-600 font-semibold mt-1">Min 80 · Avg 89</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Tabs */}
+      <section className="sticky top-[72px] z-30 bg-background-50 border-b border-background-200/70 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 md:px-6">
+          <div className="flex items-center gap-1">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium transition-colors border-b-2 cursor-pointer whitespace-nowrap ${
+                  activeTab === tab.id
+                    ? 'border-accent-500 text-accent-700 font-semibold'
+                    : 'border-transparent text-foreground-500 hover:text-foreground-700'
+                }`}
+              >
+                <i className={`${tab.icon} text-sm`}></i>
+                {tab.label}
+                {tab.count && (
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
+                    activeTab === tab.id ? 'bg-accent-100 text-accent-700' : 'bg-background-200 text-foreground-500'
+                  }`}>{tab.count}</span>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Content */}
+      <div className="max-w-7xl mx-auto px-4 md:px-6 py-8">
+        {activeTab === 'overview' && (
+          <>
+            {/* KPI Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-8">
+              {regulatoryHealthKPIs.map((kpi, i) => (
+                <KPICard key={i} kpi={kpi} />
+              ))}
+            </div>
+
+            {/* Reliability Distribution */}
+            <div className="mb-8 p-6 bg-background-50 rounded-xl border border-background-200/70">
+              <h2 className="text-lg font-bold text-foreground-950 font-heading mb-4 flex items-center gap-2">
+                <i className="ri-bar-chart-grouped-line text-primary-500"></i>
+                Distribution de Fiabilité — 136 Textes
+              </h2>
+              <div className="flex items-end gap-2 h-24 mb-4">
+                {reliabilityDistribution.faible.count > 0 && (
+                  <div className="flex-1 flex flex-col items-center">
+                    <span className="text-xs font-bold text-red-600 mb-1">{reliabilityDistribution.faible.count}</span>
+                    <div className="w-full bg-red-400 rounded-t-md" style={{ height: `${(reliabilityDistribution.faible.count / reliabilityDistribution.total) * 100 * 3}%`, minHeight: '4px' }}></div>
+                    <span className="text-[10px] text-foreground-400 mt-1">{"<70"}</span>
+                  </div>
+                )}
+                {reliabilityDistribution.moyen.count > 0 && (
+                  <div className="flex-1 flex flex-col items-center">
+                    <span className="text-xs font-bold text-amber-600 mb-1">{reliabilityDistribution.moyen.count}</span>
+                    <div className="w-full bg-amber-400 rounded-t-md" style={{ height: `${(reliabilityDistribution.moyen.count / reliabilityDistribution.total) * 100 * 3}%`, minHeight: '4px' }}></div>
+                    <span className="text-[10px] text-foreground-400 mt-1">70-79</span>
+                  </div>
+                )}
+                <div className="flex-1 flex flex-col items-center">
+                  <span className="text-xs font-bold text-emerald-600 mb-1">{reliabilityDistribution.bon.count}</span>
+                  <div className="w-full bg-emerald-400 rounded-t-md" style={{ height: `${(reliabilityDistribution.bon.count / reliabilityDistribution.total) * 100 * 3}%`, minHeight: '4px' }}></div>
+                  <span className="text-[10px] text-foreground-400 mt-1">80-94</span>
+                </div>
+                <div className="flex-1 flex flex-col items-center">
+                  <span className="text-xs font-bold text-emerald-600 mb-1">{reliabilityDistribution.excellent.count}</span>
+                  <div className="w-full bg-emerald-500 rounded-t-md" style={{ height: `${(reliabilityDistribution.excellent.count / reliabilityDistribution.total) * 100 * 3}%`, minHeight: '4px' }}></div>
+                  <span className="text-[10px] text-foreground-400 mt-1">95-100</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-4 text-xs text-foreground-500">
+                <span>Moyenne : <strong className="text-foreground-950">{reliabilityDistribution.moyenne}/100</strong></span>
+                <span>Minimum : <strong className="text-foreground-950">{reliabilityDistribution.minimum}/100</strong></span>
+                <span>Excellent : <strong className="text-emerald-600">{reliabilityDistribution.excellent.count}</strong></span>
+              </div>
+            </div>
+
+            {/* Recent Activity + Textes Alert */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+              {/* Timeline */}
+              <div className="lg:col-span-2 p-6 bg-background-50 rounded-xl border border-background-200/70">
+                <h2 className="text-lg font-bold text-foreground-950 font-heading mb-5 flex items-center gap-2">
+                  <i className="ri-history-line text-accent-500"></i>
+                  Activité Récente
+                </h2>
+                <div className="max-h-[440px] overflow-y-auto pr-2">
+                  {validatorRuns.map((run, i) => (
+                    <TimelineEntry key={i} run={run} isLast={i === validatorRuns.length - 1} />
+                  ))}
+                </div>
+              </div>
+
+              {/* Textes sous réserve mini */}
+              <div className="p-6 bg-background-50 rounded-xl border border-amber-200/60">
+                <h2 className="text-lg font-bold text-foreground-950 font-heading mb-4 flex items-center gap-2">
+                  <i className="ri-alert-line text-amber-500"></i>
+                  Sous Réserve
+                  <span className="text-sm font-normal text-foreground-500">(10)</span>
+                </h2>
+                <div className="space-y-1 max-h-[440px] overflow-y-auto">
+                  {textesSousReserve.map((texte) => (
+                    <TextSousReserveRow key={texte.id} texte={texte} />
+                  ))}
+                </div>
+                <button
+                  onClick={() => setActiveTab('textes')}
+                  className="mt-4 w-full py-2 text-sm font-semibold text-accent-600 hover:text-accent-700 cursor-pointer flex items-center justify-center gap-1"
+                >
+                  Voir tous les détails
+                  <i className="ri-arrow-right-line text-xs"></i>
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+
+        {activeTab === 'textes' && (
+          <div className="space-y-6">
+            <div className="p-6 bg-background-50 rounded-xl border border-amber-200/60">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-bold text-foreground-950 font-heading flex items-center gap-2">
+                  <i className="ri-timer-line text-amber-500"></i>
+                  10 Textes sous réserve — BEAC/COBAC/BCEAO
+                </h2>
+                <span className="text-xs text-foreground-500">
+                  Dernière vérification : 27 Juin 2026 · Validateur v2 (HTML Scraping) · Cron hebdo (Lundi 05h00 UTC)
+                </span>
+              </div>
+              <div className="divide-y divide-background-200">
+                {textesSousReserve.map((texte) => (
+                  <TextSousReserveRow key={texte.id} texte={texte} />
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'qa' && (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {qaArticleTests.map((test, i) => (
+                <QAArticleCard key={i} test={test} />
+              ))}
+            </div>
+            <div className="p-6 bg-background-50 rounded-xl border border-primary-200/60">
+              <h2 className="text-lg font-bold text-foreground-950 font-heading mb-3 flex items-center gap-2">
+                <i className="ri-sparkling-line text-primary-500"></i>
+                Pipeline Zero-Defect — Tests QA Articles Blog
+              </h2>
+              <p className="text-sm text-foreground-600 mb-4">
+                4 articles testés couvrant les 4 juridictions réglementaires. Le QA Engine vérifie 10 principes :
+                source officielle, nomenclature, interprétation, projets labellisés, fiabilité ≥95, métadonnées,
+                références fictives, contradictions, traçabilité, triple validation.
+              </p>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
+                  <i className="ri-checkbox-circle-line"></i>
+                  1 article vérifié (BCEAO — 92/100)
+                </span>
+                <span className="text-xs text-amber-600 font-semibold flex items-center gap-1">
+                  <i className="ri-loader-4-line animate-spin"></i>
+                  3 articles en cours de vérification
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'infra' && (
+          <div className="space-y-6">
+            {/* Edge Functions */}
+            <div className="p-6 bg-background-50 rounded-xl border border-background-200/70">
+              <h2 className="text-lg font-bold text-foreground-950 font-heading mb-4 flex items-center gap-2">
+                <i className="ri-function-line text-primary-500"></i>
+                Edge Functions Réglementaires
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {edgeFunctions.map((ef, i) => (
+                  <div key={i} className="p-4 bg-background-100 rounded-lg border border-background-200/70">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-bold text-foreground-950 font-mono">{ef.nom}</span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-semibold">{ef.version}</span>
+                    </div>
+                    <p className="text-xs text-foreground-600 mb-2">{ef.description}</p>
+                    <span className="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                      {ef.statut}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Cron Jobs */}
+            <div className="p-6 bg-background-50 rounded-xl border border-background-200/70">
+              <h2 className="text-lg font-bold text-foreground-950 font-heading mb-4 flex items-center gap-2">
+                <i className="ri-timer-2-line text-accent-500"></i>
+                Cron Jobs Réglementaires
+              </h2>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-background-200">
+                      <th className="px-4 py-2 text-left text-xs font-bold text-foreground-500 uppercase">ID</th>
+                      <th className="px-4 py-2 text-left text-xs font-bold text-foreground-500 uppercase">Nom</th>
+                      <th className="px-4 py-2 text-left text-xs font-bold text-foreground-500 uppercase">Fréquence</th>
+                      <th className="px-4 py-2 text-left text-xs font-bold text-foreground-500 uppercase">Prochaine exécution</th>
+                      <th className="px-4 py-2 text-left text-xs font-bold text-foreground-500 uppercase">Statut</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-background-100">
+                    {cronJobs.map((job) => (
+                      <tr key={job.id} className="hover:bg-background-100 transition-colors">
+                        <td className="px-4 py-3 text-xs font-mono text-foreground-600">#{job.id}</td>
+                        <td className="px-4 py-3 text-xs font-semibold text-foreground-950">{job.nom}</td>
+                        <td className="px-4 py-3 text-xs text-foreground-600">{job.frequence}</td>
+                        <td className="px-4 py-3 text-xs text-foreground-600">
+                          {new Date(job.prochaine).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' })}
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-semibold">{job.statut}</span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Regulations DB Stats */}
+            <div className="p-6 bg-background-50 rounded-xl border border-background-200/70">
+              <h2 className="text-lg font-bold text-foreground-950 font-heading mb-4 flex items-center gap-2">
+                <i className="ri-database-2-line text-secondary-500"></i>
+                Base de Données Regulations
+              </h2>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div className="p-4 bg-background-100 rounded-lg text-center">
+                  <div className="text-2xl font-bold text-foreground-950 font-heading">{reliabilityDistribution.total}</div>
+                  <div className="text-xs text-foreground-500">Textes réglementaires</div>
+                </div>
+                <div className="p-4 bg-background-100 rounded-lg text-center">
+                  <div className="text-2xl font-bold text-emerald-600 font-heading">{reliabilityDistribution.moyenne}</div>
+                  <div className="text-xs text-foreground-500">Fiabilité moyenne</div>
+                </div>
+                <div className="p-4 bg-background-100 rounded-lg text-center">
+                  <div className="text-2xl font-bold text-foreground-950 font-heading">{reliabilityDistribution.minimum}</div>
+                  <div className="text-xs text-foreground-500">Fiabilité minimum</div>
+                </div>
+                <div className="p-4 bg-background-100 rounded-lg text-center">
+                  <div className="text-2xl font-bold text-primary-500 font-heading">4</div>
+                  <div className="text-xs text-foreground-500">Juridictions</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <Footer />
+    </div>
+  );
+}
+
+
+

@@ -1,0 +1,54 @@
+{
+  "Audit": "MASTER CD PWSH 113 PAYDUNYA BILLING ACTIVATION",
+  "Date": "2026-07-19T16:06:25.8161707+00:00",
+  "Node": "v24.18.0",
+  "PNPM": "11.13.1",
+  "Supabase": "2.109.1",
+  "EdgeFunctions": 75,
+  "PayDunya": {
+    "PAYDUNYA_TOKEN": "CONFIGURED",
+    "PAYDUNYA_MODE": "CONFIGURED",
+    "PAYDUNYA_PRIVATE_KEY": "CONFIGURED",
+    "PAYDUNYA_MASTER_KEY": "CONFIGURED"
+  },
+  "BillingFunctions": {
+    "subscription-manager": "MISSING",
+    "payment-webhook": "MISSING",
+    "invoice-generator": "MISSING",
+    "billing-hub": "MISSING",
+    "payment-create": "MISSING"
+  },
+  "Database": {
+    "plans": "REQUIRED",
+    "audit_logs": "REQUIRED",
+    "payments": "REQUIRED",
+    "subscriptions": "REQUIRED",
+    "transactions": "REQUIRED"
+  },
+  "Frontend": "PASS",
+  "Plans": [
+    "FREE Diagnostic",
+    "STARTER 29 EUR",
+    "PRO 99 EUR",
+    "ENTERPRISE SLA"
+  ],
+  "PaymentFlow": [
+    "CREATE PAYMENT",
+    "PAYDUNYA CHECKOUT",
+    "WEBHOOK VALIDATION",
+    "SUBSCRIPTION ACTIVATION",
+    "ACCESS CONTROL"
+  ],
+  "Security": "HARDENING REQUIRED",
+  "Scores": {
+    "Infrastructure": 10,
+    "Frontend": 15,
+    "Supabase": 15,
+    "Billing": 10,
+    "Security": 10,
+    "Monetization": 15,
+    "Compliance": 10
+  },
+  "BigFourScore": 85.0,
+  "Decision": "FINAL BILLING REVIEW"
+}

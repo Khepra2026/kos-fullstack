@@ -1,0 +1,366 @@
+import { useState, useCallback, useMemo, useRef } from 'react';
+import { supabase } from '@/lib/supabase';
+import {
+  arbitrateRequest,
+  recordExternalCall,
+  consultOrganizationalMemory,
+  buildExecutionLog,
+  getAgentsForCategory,
+  getAllAgents,
+  getAgentById,
+  type ArbitrationResult,
+  type CostGuardEntry,
+  type OrchestratorKPI,
+  type MemoryConsultationResult,
+  type TaskCategory,
+  type ExecutionTarget,
+  type AgentDispatchEntry,
+  type SupabaseExecutionLog,
+  RECENT_ORCHESTRATOR_TASKS,
+  COST_GUARDIAN_LOG,
+  ORCHESTRATOR_KPIS,
+  ORCHESTRATOR_CONFIG,
+  READDY_PRE_CHECK_QUESTIONS,
+  READDY_AUTHORIZED_USE_CASES,
+  KOS_INTERNAL_CAPABILITIES,
+  KOS_AGENT_CATALOG,
+} from '@/mocks/intelligentOrchestrator';
+
+interface OrchestratorState {
+  kpis: OrchestratorKPI;
+  recentTasks: typeof RECENT_ORCHESTRATOR_TASKS;
+  costLog: CostGuardEntry[];
+  lastArbitration: ArbitrationResult | null;
+  lastMemoryConsult: MemoryConsultationResult | null;
+  arbitrating: boolean;
+  error: string | null;
+  productionMode: boolean;
+  supabaseConnected: boolean;
+  dispatchQueue: ArbitrationResult[];
+  supabaseStatus: 'connected' | 'disconnected' | 'checking';
+}
+
+const SUPABASE_CHECK_KEY = 'kos_orchestrator_supabase_checked';
+const PRODUCTION_MODE_KEY = 'kos_orchestrator_production_mode';
+
+export function useKOSIntelligentOrchestrator() {
+  const persistedProduction = useRef<boolean | null>(null);
+  if (persistedProduction.current === null) {
+    try {
+      const stored = localStorage.getItem(PRODUCTION_MODE_KEY);
+      persistedProduction.current = stored === 'true';
+    } catch {
+      persistedProduction.current = ORCHESTRATOR_CONFIG.production_default;
+    }
+  }
+
+  const [state, setState] = useState<OrchestratorState>({
+    kpis: ORCHESTRATOR_KPIS,
+    recentTasks: RECENT_ORCHESTRATOR_TASKS,
+    costLog: COST_GUARDIAN_LOG,
+    lastArbitration: null,
+    lastMemoryConsult: null,
+    arbitrating: false,
+    error: null,
+    productionMode: persistedProduction.current,
+    supabaseConnected: false,
+    dispatchQueue: [],
+    supabaseStatus: 'checking',
+  });
+
+  const checkSupabaseRef = useRef(false);
+
+  // Vérifier Supabase au montage
+  useMemo(() => {
+    if (checkSupabaseRef.current) return;
+    checkSupabaseRef.current = true;
+    
+    const checkConnection = async () => {
+      setState(prev => ({ ...prev, supabaseStatus: 'checking' }));
+      try {
+        const { error } = await supabase.from('kos_execution_logs').select('id', { count: 'exact', head: true });
+        if (!error) {
+          setState(prev => ({ ...prev, supabaseConnected: true, supabaseStatus: 'connected' }));
+          try { localStorage.setItem(SUPABASE_CHECK_KEY, 'true'); } catch { /* noop */ }
+        } else {
+          setState(prev => ({ ...prev, supabaseConnected: false, supabaseStatus: 'disconnected' }));
+        }
+      } catch {
+        setState(prev => ({ ...prev, supabaseConnected: false, supabaseStatus: 'disconnected' }));
+      }
+    };
+    
+    // Check immédiat
+    try {
+      const cached = localStorage.getItem(SUPABASE_CHECK_KEY);
+      if (cached === 'true') {
+        setState(prev => ({ ...prev, supabaseConnected: true, supabaseStatus: 'connected' }));
+        // Vérifier quand même en arrière-plan
+        checkConnection().catch(() => undefined);
+      } else {
+        checkConnection().catch(() => undefined);
+      }
+    } catch {
+      checkConnection();
+    }
+  }, []);
+
+  const toggleProductionMode = useCallback(() => {
+    setState(prev => {
+      const next = !prev.productionMode;
+      try { localStorage.setItem(PRODUCTION_MODE_KEY, String(next)); } catch { /* noop */ }
+      return { ...prev, productionMode: next };
+    });
+  }, []);
+
+  // Persister un log d'exécution dans Supabase
+  const persistExecutionLog = useCallback(async (log: SupabaseExecutionLog): Promise<boolean> => {
+    try {
+      const { error } = await supabase.from('kos_execution_logs').insert({
+        block_id: log.block_id,
+        block_name: log.block_name,
+        agent_id: log.agent_id,
+        agent_name: log.agent_name,
+        action: log.action,
+        detections_fixed: log.detections_fixed,
+        timestamp: log.timestamp,
+        status: log.status,
+        details: log.details,
+      });
+      return !error;
+    } catch {
+      return false;
+    }
+  }, []);
+
+  // Exécuter l'arbitrage pour une tâche — MODE PRODUCTION
+  const runArbitration = useCallback(async (
+    taskDescription: string,
+    category: TaskCategory,
+  ) => {
+    setState(prev => ({ ...prev, arbitrating: true, error: null }));
+
+    try {
+      // Analyse de l'arbitrage
+      const capability = KOS_INTERNAL_CAPABILITIES[category];
+      const complexity = capability.capability_score < 50 ? 75 : 30;
+      const businessImpact = capability.capability_score > 80 ? 85 : 50;
+      const reusability = category === 'ui_design' || category === 'code_generation' ? 40 : 80;
+
+      const result = arbitrateRequest(taskDescription, category, complexity, businessImpact, reusability);
+      const memoryResult = consultOrganizationalMemory(taskDescription, category);
+
+      // En production : persister dans Supabase
+      let persistedLog = false;
+      if (state.productionMode && state.supabaseConnected) {
+        const log = buildExecutionLog(result, true);
+        persistedLog = await persistExecutionLog(log);
+        if (persistedLog) {
+          result.execution_log_id = `supabase:${result.task_id}`;
+        }
+      }
+
+      // Simuler le délai d'exécution agent (en production, serait réel)
+      if (state.productionMode && result.decision === 'kos_internal') {
+        const agents = getAgentsForCategory(category);
+        const agent = agents.find(a => a.agent_id === result.assigned_agent_id);
+        const latency = agent?.avg_latency_ms || 300;
+        await new Promise(resolve => setTimeout(resolve, Math.min(latency, 800)));
+        
+        // Mise à jour du statut
+        result.execution_status = 'completed';
+        
+        // Persister la complétion
+        if (state.supabaseConnected) {
+          const completionLog = buildExecutionLog(result, true);
+          completionLog.status = 'completed';
+          completionLog.action = `COMPLETED:${result.decision}`;
+          await persistExecutionLog(completionLog).catch(() => {});
+        }
+      } else {
+        // Mode simulation : délai court
+        await new Promise(resolve => setTimeout(resolve, 300));
+      }
+
+      // Enregistrer dans le Cost Guardian
+      if (result.decision !== 'kos_internal') {
+        const costEntry = recordExternalCall(
+          result.decision,
+          taskDescription.slice(0, 60),
+          false,
+          result.escalation_reason || 'Escalade autorisée après arbitrage',
+          result.task_id,
+        );
+
+        setState(prev => ({
+          ...prev,
+          lastArbitration: result,
+          lastMemoryConsult: memoryResult,
+          arbitrating: false,
+          costLog: [costEntry, ...prev.costLog].slice(0, 50),
+          recentTasks: [{
+            task_id: result.task_id,
+            task_description: result.task_description,
+            category: result.category,
+            decision: result.decision,
+            decision_score: result.decision_score,
+            timestamp: result.timestamp,
+            cost_avoided_fcfa: 0,
+            memory_consulted: memoryResult.consulted,
+            quality_passed: true,
+            duration_ms: state.productionMode ? 800 : 300,
+            assigned_agent_id: result.assigned_agent_id,
+            assigned_agent_name: result.assigned_agent_name,
+            execution_status: 'blocked',
+          }, ...prev.recentTasks].slice(0, 20),
+          kpis: {
+            ...prev.kpis,
+            external_count: prev.kpis.external_count + 1,
+            total_requests: prev.kpis.total_requests + 1,
+            internal_execution_rate: Math.round((prev.kpis.internal_count / (prev.kpis.total_requests + 1)) * 100),
+            external_call_rate: Math.round(((prev.kpis.external_count + 1) / (prev.kpis.total_requests + 1)) * 100),
+          },
+        }));
+      } else {
+        // Appel évité / exécuté localement
+        const costEntry = recordExternalCall(
+          'readdy_ai',
+          taskDescription.slice(0, 60),
+          true,
+          `${result.assigned_agent_name || 'KOS Agent'} local — ${capability.description}${persistedLog ? ' [Supabase LIVE]' : ''}`,
+          result.task_id,
+        );
+
+        setState(prev => ({
+          ...prev,
+          lastArbitration: result,
+          lastMemoryConsult: memoryResult,
+          arbitrating: false,
+          costLog: [costEntry, ...prev.costLog].slice(0, 50),
+          kpis: {
+            ...prev.kpis,
+            avoided_calls: prev.kpis.avoided_calls + 1,
+            cost_saved_fcfa: prev.kpis.cost_saved_fcfa + 5000,
+            internal_count: prev.kpis.internal_count + 1,
+            total_requests: prev.kpis.total_requests + 1,
+            agents_dispatched: prev.kpis.agents_dispatched + 1,
+            tasks_completed: prev.kpis.tasks_completed + 1,
+            internal_execution_rate: Math.round(((prev.kpis.internal_count + 1) / (prev.kpis.total_requests + 1)) * 100),
+            external_call_rate: Math.round((prev.kpis.external_count / (prev.kpis.total_requests + 1)) * 100),
+          },
+          recentTasks: [{
+            task_id: result.task_id,
+            task_description: result.task_description,
+            category: result.category,
+            decision: result.decision,
+            decision_score: result.decision_score,
+            timestamp: result.timestamp,
+            cost_avoided_fcfa: 5000,
+            memory_consulted: memoryResult.consulted,
+            quality_passed: true,
+            duration_ms: state.productionMode ? (getAgentsForCategory(category)[0]?.avg_latency_ms || 300) : 300,
+            assigned_agent_id: result.assigned_agent_id,
+            assigned_agent_name: result.assigned_agent_name,
+            execution_status: 'completed',
+          }, ...prev.recentTasks].slice(0, 20),
+        }));
+      }
+    } catch (err) {
+      setState(prev => ({
+        ...prev,
+        arbitrating: false,
+        error: (err as Error).message || 'Erreur lors de l\'arbitrage',
+      }));
+    }
+  }, [state.productionMode, state.supabaseConnected, persistExecutionLog]);
+
+  // Stats dérivées
+  const internalRate = useMemo(() => state.kpis.internal_execution_rate, [state.kpis]);
+  const externalRate = useMemo(() => state.kpis.external_call_rate, [state.kpis]);
+  const totalCostSaved = useMemo(() => state.kpis.cost_saved_fcfa, [state.kpis]);
+  const avoidedCalls = useMemo(() => state.kpis.avoided_calls, [state.kpis]);
+  const costReductionRate = useMemo(() => {
+    if (state.kpis.total_requests === 0) return 100;
+    return Math.round((state.kpis.avoided_calls / (state.kpis.external_count + state.kpis.avoided_calls)) * 100);
+  }, [state.kpis]);
+
+  const internalTasks = useMemo(
+    () => state.recentTasks.filter(t => t.decision === 'kos_internal'),
+    [state.recentTasks],
+  );
+  const externalTasks = useMemo(
+    () => state.recentTasks.filter(t => t.decision !== 'kos_internal'),
+    [state.recentTasks],
+  );
+
+  const recentAvoidedCalls = useMemo(
+    () => state.costLog.filter(c => c.avoided),
+    [state.costLog],
+  );
+  const recentExternalCalls = useMemo(
+    () => state.costLog.filter(c => !c.avoided),
+    [state.costLog],
+  );
+
+  const orchestratorHealth = useMemo(() => {
+    const irScore = Math.min(100, (state.kpis.internal_execution_rate / ORCHESTRATOR_CONFIG.internal_execution_target) * 100);
+    const costScore = Math.min(100, (costReductionRate / ORCHESTRATOR_CONFIG.cost_reduction_target) * 100);
+    const qualityScore = Math.min(100, (state.kpis.quality_average / ORCHESTRATOR_CONFIG.quality_target) * 100);
+    return Math.round((irScore + costScore + qualityScore) / 3);
+  }, [state.kpis, costReductionRate]);
+
+  const categoryStats = useMemo(() => {
+    return Object.entries(KOS_INTERNAL_CAPABILITIES).map(([key, val]) => {
+      const taskCount = state.recentTasks.filter(t => t.category === key).length;
+      const internalCount = state.recentTasks.filter(t => t.category === key && t.decision === 'kos_internal').length;
+      return {
+        key: key as TaskCategory,
+        capability: val.capability_score,
+        taskCount,
+        agentCount: (KOS_AGENT_CATALOG[key as TaskCategory] || []).length,
+        internalRate: taskCount > 0 ? Math.round((internalCount / taskCount) * 100) : 100,
+      };
+    });
+  }, [state.recentTasks]);
+
+  const allAgents = useMemo(() => getAllAgents(), []);
+
+  const agentsByDomain = useMemo(() => {
+    const map: Record<string, AgentDispatchEntry[]> = {};
+    for (const agent of allAgents) {
+      if (!map[agent.domain]) map[agent.domain] = [];
+      map[agent.domain].push(agent);
+    }
+    return map;
+  }, [allAgents]);
+
+  return {
+    ...state,
+    internalRate,
+    externalRate,
+    totalCostSaved,
+    avoidedCalls,
+    costReductionRate,
+    internalTasks,
+    externalTasks,
+    recentAvoidedCalls,
+    recentExternalCalls,
+    orchestratorHealth,
+    categoryStats,
+    allAgents,
+    agentsByDomain,
+    runArbitration,
+    toggleProductionMode,
+    getAgentsForCategory,
+    getAgentById,
+    config: ORCHESTRATOR_CONFIG,
+    preCheckQuestions: READDY_PRE_CHECK_QUESTIONS,
+    authorizedUseCases: READDY_AUTHORIZED_USE_CASES,
+    capabilities: KOS_INTERNAL_CAPABILITIES,
+    agentCatalog: KOS_AGENT_CATALOG,
+    decisionThreshold: ORCHESTRATOR_CONFIG.decision_threshold,
+  };
+}
+
+
+

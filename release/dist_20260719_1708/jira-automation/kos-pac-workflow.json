@@ -1,0 +1,187 @@
+{
+  "name": "KOS Big Four PAC Engine — Finding → Ticket Automatique",
+  "description": "Reçoit un JiraSeed JSON depuis KOS PAC Engine via webhook et crée automatiquement le ticket Jira avec tous les champs Big Four : priority (Highest/High/Medium/Low), SLA due date, labels ISO/SOC2/BCEAO, customfields 10001/10002/10003, RACI ISAE 3000. Crée aussi automatiquement la page Confluence Evidence Pack ISA 265 et linke le tout. 0 code custom. Import direct : Project Settings > Automation > Import rule.",
+  "state": "ENABLED",
+  "tags": ["kos", "big-four", "pac-engine", "iso27001", "soc2", "isae3000", "isa265"],
+  "trigger": {
+    "component": "TRIGGER",
+    "type": "jira.issue.event.trigger:incoming-webhook",
+    "schemaVersion": 1,
+    "triggerConfiguration": {
+      "webhook": {
+        "enabled": true
+      }
+    }
+  },
+  "components": [
+    {
+      "id": "action-1",
+      "component": "ACTION",
+      "type": "jira.issue.create",
+      "schemaVersion": 1,
+      "value": {
+        "operations": [
+          {
+            "field": "project",
+            "type": "SET",
+            "rawValue": "{{webhookData.fields.project.key}}"
+          },
+          {
+            "field": "issuetype",
+            "type": "SET",
+            "rawValue": "{{webhookData.fields.issuetype.name}}"
+          },
+          {
+            "field": "summary",
+            "type": "SET",
+            "rawValue": "{{webhookData.fields.summary}}"
+          },
+          {
+            "field": "description",
+            "type": "SET",
+            "rawValue": "{{webhookData.fields.description}}"
+          },
+          {
+            "field": "priority",
+            "type": "SET",
+            "rawValue": "{{webhookData.fields.priority.name}}"
+          },
+          {
+            "field": "labels",
+            "type": "SET",
+            "rawValue": "{{webhookData.fields.labels}}"
+          },
+          {
+            "field": "duedate",
+            "type": "SET",
+            "rawValue": "{{webhookData.fields.duedate}}"
+          },
+          {
+            "field": "components",
+            "type": "SET",
+            "rawValue": "{{webhookData.fields.components}}"
+          },
+          {
+            "field": "customfield_10001",
+            "type": "SET",
+            "rawValue": "{{webhookData.fields.customfield_10001}}"
+          },
+          {
+            "field": "customfield_10002",
+            "type": "SET",
+            "rawValue": "{{webhookData.fields.customfield_10002}}"
+          },
+          {
+            "field": "customfield_10003",
+            "type": "SET",
+            "rawValue": "{{webhookData.fields.customfield_10003}}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "comment-1",
+      "component": "ACTION",
+      "type": "jira.issue.comment",
+      "schemaVersion": 1,
+      "value": {
+        "operations": [
+          {
+            "field": "comment",
+            "type": "SET",
+            "rawValue": "---\n*KOS PAC ENGINE v1.0 — Ticket généré automatiquement*\n- Finding ID: {{webhookData.meta.finding_id}}\n- Transformé par: {{webhookData.meta.transformed_by}}\n- Format: {{webhookData.meta.format}}\n- SLA: {{webhookData.meta.sla_days}} jours\n- RACI: A={{webhookData.meta.raci.assignee}} / R={{webhookData.meta.raci.reporter}} / C={{webhookData.meta.raci.validator}}\n- Execution ID: {{webhookData.execution_id}}\n\n*Quality Gates:*\n- ISO 9001: {{webhookData.meta.quality_gates.iso_9001}}\n- ISO 27001 A.9-12: {{webhookData.meta.quality_gates.iso_27001_a912}}\n- ISAE 3000 Séparation: {{webhookData.meta.quality_gates.isae_3000_separation}}\n- ISA 265 Traçabilité: {{webhookData.meta.quality_gates.isa_265_tracabilite}}\n- BCEAO Check: {{webhookData.meta.quality_gates.bceao_check}}\n---\n*0 dette technique · 0 table · 0 Edge Function · 100% auditable*"
+          }
+        ]
+      }
+    },
+    {
+      "id": "condition-sla-reminder",
+      "component": "BRANCH",
+      "type": "jira.issue.condition.advanced",
+      "schemaVersion": 1,
+      "value": {
+        "operations": [
+          {
+            "rawValue": "{{webhookData.fields.priority.name}} == \"Highest\" OR {{webhookData.fields.priority.name}} == \"High\""
+          }
+        ],
+        "children": [
+          {
+            "component": "ACTION",
+            "type": "jira.issue.comment",
+            "value": {
+              "operations": [
+                {
+                  "field": "comment",
+                  "type": "SET",
+                  "rawValue": "[ALERTE DG] Finding {{webhookData.fields.priority.name}} — Escalade automatique J+1. Due date: {{webhookData.fields.duedate}}. Conformément à la procédure ISA 265 Material Weakness."
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "confluence-create-page",
+      "component": "ACTION",
+      "type": "jira.webhook",
+      "schemaVersion": 1,
+      "value": {
+        "useEnhancedWebhookAction": true,
+        "webhook": {
+          "url": "https://{{confluence_domain}}/wiki/rest/api/content",
+          "method": "POST",
+          "headers": [
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "Authorization", "value": "Basic {{confluence_api_token_base64}}" }
+          ],
+          "body": {
+            "type": "page",
+            "title": "KOS-PAC-{{webhookData.meta.finding_id}} Evidence Pack",
+            "space": { "key": "{{confluence_space_key}}" },
+            "ancestors": [{ "id": "{{confluence_parent_page_id}}" }],
+            "body": {
+              "storage": {
+                "representation": "storage",
+                "value": "<h2>KOS-PAC-{{webhookData.meta.finding_id}} — Evidence Pack</h2><p><strong>Format :</strong> KPMG Big Four · <strong>Date :</strong> {{now}} · <strong>Classification :</strong> Confidentiel — Usage Interne Audit</p><h3>Section 1 — Finding Summary</h3><table><tbody><tr><th>ID Finding</th><td>{{webhookData.meta.finding_id}}</td></tr><tr><th>Standard</th><td>{{webhookData.fields.customfield_10001}}</td></tr><tr><th>Criticité</th><td>{{webhookData.fields.customfield_10002}}</td></tr><tr><th>Titre</th><td>{{webhookData.fields.summary}}</td></tr><tr><th>Propriétaire Risque (R)</th><td>{{webhookData.meta.raci.assignee}}</td></tr><tr><th>Validator (A)</th><td>{{webhookData.meta.raci.validator}}</td></tr></tbody></table><h3>Section 2 — Root Cause Analysis</h3><ac:structured-macro ac:name=\"panel\"><ac:parameter ac:name=\"title\">ISAE 3000 — Root Cause</ac:parameter><ac:rich-text-body><p>{{webhookData.fields.customfield_10003}}</p></ac:rich-text-body></ac:structured-macro><h3>Section 8 — Sign-off (ISAE 3000)</h3><table><tbody><tr><th>R</th><td>{{webhookData.meta.raci.assignee}} ☐</td></tr><tr><th>A</th><td>{{webhookData.meta.raci.validator}} ☐</td></tr><tr><th>Auditeur</th><td>☐</td></tr></tbody></table><hr/><p style=\"text-align:center;color:#6B778C;font-size:11px;\">Généré par KOS PAC ENGINE v1.0 · ISO 27001:2022 · SOC 2 Type 2 · ISAE 3000 · ISA 265 · 0 dette technique</p>"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "jira-link-confluence-evidence",
+      "component": "ACTION",
+      "type": "jira.issue.edit",
+      "schemaVersion": 1,
+      "value": {
+        "operations": [
+          {
+            "field": "customfield_10004",
+            "type": "SET",
+            "rawValue": "{{webResponse.body._links.webui}}"
+          }
+        ]
+      }
+    },
+    {
+      "id": "comment-confluence-link",
+      "component": "ACTION",
+      "type": "jira.issue.comment",
+      "schemaVersion": 1,
+      "value": {
+        "operations": [
+          {
+            "field": "comment",
+            "type": "SET",
+            "rawValue": "📎 [KOS-PAC-{{webhookData.meta.finding_id}} Evidence Pack]({{webResponse.body._links.webui}}) — Page Confluence créée automatiquement. ISA 265 Traçabilité.|n|n*Panel CWV:* Page <50KB LCP <1.5s · *Panel GSC:* Labels=[{{webhookData.fields.customfield_10001}}] · *Panel Dette:* 0 table 0 edge"
+          }
+        ]
+      }
+    }
+  ],
+  "labels": ["kos-pac-engine", "big-four", "automation"],
+  "canotherule": false
+}

@@ -1,0 +1,169 @@
+# ──── CONFIGURATION NETLIFY POUR SEO/PERFORMANCE ────
+
+# ═══════════════════════════════════════════════════════════════
+# Edge Function : KHEPRA GEO/IA MIDDLEWARE
+# Injection headers KOS AI, EEAT, Early Hints, détection bots IA
+# ═══════════════════════════════════════════════════════════════
+[[edge_functions]]
+  function = "khepra-geo-middleware"
+  path = "/*"
+
+# Edge Function : KOS WAF — Web Application Firewall
+[[edge_functions]]
+  function = "kos-waf"
+  path = "/*"
+
+# Edge Function : détection des bots sociaux et servage des meta tags OG
+[[edge_functions]]
+  function = "social-og-redirect"
+  path = "/*"
+
+# Edge Function : proxy dynamique llms.txt / llms-full.txt depuis Supabase
+[[edge_functions]]
+  function = "serve-llms-txt"
+  path = "/llms.txt"
+
+[[edge_functions]]
+  function = "serve-llms-txt"
+  path = "/llms-full.txt"
+
+[build]
+  publish = "dist"
+  command = "npm run build"
+  node_version = "20"
+
+# Redirections CANONIQUES — www → non-www + HTTP → HTTPS
+[[redirects]]
+  from = "http://www.khepraexperts.com/*"
+  to = "https://khepraexperts.com/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "https://www.khepraexperts.com/*"
+  to = "https://khepraexperts.com/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "http://khepraexperts.com/*"
+  to = "https://khepraexperts.com/:splat"
+  status = 301
+  force = true
+
+# Redirections 301 — nettoyage anciennes URLs
+[[redirects]]
+  from = "/wp-admin/*"
+  to = "/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/wp-content/*"
+  to = "/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/wp-login.php"
+  to = "/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/feed/*"
+  to = "/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/xmlrpc.php"
+  to = "/"
+  status = 301
+  force = true
+
+# Anciens domaines parasites
+[[redirects]]
+  from = "http://khepra-expert.com/*"
+  to = "https://khepraexperts.com/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "https://khepra-expert.com/*"
+  to = "https://khepraexperts.com/:splat"
+  status = 301
+  force = true
+
+# Disable Netlify Pretty URL — explicitly strip trailing slashes
+# This prevents the deadly loop: Pretty URL strips / → _redirects adds / → repeat
+# Must be BEFORE the SPA catch-all
+[[redirects]]
+  from = "/*/"
+  to = "/:splat"
+  status = 301
+
+# SPA fallback — DERNIERE REGLE
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# ═══════════════════════════════════════════════════════════════
+# HEADERS DE SÉCURITÉ — Simplifiés, pas de COEP/COOP agressif
+# ═══════════════════════════════════════════════════════════════
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-DNS-Prefetch-Control = "on"
+    X-Frame-Options = "DENY"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Strict-Transport-Security = "max-age=63072000; includeSubDomains; preload"
+    X-XSS-Protection = "0"
+    X-Download-Options = "noopen"
+    X-Permitted-Cross-Domain-Policies = "none"
+    # Cache NUKE — force rechargement complet
+    Cache-Control = "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0"
+    Pragma = "no-cache"
+    Expires = "0"
+    Vary = "Accept-Encoding"
+    Alt-Svc = "h3=\":443\"; ma=86400, h2=\":443\"; ma=86400"
+
+# Assets — no-store temporairement pour casser le cache corrompu
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0"
+    Pragma = "no-cache"
+    Expires = "0"
+    Access-Control-Allow-Origin = "*"
+    Vary = "Accept-Encoding"
+    Alt-Svc = "h3=\":443\"; ma=86400, h2=\":443\"; ma=86400"
+
+# Images — cache long (immutable)
+[[headers]]
+  for = "/images/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+    CDN-Cache-Control = "public, max-age=31536000, immutable"
+    Alt-Svc = "h3=\":443\"; ma=86400, h2=\":443\"; ma=86400"
+
+# HTML — no-store
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0"
+    Pragma = "no-cache"
+    Expires = "0"
+    Vary = "Accept-Encoding"
+    Alt-Svc = "h3=\":443\"; ma=86400, h2=\":443\"; ma=86400"
+
+# Service Worker — no-store
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0"
+    Pragma = "no-cache"
+    Expires = "0"
+    Alt-Svc = "h3=\":443\"; ma=86400, h2=\":443\"; ma=86400"

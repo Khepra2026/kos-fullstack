@@ -1,0 +1,52 @@
+import { useState, useMemo, useEffect } from 'react';
+import { checkTableHealth } from '@/hooks/utils/hookMigration';
+import {
+  SPRINT2_ACTIONS,
+  SPRINT2_META,
+  computeZeroBudget2KPIs,
+  ZeroBudgetAction2,
+  ZeroBudgetSprint2KPIs,
+} from '@/mocks/kosZeroBudgetSprint2';
+
+type BudgetFilter = 'all' | 'zero_cost' | 'internal_effort' | 'blocked_budget' | 'creative_workaround';
+type StatusFilter = 'all' | 'executed' | 'in_progress' | 'pending' | 'blocked';
+type CategoryFilter = 'all' | 'security' | 'performance' | 'compliance' | 'quality' | 'kosData.data' | 'growth' | 'code' | 'infrastructure';
+
+export function useKOSZeroBudgetSprint2() {
+  const meta = SPRINT2_META;
+  const kpis: ZeroBudgetSprint2KPIs = useMemo(() => computeZeroBudget2KPIs(), []);
+  const actions: ZeroBudgetAction2[] = SPRINT2_ACTIONS;
+  const [isLive, setIsLive] = useState(false);
+
+  const [budgetFilter, setBudgetFilter] = useState<BudgetFilter>('all');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('all');
+
+  useEffect(() => {
+    checkTableHealth('kos_execution_logs').then(setIsLive);
+  }, []);
+
+  const filteredActions = useMemo(() => {
+    return actions.filter(a => {
+      if (budgetFilter !== 'all' && a.budgetStatus !== budgetFilter) return false;
+      if (statusFilter !== 'all' && a.executionStatus !== statusFilter) return false;
+      if (categoryFilter !== 'all' && a.category !== categoryFilter) return false;
+      return true;
+    });
+  }, [actions, budgetFilter, statusFilter, categoryFilter]);
+
+  return {
+    meta,
+    kpis,
+    actions,
+    filteredActions,
+    isLive,
+    budgetFilter,
+    setBudgetFilter,
+    statusFilter,
+    setStatusFilter,
+    categoryFilter,
+    setCategoryFilter,
+    loading: false,
+  };
+}

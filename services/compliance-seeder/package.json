@@ -1,0 +1,28 @@
+{
+  "name": "kos-compliance-seeder",
+  "version": "5.2.0",
+  "description": "KOS Compliance Engine v5.2 — RAG Universel 320 Sources — Quadruple Ancrage ISAE 3402 — Universal Crawler BullMQ+Puppeteer",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node seed-full.js",
+    "start:universal": "node seed-universal.js",
+    "start:crawler": "node kos-universal-crawler.js",
+    "audit": "node audit-universal.js",
+    "memory": "node kos-memory-engine.js",
+    "alert:config": "node alert-config.js",
+    "alert:worker": "node kos-alert-worker.js",
+    "dev": "node --watch seed-full.js",
+    "dev:universal": "node --watch seed-universal.js",
+    "dev:crawler": "node --watch kos-universal-crawler.js"
+  },
+  "dependencies": {
+    "node-cron": "3.0.3",
+    "node-fetch": "3.3.2",
+    "bullmq": "5.41.7",
+    "puppeteer": "24.6.1",
+    "robots-parser": "3.0.1",
+    "ioredis": "5.6.0",
+    "express": "4.21.2"
+  }
+}

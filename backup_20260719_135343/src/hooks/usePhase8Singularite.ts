@@ -1,0 +1,45 @@
+import { useState, useCallback } from 'react';
+import { computePhaseMetrics, usePhaseLoading, usePhaseLiveData } from '@/hooks/usePhaseDataCore';
+import {
+  phase8Stats,
+  phase8Chantiers,
+  phase8ExecutionLog,
+  phase8Timeline,
+  phase8Budget,
+  phase8Dependencies,
+} from '@/mocks/phase8Singularite';
+
+export function usePhase8Singularite() {
+  const [retryCount, setRetryCount] = useState(0);
+  const loading = usePhaseLoading(retryCount);
+  const retry = useCallback(() => setRetryCount(c => c + 1), []);
+  const { liveData, isLive } = usePhaseLiveData(8);
+
+  const m = computePhaseMetrics(phase8Chantiers, 62000000, 4500000, '2026-10-06', '2026-10-17');
+
+  return {
+    loading,
+    retry,
+    isLive,
+    liveData,
+    phase8Stats,
+    phase8Chantiers,
+    phase8ExecutionLog,
+    phase8Timeline,
+    phase8Budget,
+    phase8Dependencies,
+    openChantiers: m.openItems,
+    inProgressChantiers: m.inProgressItems,
+    completedChantiers: m.completedItems,
+    totalActions: m.totalActions,
+    completedActions: m.completedActions,
+    inProgressActions: m.inProgressActions,
+    globalProgress: m.globalProgress,
+    criticalPathBlockers: m.criticalPathBlockers,
+    daysRemaining: m.daysRemaining,
+    budgetUtilizationPercent: m.budgetUtilizationPercent,
+  };
+}
+
+
+

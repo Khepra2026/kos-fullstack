@@ -1,0 +1,268 @@
+import { useState, useMemo, useCallback, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
+import {
+  CONTENT_PIPELINE,
+  CONTENT_SLOTS,
+  YOUTUBE_SCRIPTS as MOCK_SCRIPTS,
+  SEO_DISTRIBUTION_CONFIGS,
+  YOUTUBE_CHANNEL_KPIS,
+  YOUTUBE_FACTORY_STATS,
+} from '@/mocks/youTubeFactory';
+import type {
+  PipelineStep,
+  ContentSlot,
+  YouTubeScript,
+  SEODistributionConfig,
+} from '@/mocks/youTubeFactory';
+
+interface UseKOSYouTubeFactoryReturn {
+  loading: boolean;
+  isLive: boolean;
+  refetch: () => void;
+  pipeline: PipelineStep[];
+  optimizedSteps: PipelineStep[];
+  developingSteps: PipelineStep[];
+  getStepById: (id: string) => PipelineStep | undefined;
+  getStepByNumber: (num: number) => PipelineStep | undefined;
+  pipelineStats: Record<string, number>;
+  contentSlots: ContentSlot[];
+  shorts: ContentSlot[];
+  videos: ContentSlot[];
+  podcasts: ContentSlot[];
+  masterclass: ContentSlot[];
+  getSlotById: (id: string) => ContentSlot | undefined;
+  getSlotsByType: (type: string) => ContentSlot[];
+  calendarStats: Record<string, unknown>;
+  scripts: YouTubeScript[];
+  publishedScripts: YouTubeScript[];
+  scheduledScripts: YouTubeScript[];
+  inProductionScripts: YouTubeScript[];
+  draftScripts: YouTubeScript[];
+  getScriptById: (id: string) => YouTubeScript | undefined;
+  getScriptsByFormat: (format: string) => YouTubeScript[];
+  getScriptsByDomain: (domain: string) => YouTubeScript[];
+  searchScripts: (query: string) => YouTubeScript[];
+  scriptStats: Record<string, unknown>;
+  distributionConfigs: SEODistributionConfig[];
+  activeDistributions: SEODistributionConfig[];
+  getDistConfigById: (id: string) => SEODistributionConfig | undefined;
+  getDistConfigByPlatform: (platform: string) => SEODistributionConfig | undefined;
+  distributionStats: Record<string, unknown>;
+  channelKpis: typeof YOUTUBE_CHANNEL_KPIS;
+  kpiTrends: Record<string, number>;
+  stats: typeof YOUTUBE_FACTORY_STATS;
+  getStats: () => typeof YOUTUBE_FACTORY_STATS;
+}
+
+function normalizeSupabaseScript(row: Record<string, unknown>): YouTubeScript {
+  return {
+    id: String(row.id || ''),
+    title: String(row.title || ''),
+    format: String((row.metadata as Record<string, unknown>)?.format || 'video'),
+    domain: String((row.metadata as Record<string, unknown>)?.domain || 'Réglementaire'),
+    status: String(row.status || 'draft'),
+    seoKeywords: (row.keywords as string[]) || [],
+    duration: String(row.duration || '10 min'),
+    sections: (row.chapters as Array<{ title: string; content: string }>) || [],
+    hook: String(row.hook || ''),
+    cta: String(row.cta || ''),
+    description: String(row.description_youtube || ''),
+    qualityScore: Number(row.quality_score || 0),
+    createdAt: String(row.created_at || new Date().toISOString()),
+    publishedAt: row.status === 'published' ? String(row.updated_at || '') : null,
+  } as YouTubeScript;
+}
+
+export function useKOSYouTubeFactory(): UseKOSYouTubeFactoryReturn {
+  const [loading, setLoading] = useState(true);
+  const [isLive, setIsLive] = useState(false);
+  const [scripts, setScripts] = useState<YouTubeScript[]>(MOCK_SCRIPTS);
+
+  const fetchScripts = useCallback(async () => {
+    setLoading(true);
+    try {
+      const { data, error: err } = await supabase
+        .from('youtube_scripts')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (err) throw err;
+      if (data && data.length > 0) {
+        const normalized = data.map(normalizeSupabaseScript);
+        setScripts(normalized);
+        setIsLive(true);
+      } else {
+        setScripts(MOCK_SCRIPTS);
+        setIsLive(false);
+      }
+    } catch {
+      setScripts(MOCK_SCRIPTS);
+      setIsLive(false);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchScripts();
+  }, [fetchScripts]);
+
+  // ─── PIPELINE (mock pur — pas de table Supabase dédiée) ───
+  const pipeline = useMemo(() => CONTENT_PIPELINE, []);
+  const optimizedSteps = useMemo(() => CONTENT_PIPELINE.filter(s => s.status === 'optimized'), []);
+  const developingSteps = useMemo(() => CONTENT_PIPELINE.filter(s => s.status === 'developing'), []);
+
+  const getStepById = useCallback((id: string): PipelineStep | undefined => {
+    return CONTENT_PIPELINE.find(s => s.id === id);
+  }, []);
+
+  const getStepByNumber = useCallback((num: number): PipelineStep | undefined => {
+    return CONTENT_PIPELINE.find(s => s.stepNumber === num);
+  }, []);
+
+  const pipelineStats = useMemo(() => ({
+    totalSteps: CONTENT_PIPELINE.length,
+    optimized: CONTENT_PIPELINE.filter(s => s.status === 'optimized').length,
+    manual: CONTENT_PIPELINE.filter(s => s.status === 'manual').length,
+    developing: CONTENT_PIPELINE.filter(s => s.status === 'developing').length,
+    automationRate: Math.round((CONTENT_PIPELINE.filter(s => s.status === 'optimized').length / CONTENT_PIPELINE.length) * 100),
+  }), []);
+
+  // ─── CONTENT SLOTS ───
+  const contentSlots = useMemo(() => CONTENT_SLOTS, []);
+  const shorts = useMemo(() => CONTENT_SLOTS.filter(s => s.type === 'short'), []);
+  const videos = useMemo(() => CONTENT_SLOTS.filter(s => s.type === 'video'), []);
+  const podcasts = useMemo(() => CONTENT_SLOTS.filter(s => s.type === 'podcast'), []);
+  const masterclass = useMemo(() => CONTENT_SLOTS.filter(s => s.type === 'masterclass'), []);
+
+  const getSlotById = useCallback((id: string): ContentSlot | undefined => {
+    return CONTENT_SLOTS.find(s => s.id === id);
+  }, []);
+
+  const getSlotsByType = useCallback((type: string): ContentSlot[] => {
+    return CONTENT_SLOTS.filter(s => s.type === type);
+  }, []);
+
+  const calendarStats = useMemo(() => ({
+    totalSlots: CONTENT_SLOTS.length,
+    totalProduced: CONTENT_SLOTS.reduce((s, slot) => s + slot.totalProduced, 0),
+    totalAvgViews: CONTENT_SLOTS.reduce((s, slot) => s + slot.avgViews, 0),
+    bestPerforming: [...CONTENT_SLOTS].sort((a, b) => b.avgViews - a.avgViews)[0],
+  }), []);
+
+  // ─── SCRIPTS (hybride Supabase + mock fallback) ───
+  const publishedScripts = useMemo(() => scripts.filter(s => s.status === 'published'), [scripts]);
+  const scheduledScripts = useMemo(() => scripts.filter(s => s.status === 'scheduled'), [scripts]);
+  const inProductionScripts = useMemo(() => scripts.filter(s => s.status === 'in_production'), [scripts]);
+  const draftScripts = useMemo(() => scripts.filter(s => s.status === 'draft'), [scripts]);
+
+  const getScriptById = useCallback((id: string): YouTubeScript | undefined => {
+    return scripts.find(s => s.id === id);
+  }, [scripts]);
+
+  const getScriptsByFormat = useCallback((format: string): YouTubeScript[] => {
+    return scripts.filter(s => s.format === format);
+  }, [scripts]);
+
+  const getScriptsByDomain = useCallback((domain: string): YouTubeScript[] => {
+    return scripts.filter(s => s.domain.toLowerCase().includes(domain.toLowerCase()));
+  }, [scripts]);
+
+  const searchScripts = useCallback((query: string): YouTubeScript[] => {
+    const q = query.toLowerCase();
+    return scripts.filter(s =>
+      s.title.toLowerCase().includes(q) ||
+      s.domain.toLowerCase().includes(q) ||
+      s.seoKeywords.some(k => k.toLowerCase().includes(q)) ||
+      s.sections.some(sec => sec.content.toLowerCase().includes(q))
+    );
+  }, [scripts]);
+
+  const scriptStats = useMemo(() => ({
+    total: scripts.length,
+    published: scripts.filter(s => s.status === 'published').length,
+    scheduled: scripts.filter(s => s.status === 'scheduled').length,
+    inProduction: scripts.filter(s => s.status === 'in_production').length,
+    drafts: scripts.filter(s => s.status === 'draft').length,
+    domains: [...new Set(scripts.map(s => s.domain))],
+    formats: [...new Set(scripts.map(s => s.format))],
+  }), [scripts]);
+
+  // ─── SEO & DISTRIBUTION ───
+  const distributionConfigs = useMemo(() => SEO_DISTRIBUTION_CONFIGS, []);
+  const activeDistributions = useMemo(() => SEO_DISTRIBUTION_CONFIGS.filter(d => d.active), []);
+
+  const getDistConfigById = useCallback((id: string): SEODistributionConfig | undefined => {
+    return SEO_DISTRIBUTION_CONFIGS.find(d => d.id === id);
+  }, []);
+
+  const getDistConfigByPlatform = useCallback((platform: string): SEODistributionConfig | undefined => {
+    return SEO_DISTRIBUTION_CONFIGS.find(d => d.platform === platform);
+  }, []);
+
+  const distributionStats = useMemo(() => ({
+    totalChannels: SEO_DISTRIBUTION_CONFIGS.length,
+    active: SEO_DISTRIBUTION_CONFIGS.filter(d => d.active).length,
+    platforms: SEO_DISTRIBUTION_CONFIGS.map(d => d.platform),
+    totalTips: SEO_DISTRIBUTION_CONFIGS.reduce((s, d) => s + d.optimizationTips.length, 0),
+  }), []);
+
+  // ─── KPIs ───
+  const channelKpis = useMemo(() => YOUTUBE_CHANNEL_KPIS, []);
+
+  const kpiTrends = useMemo(() => {
+    const improving = YOUTUBE_CHANNEL_KPIS.filter(k => k.trend === 'up');
+    return {
+      improving: improving.length,
+      total: YOUTUBE_CHANNEL_KPIS.length,
+      avgGrowth: Math.round(YOUTUBE_CHANNEL_KPIS.reduce((s, k) => {
+        return s + (k.previous > 0 ? ((k.current - k.previous) / k.previous) * 100 : 100);
+      }, 0) / YOUTUBE_CHANNEL_KPIS.length),
+    };
+  }, []);
+
+  // ─── STATS ───
+  const getStats = useCallback(() => YOUTUBE_FACTORY_STATS, []);
+
+  return {
+    loading,
+    isLive,
+    refetch: fetchScripts,
+    pipeline,
+    optimizedSteps,
+    developingSteps,
+    getStepById,
+    getStepByNumber,
+    pipelineStats,
+    contentSlots,
+    shorts,
+    videos,
+    podcasts,
+    masterclass,
+    getSlotById,
+    getSlotsByType,
+    calendarStats,
+    scripts,
+    publishedScripts,
+    scheduledScripts,
+    inProductionScripts,
+    draftScripts,
+    getScriptById,
+    getScriptsByFormat,
+    getScriptsByDomain,
+    searchScripts,
+    scriptStats,
+    distributionConfigs,
+    activeDistributions,
+    getDistConfigById,
+    getDistConfigByPlatform,
+    distributionStats,
+    channelKpis,
+    kpiTrends,
+    stats: YOUTUBE_FACTORY_STATS,
+    getStats,
+  };
+}
+
+
+

@@ -1,0 +1,256 @@
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import {
+  analyzePostQuality,
+  generateExecutiveReport,
+  generateAuditLog,
+  autoCorrectQueue,
+  type PostQualityReport,
+  type QualityCycleReport,
+  type AuditLogEntry,
+  type AutoCorrectionResult,
+} from '@/mocks/socialQualityEngine';
+import type { SocialQueueItem } from '@/mocks/socialAutomationQueue';
+import { supabase } from '@/lib/supabase';
+
+interface SocialQualityState {
+  reports: PostQualityReport[];
+  correctedReports: PostQualityReport[];
+  executiveReport: QualityCycleReport | null;
+  auditLog: AuditLogEntry[];
+  correctionResults: AutoCorrectionResult[];
+  loading: boolean;
+  correcting: boolean;
+  error: string | null;
+  lastScanDate: string | null;
+  scanCount: number;
+  correctedCount: number;
+  supabaseError: string | null;
+}
+
+export function useSocialQualityEngine(queue: SocialQueueItem[]) {
+  const [state, setState] = useState<SocialQualityState>({
+    reports: [],
+    correctedReports: [],
+    executiveReport: null,
+    auditLog: [],
+    correctionResults: [],
+    loading: false,
+    correcting: false,
+    error: null,
+    lastScanDate: null,
+    scanCount: 0,
+    correctedCount: 0,
+    supabaseError: null,
+  });
+
+  const linkedinPosts = useMemo(
+    () => queue.filter(p => p.platform === 'linkedin'),
+    [queue]
+  );
+
+  // Persist audit log to Supabase
+  const persistAuditLog = useCallback(async (logs: AuditLogEntry[]) => {
+    try {
+      const rows = logs.map((log) => ({
+        block_id: String(log.post_id),
+        block_name: log.post_title,
+        agent_id: 'kos-social-quality-engine',
+        agent_name: 'KOS Social Quality Engine',
+        action: log.action,
+        detections_fixed: log.action === 'correct' ? 1 : 0,
+        timestamp: new Date(log.timestamp).toISOString(),
+        status: log.severity === 'critical' ? 'fail' : log.severity === 'warning' ? 'pending' : 'pass',
+        details: log.detail,
+      }));
+
+      const { error } = await supabase.from('kos_execution_logs').insert(rows);
+      if (error) {
+        console.warn('[KOS Quality] Failed to persist audit log to Supabase:', error.message);
+        setState(prev => ({ ...prev, supabaseError: error.message }));
+      } else {
+        setState(prev => ({ ...prev, supabaseError: null }));
+      }
+    } catch (err) {
+      console.warn('[KOS Quality] Supabase persist exception:', err);
+      setState(prev => ({ ...prev, supabaseError: (err as Error).message }));
+    }
+  }, []);
+
+  const runQualityScan = useCallback(async () => {
+    setState(prev => ({ ...prev, loading: true, error: null }));
+
+    try {
+      // Analyser chaque post LinkedIn
+      const reports: PostQualityReport[] = linkedinPosts.map(post =>
+        analyzePostQuality({
+          id: post.id,
+          title: post.title,
+          platform: post.platform,
+          content: post.content,
+          source_url: post.source_url,
+          hashtags: post.hashtags,
+          status: post.status,
+        })
+      );
+
+      // Générer le rapport exécutif
+      const executiveReport = generateExecutiveReport(reports);
+
+      // Générer le journal d'audit
+      const auditLog = generateAuditLog(reports);
+
+      // Persister les logs dans Supabase
+      await persistAuditLog(auditLog);
+
+      setState(prev => ({
+        ...prev,
+        reports,
+        correctedReports: [],
+        executiveReport,
+        auditLog,
+        correctionResults: [],
+        loading: false,
+        error: null,
+        lastScanDate: new Date().toISOString(),
+        scanCount: prev.scanCount + 1,
+        correctedCount: 0,
+      }));
+    } catch (err) {
+      setState(prev => ({
+        ...prev,
+        loading: false,
+        error: (err as Error).message || 'Erreur lors du scan qualité Big Four',
+      }));
+    }
+  }, [linkedinPosts, persistAuditLog]);
+
+  const runAutoCorrection = useCallback(async () => {
+    setState(prev => ({ ...prev, correcting: true, error: null }));
+
+    try {
+      const { results, correctedReports, totalScoreBefore, totalScoreAfter } = autoCorrectQueue(
+        linkedinPosts.map(p => ({
+          id: p.id,
+          title: p.title,
+          platform: p.platform,
+          content: p.content,
+          source_url: p.source_url,
+          hashtags: p.hashtags,
+          status: p.status,
+        }))
+      );
+
+      // Generate audit log for corrections
+      const correctionLogs: AuditLogEntry[] = results.map((r, i) => ({
+        id: `audit-correct-${String(i + 1).padStart(4, '0')}`,
+        timestamp: new Date().toISOString(),
+        post_id: r.post_id,
+        post_title: linkedinPosts.find(p => p.id === r.post_id)?.title || `Post #${r.post_id}`,
+        action: 'correct',
+        severity: r.score_after >= 95 ? 'info' : 'warning',
+        detail: `Auto-correction Big Four — ${r.corrections_applied.join(' ; ')}. Score : ${r.score_before} → ${r.score_after}/100`,
+        score_before: r.score_before,
+        score_after: r.score_after,
+      }));
+
+      await persistAuditLog(correctionLogs);
+
+      // Generate new executive report with corrected data
+      const executiveReport = generateExecutiveReport(correctedReports);
+      const auditLog = generateAuditLog(correctedReports);
+      await persistAuditLog(auditLog);
+
+      setState(prev => ({
+        ...prev,
+        correctedReports,
+        correctionResults: results,
+        executiveReport,
+        auditLog,
+        correcting: false,
+        correctedCount: results.length,
+        lastScanDate: new Date().toISOString(),
+      }));
+    } catch (err) {
+      setState(prev => ({
+        ...prev,
+        correcting: false,
+        error: (err as Error).message || 'Erreur lors de l\'auto-correction Big Four',
+      }));
+    }
+  }, [linkedinPosts, persistAuditLog]);
+
+  // Auto-scan au montage
+  useEffect(() => {
+    if (linkedinPosts.length > 0) {
+      runQualityScan();
+    }
+  }, []);
+
+  // Stats dérivées
+  const authorizedPosts = useMemo(
+    () => {
+      const target = state.correctedReports.length > 0 ? state.correctedReports : state.reports;
+      return target.filter(r => r.authorized_for_publication);
+    },
+    [state.reports, state.correctedReports]
+  );
+
+  const blockedPosts = useMemo(
+    () => {
+      const target = state.correctedReports.length > 0 ? state.correctedReports : state.reports;
+      return target.filter(r => !r.authorized_for_publication);
+    },
+    [state.reports, state.correctedReports]
+  );
+
+  const criticalPosts = useMemo(
+    () => {
+      const target = state.correctedReports.length > 0 ? state.correctedReports : state.reports;
+      return target.filter(r => r.global_score < 60);
+    },
+    [state.reports, state.correctedReports]
+  );
+
+  const overallHealthScore = useMemo(() => {
+    if (!state.executiveReport) return 0;
+    return state.executiveReport.average_score;
+  }, [state.executiveReport]);
+
+  const hashtagViolations = useMemo(() => {
+    const target = state.correctedReports.length > 0 ? state.correctedReports : state.reports;
+    const all: { postId: number; postTitle: string; violation: string }[] = [];
+    for (const report of target) {
+      for (const v of report.hashtag_violations) {
+        all.push({ postId: report.post_id, postTitle: report.post_title, violation: v });
+      }
+    }
+    return all;
+  }, [state.reports, state.correctedReports]);
+
+  const unverifiedClaimsAll = useMemo(() => {
+    const target = state.correctedReports.length > 0 ? state.correctedReports : state.reports;
+    const all: { postId: number; postTitle: string; claim: string }[] = [];
+    for (const report of target) {
+      for (const c of report.unverified_claims) {
+        all.push({ postId: report.post_id, postTitle: report.post_title, claim: c });
+      }
+    }
+    return all;
+  }, [state.reports, state.correctedReports]);
+
+  return {
+    ...state,
+    linkedinPosts,
+    authorizedPosts,
+    blockedPosts,
+    criticalPosts,
+    overallHealthScore,
+    hashtagViolations,
+    unverifiedClaimsAll,
+    runQualityScan,
+    runAutoCorrection,
+  };
+}
+
+
+

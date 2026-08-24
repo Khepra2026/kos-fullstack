@@ -1,0 +1,18 @@
+
+supabase\functions\aml\index.ts:64:    await supabase.from('kos_audit_log').insert({
+supabase\functions\aml\index.ts:124:    await supabase.from('kos_audit_log').insert({
+supabase\functions\compliance\index.ts:64:    await supabase.from('kos_audit_log').insert({
+supabase\functions\compliance\index.ts:126:    await supabase.from('kos_audit_log').insert({
+supabase\functions\cybersec\index.ts:64:    await supabase.from('kos_audit_log').insert({
+supabase\functions\cybersec\index.ts:124:    await supabase.from('kos_audit_log').insert({
+supabase\functions\kos-capa-api\index.ts:163:  const { error } = await supabase.from("kos_audit_log").insert({
+supabase\functions\kos-page-regenerator\index.ts:270:  // Log batch dans kos_audit_log
+supabase\functions\kos-page-regenerator\index.ts:272:    await supabase.from("kos_audit_log").insert({
+supabase\functions\kos-page-regenerator\index.ts:281:    logError("kos_audit_log insert", e);
+supabase\functions\kos-page-regenerator\index.ts:419:    await supabase.from("kos_audit_log").insert({
+supabase\functions\kos-page-regenerator\index.ts:428:    logError("kos_audit_log insert", e);
+supabase\functions\risk\index.ts:64:    await supabase.from('kos_audit_log').insert({
+supabase\functions\risk\index.ts:124:    await supabase.from('kos_audit_log').insert({
+supabase\functions\strategic-insight\index.ts:56:    await supabase.from('kos_audit_log').insert({
+supabase\functions\strategic-insight\index.ts:113:    await supabase.from('kos_audit_log').insert({
+

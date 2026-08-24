@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# ═══════════════════════════════════════════════════════════════
+# GRAFANA PROVISIONING — Auto-import des dashboards KOS
+# À placer dans /etc/grafana/provisioning/dashboards/kos.yml
+# ═══════════════════════════════════════════════════════════════
+
+apiVersion: 1
+
+providers:
+  - name: 'KOS Sovereign Stack'
+    orgId: 1
+    folder: 'KOS Infrastructure'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards/kos
+      foldersFromFilesStructure: false

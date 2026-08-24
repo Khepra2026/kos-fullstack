@@ -1,0 +1,820 @@
+import { useState } from 'react';
+import hubLayout from '@/components/feature/hubLayout';
+import {
+  marketIntelligence,
+  growthEngine,
+  executiveContentStudio,
+  authorityReputationLab,
+  partnerEcosystem,
+  opportunityDiscovery,
+  autonomousGrowthTeam,
+} from '@/mocks/autonomousGrowthMarket';
+
+type Tab = 'market' | 'growth' | 'content' | 'authority' | 'partners' | 'opportunities' | 'growthteam';
+
+export default function autonomousGrowthMarketPage() {
+  const [activeTab, setActiveTab] = useState<Tab>('market');
+  const [selectedMarket, setSelectedMarket] = useState(marketIntelligence[0]);
+  const [selectedLead, setSelectedLead] = useState(growthEngine[0]);
+  const [selectedContent, setSelectedContent] = useState(executiveContentStudio[0]);
+  const [selectedAuthority, setSelectedAuthority] = useState(authorityReputationLab[0]);
+  const [selectedPartner, setSelectedPartner] = useState(partnerEcosystem[0]);
+  const [selectedOpportunity, setSelectedOpportunity] = useState(opportunityDiscovery[0]);
+  const [selectedGrowth, setSelectedGrowth] = useState(autonomousGrowthTeam[0]);
+
+  const getGrowthPotentialChip = (label: string) => {
+    if (label.includes('Très Élevé') || label.includes('First Mover') || label.includes('Immédiat')) return 'bg-green-100 text-green-700';
+    if (label.includes('Élevé')) return 'bg-cyan-100 text-cyan-700';
+    if (label.includes('Modéré')) return 'bg-yellow-100 text-yellow-700';
+    return 'bg-background-100 text-foreground-600';
+  };
+
+  const getLeadStatusChip = (status: string) => {
+    if (status.includes('Très Chaud') || status.includes('Closing')) return 'bg-red-100 text-red-700';
+    if (status.includes('Chaud')) return 'bg-orange-100 text-orange-700';
+    if (status.includes('Tiède')) return 'bg-yellow-100 text-yellow-700';
+    if (status.includes('Froid')) return 'bg-background-100 text-foreground-500';
+    return 'bg-background-100 text-foreground-600';
+  };
+
+  const getContentStatusChip = (status: string) => {
+    if (status === 'Publié') return 'bg-green-100 text-green-700';
+    if (status.includes('Révision')) return 'bg-amber-100 text-amber-700';
+    if (status.includes('Rédaction')) return 'bg-secondary-100 text-secondary-700';
+    if (status === 'Planifié') return 'bg-background-100 text-foreground-500';
+    return 'bg-background-100 text-foreground-600';
+  };
+
+  const getAuthStatusChip = (status: string) => {
+    if (status.includes('Réalisé') || status.includes('Viral')) return 'bg-green-100 text-green-700';
+    if (status.includes('Planifié') || status.includes('Programmé')) return 'bg-background-100 text-foreground-500';
+    if (status.includes('production')) return 'bg-amber-100 text-amber-700';
+    return 'bg-background-100 text-foreground-600';
+  };
+
+  const getPartnerStatusChip = (status: string) => {
+    if (status === 'Actif') return 'bg-green-100 text-green-700';
+    if (status.includes('Pipeline') || status.includes('Négociation')) return 'bg-yellow-100 text-yellow-700';
+    return 'bg-background-100 text-foreground-600';
+  };
+
+  const getOppStatusChip = (status: string) => {
+    if (status.includes('En cours')) return 'bg-primary-100 text-primary-700';
+    if (status.includes('Qualifié')) return 'bg-cyan-100 text-cyan-700';
+    if (status.includes('exploration')) return 'bg-secondary-100 text-secondary-700';
+    return 'bg-background-100 text-foreground-600';
+  };
+
+  const getGrowthStatusChip = (status: string) => {
+    if (status.includes('exceptionnelle')) return 'bg-green-100 text-green-700';
+    if (status.includes('accélération')) return 'bg-primary-100 text-primary-700';
+    return 'bg-background-100 text-foreground-600';
+  };
+
+  const renderGaugeCircle = (score: number, maxScore: number, label: string, size: number = 48, colorOverride?: string) => {
+    const pct = Math.min((score / maxScore) * 100, 100);
+    const r = (size - 8) / 2;
+    const circ = 2 * Math.PI * r;
+    const color = colorOverride || (score >= 9 ? '#22c55e' : score >= 8 ? '#06b6d4' : score >= 7 ? '#f59e0b' : '#ef4444');
+    return (
+      <div className="flex flex-col items-center gap-1">
+        <div className="relative" style={{ width: size, height: size }}>
+          <svg className="-rotate-90" style={{ width: size, height: size }} viewBox={`0 0 ${size} ${size}`}>
+            <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#e5e7eb" strokeWidth="5" />
+            <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth="5"
+              strokeDasharray={`${(pct / 100) * circ} ${circ}`} strokeLinecap="round" />
+          </svg>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="text-xs font-bold text-foreground-950">{typeof score === 'number' && score % 1 !== 0 ? score.toFixed(1) : score}</span>
+          </div>
+        </div>
+        <span className="text-[10px] text-foreground-500 text-center leading-tight">{label}</span>
+      </div>
+    );
+  };
+
+  const renderScoreBar = (score: number, max: number = 100, color?: string) => (
+    <div className="flex items-center gap-2">
+      <div className="flex-1 h-1.5 bg-background-200/70 rounded-full overflow-hidden">
+        <div className={`h-full rounded-full ${color || 'bg-accent-500'}`} style={{ width: `${Math.min((score / max) * 100, 100)}%` }}></div>
+      </div>
+      <span className="text-xs font-bold text-foreground-950">{typeof score === 'number' && score % 1 !== 0 ? score.toFixed(1) : score}%</span>
+    </div>
+  );
+
+  const formatFCFA = (val: number) => {
+    if (val >= 1000000000) return `${(val / 1000000000).toFixed(1)} Md`;
+    if (val >= 1000000) return `${(val / 1000000).toFixed(0)} M`;
+    return val.toLocaleString('fr-FR');
+  };
+
+  const totalPipeline = growthEngine.reduce((s, l) => s + l.pipeline_value_fcfa, 0);
+  const avgConversion = Math.round(growthEngine.reduce((s, l) => s + l.conversion_probability, 0) / growthEngine.length);
+  const hotLeads = growthEngine.filter(l => l.status.includes('Chaud') || l.status.includes('Closing')).length;
+  const totalPartnerCollabs = partnerEcosystem.reduce((s, p) => s + p.collaboration_count, 0);
+  const avgROI = Math.round(autonomousGrowthTeam.reduce((s, c) => s + c.roi_pct, 0) / autonomousGrowthTeam.length);
+  const totalOpportunitiesValue = opportunityDiscovery.reduce((s, o) => s + o.estimated_value_fcfa, 0);
+
+  const tabs: { id: Tab; label: string; icon: string; count: number; accent: string }[] = [
+    { id: 'market', label: 'Intelligence Marché', icon: 'ri-line-chart-line', count: marketIntelligence.length, accent: 'border-cyan-300 bg-cyan-50/50' },
+    { id: 'growth', label: 'Moteur de Croissance', icon: 'ri-rocket-line', count: hotLeads, accent: 'border-orange-300 bg-orange-50/50' },
+    { id: 'content', label: 'Studio Contenu', icon: 'ri-quill-pen-line', count: executiveContentStudio.filter(c => c.status === 'Publié').length, accent: 'border-amber-300 bg-amber-50/50' },
+    { id: 'authority', label: 'Autorité & Réputation', icon: 'ri-award-line', count: authorityReputationLab.filter(a => a.authority_score >= 90).length, accent: 'border-rose-300 bg-rose-50/50' },
+    { id: 'partners', label: 'Écosystème Partenaires', icon: 'ri-hand-heart-line', count: partnerEcosystem.filter(p => p.status === 'Actif').length, accent: 'border-teal-300 bg-teal-50/50' },
+    { id: 'opportunities', label: 'Découverte Opportunités', icon: 'ri-lightbulb-flash-line', count: opportunityDiscovery.filter(o => o.feasibility_score >= 8).length, accent: 'border-emerald-300 bg-emerald-50/50' },
+    { id: 'growthteam', label: 'Équipe Croissance Autonome', icon: 'ri-robot-line', count: autonomousGrowthTeam.filter(c => c.roi_pct >= 300).length, accent: 'border-primary-300 bg-primary-50/50' },
+  ];
+
+  return (
+    <hubLayout hubId={6}>
+      <section className="relative bg-background-100 border-b border-background-200/70">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 py-10 md:py-14">
+          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-100 text-primary-700 text-xs font-semibold mb-4">
+                <i className="ri-rocket-line"></i>KOS Phase 4 — Autonomous Growth & Market Command
+              </div>
+              <h1 className="text-2xl md:text-4xl font-heading font-bold text-foreground-950 tracking-tight">Autonomous Growth & Market Command</h1>
+              <p className="text-sm md:text-base text-foreground-600 mt-3 max-w-2xl">
+                Centre de commandement de la croissance autonome — Intelligence marché temps réel, Pipeline commercial intelligent,
+                Studio de contenu d'influence, Autorité & réputation, Écosystème partenarial, Découverte d'opportunités et Canaux de croissance automatisés.
+              </p>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="text-center px-4 py-3 bg-background-50 rounded-lg border border-background-200/70">
+                <div className="text-2xl font-bold text-foreground-950">{formatFCFA(totalPipeline)} FCFA</div>
+                <div className="text-xs text-foreground-500">Pipeline</div>
+              </div>
+              <div className="text-center px-4 py-3 bg-background-50 rounded-lg border border-background-200/70">
+                <div className="text-2xl font-bold text-accent-500">{hotLeads}/{growthEngine.length}</div>
+                <div className="text-xs text-foreground-500">Leads Chauds</div>
+              </div>
+              <div className="text-center px-4 py-3 bg-background-50 rounded-lg border border-background-200/70">
+                <div className="text-2xl font-bold text-primary-500">{avgROI}%</div>
+                <div className="text-xs text-foreground-500">ROI Moyen</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div className="sticky top-0 z-30 bg-background-50 border-b border-background-200/70">
+        <div className="max-w-7xl mx-auto px-4 md:px-6">
+          <div className="flex gap-1 py-3 overflow-x-auto">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2 transition-colors cursor-pointer ${
+                  activeTab === tab.id ? 'bg-foreground-950 text-background-50' : 'text-foreground-600 hover:bg-background-100'
+                }`}
+              >
+                <i className={`${tab.icon} text-sm`}></i>
+                {tab.label}
+                <span className="text-xs opacity-60">{tab.count}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 md:px-6 py-8">
+
+        {/* ===== ONGLET 1 : MARKET INTELLIGENCE ===== */}
+        {activeTab === 'market' && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-1 space-y-3">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-cyan-100 text-cyan-700">
+                  <i className="ri-line-chart-line text-lg"></i>
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-foreground-950">KOS Market Intelligence™</h3>
+                  <p className="text-xs text-foreground-500">{marketIntelligence.length} tendances détectées</p>
+                </div>
+              </div>
+              <div className="p-3 rounded-lg border border-cyan-200 bg-cyan-50/50 mb-3">
+                <div className="text-xs text-foreground-500 mb-1">Marché adressable total</div>
+                <div className="text-lg font-bold text-cyan-700">14.8 Mds FCFA</div>
+                <div className="text-xs text-foreground-400 mt-1">8 tendances actives — UEMOA + CEMAC</div>
+              </div>
+              {marketIntelligence.map((m) => (
+                <div
+                  key={m.id}
+                  onClick={() => setSelectedMarket(m)}
+                  className={`p-4 rounded-lg border cursor-pointer transition-colors ${
+                    selectedMarket.id === m.id ? 'border-cyan-300 bg-cyan-50/50' : 'border-background-200/70 bg-background-50 hover:border-background-300/60'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-secondary-100 text-secondary-700 font-medium whitespace-nowrap">{m.region}</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${getGrowthPotentialChip(m.growth_potential)}`}>
+                      {m.growth_potential.split('—')[0].trim()}
+                    </span>
+                  </div>
+                  <h4 className="text-sm font-semibold text-foreground-950 line-clamp-2">{m.title}</h4>
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className="text-xs text-foreground-500">{m.sector}</span>
+                    <span className="text-xs font-bold text-foreground-950">{m.priority_score}/100</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="lg:col-span-2">
+              <div className="bg-background-50 rounded-lg border border-background-200/70 p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-secondary-100 text-secondary-700 font-medium">{selectedMarket.region}</span>
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-cyan-100 text-cyan-700 font-medium">{selectedMarket.sector}</span>
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${getGrowthPotentialChip(selectedMarket.growth_potential)}`}>
+                    {selectedMarket.growth_potential}
+                  </span>
+                  <span className="text-xs text-foreground-400 ml-auto">
+                    {new Date(selectedMarket.published_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                  </span>
+                </div>
+                <h2 className="text-lg font-bold text-foreground-950 mb-4">{selectedMarket.title}</h2>
+                <div className="grid grid-cols-3 gap-4 mb-4">
+                  <div className="p-3 bg-background-100 rounded-lg text-center">
+                    <div className="text-xs text-foreground-500 mb-1">Priorité</div>
+                    <div className="text-2xl font-bold text-foreground-950">{selectedMarket.priority_score}<span className="text-sm text-foreground-400">/100</span></div>
+                  </div>
+                  <div className="p-3 bg-background-100 rounded-lg text-center">
+                    <div className="text-xs text-foreground-500 mb-1">Potentiel</div>
+                    <div className="text-sm font-bold text-foreground-950">{selectedMarket.growth_potential.split('—')[1]?.trim() || selectedMarket.growth_potential}</div>
+                  </div>
+                  <div className="p-3 bg-background-100 rounded-lg text-center">
+                    <div className="text-xs text-foreground-500 mb-1">Type</div>
+                    <div className="text-sm font-bold text-foreground-950">{selectedMarket.trend_type}</div>
+                  </div>
+                </div>
+                <div className="mb-4">
+                  {renderScoreBar(selectedMarket.priority_score, 100, 'bg-cyan-500')}
+                  <div className="text-xs text-foreground-500 mt-2">Score de priorité stratégique</div>
+                </div>
+                <div className="p-4 bg-background-100 rounded-lg border border-background-200/70 mb-4">
+                  <h4 className="text-sm font-semibold text-foreground-950 mb-2">Analyse</h4>
+                  <p className="text-sm text-foreground-600 leading-relaxed">{selectedMarket.description}</p>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-3 bg-cyan-50/50 rounded-lg border border-cyan-100">
+                    <h4 className="text-xs font-semibold text-foreground-950 mb-1">Points de données</h4>
+                    <p className="text-xs text-foreground-600">{selectedMarket.data_points}</p>
+                  </div>
+                  <div className="p-3 bg-background-100 rounded-lg border border-background-200/70">
+                    <h4 className="text-xs font-semibold text-foreground-950 mb-1">Source</h4>
+                    <p className="text-xs text-foreground-600">{selectedMarket.source}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ===== ONGLET 2 : GROWTH ENGINE ===== */}
+        {activeTab === 'growth' && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-1 space-y-3">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-orange-100 text-orange-700">
+                  <i className="ri-rocket-line text-lg"></i>
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-foreground-950">KOS Growth Engine™</h3>
+                  <p className="text-xs text-foreground-500">{growthEngine.length} leads — Pipeline {formatFCFA(totalPipeline)} FCFA</p>
+                </div>
+              </div>
+              <div className="p-3 rounded-lg border border-orange-200 bg-orange-50/50 mb-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-xs text-foreground-500">Conversion moyenne</div>
+                    <div className="text-lg font-bold text-orange-700">{avgConversion}%</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-xs text-foreground-500">Leads chauds</div>
+                    <div className="text-lg font-bold text-red-600">{hotLeads}/{growthEngine.length}</div>
+                  </div>
+                </div>
+              </div>
+              {growthEngine.map((l) => (
+                <div
+                  key={l.id}
+                  onClick={() => setSelectedLead(l)}
+                  className={`p-4 rounded-lg border cursor-pointer transition-colors ${
+                    selectedLead.id === l.id ? 'border-orange-300 bg-orange-50/50' : 'border-background-200/70 bg-background-50 hover:border-background-300/60'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${getLeadStatusChip(l.status)}`}>{l.status.split('—')[0].trim()}</span>
+                    <span className="text-sm font-bold text-foreground-950">{l.conversion_probability}%</span>
+                  </div>
+                  <h4 className="text-sm font-semibold text-foreground-950">{l.lead_name}</h4>
+                  <div className="flex items-center justify-between mt-2">
+                    <span className="text-xs text-foreground-500">{formatFCFA(l.pipeline_value_fcfa)} FCFA</span>
+                    <span className="text-xs text-foreground-400">{l.nurturing_stage}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="lg:col-span-2">
+              <div className="bg-background-50 rounded-lg border border-background-200/70 p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${getLeadStatusChip(selectedLead.status)}`}>{selectedLead.status}</span>
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-secondary-100 text-secondary-700 font-medium">{selectedLead.lead_source}</span>
+                  <span className="text-xs text-foreground-400 ml-auto">
+                    Closing prévu : {new Date(selectedLead.expected_close_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                  </span>
+                </div>
+                <h2 className="text-lg font-bold text-foreground-950 mb-4">{selectedLead.lead_name}</h2>
+                <div className="grid grid-cols-4 gap-4 mb-4">
+                  <div className="p-3 bg-background-100 rounded-lg text-center">
+                    <div className="text-lg font-bold text-foreground-950">{formatFCFA(selectedLead.pipeline_value_fcfa)} FCFA</div>
+                    <div className="text-xs text-foreground-500">Valeur Pipeline</div>
+                  </div>
+                  <div className="p-3 bg-background-100 rounded-lg text-center">
+                    <div className="text-lg font-bold text-foreground-950">{selectedLead.conversion_probability}%</div>
+                    <div className="text-xs text-foreground-500">Prob. Conversion</div>
+                  </div>
+                  <div className="p-3 bg-background-100 rounded-lg text-center">
+                    <div className="text-lg font-bold text-foreground-950">{selectedLead.qualification_score}</div>
+                    <div className="text-xs text-foreground-500">Score Qualification</div>
+                  </div>
+                  <div className="p-3 bg-background-100 rounded-lg text-center">
+                    <div className="text-sm font-bold text-foreground-950">{selectedLead.nurturing_stage}</div>
+                    <div className="text-xs text-foreground-500">Étape</div>
+                  </div>
+                </div>
+                <div className="mb-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs text-foreground-500">Probabilité de conversion</span>
+                  </div>
+                  {renderScoreBar(selectedLead.conversion_probability, 100, 'bg-orange-500')}
+                </div>
+                <div className="mb-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs text-foreground-500">Score de qualification</span>
+                  </div>
+                  {renderScoreBar(selectedLead.qualification_score, 100, 'bg-accent-500')}
+                </div>
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div className="p-3 bg-background-100 rounded-lg border border-background-200/70">
+                    <h4 className="text-xs font-semibold text-foreground-950 mb-1">Prochaine action</h4>
+                    <p className="text-xs text-foreground-600">{selectedLead.next_action}</p>
+                  </div>
+                  <div className="p-3 bg-background-100 rounded-lg border border-background-200/70">
+                    <h4 className="text-xs font-semibold text-foreground-950 mb-1">Assigné à</h4>
+                    <p className="text-xs text-foreground-600">{selectedLead.assigned_to}</p>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between pt-4 border-t border-background-200/70">
+                  <span className="text-xs text-foreground-500">Détecté le {new Date(selectedLead.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</span>
+                  <span className="text-xs font-semibold text-foreground-950">Pipeline total : {formatFCFA(totalPipeline)} FCFA</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ===== ONGLET 3 : EXECUTIVE CONTENT STUDIO ===== */}
+        {activeTab === 'content' && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-1 space-y-3">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-amber-100 text-amber-700">
+                  <i className="ri-quill-pen-line text-lg"></i>
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-foreground-950">KOS Executive Content Studio™</h3>
+                  <p className="text-xs text-foreground-500">{executiveContentStudio.length} productions — Score qualité moyen {(executiveContentStudio.reduce((s, c) => s + c.quality_score, 0) / executiveContentStudio.length).toFixed(1)}</p>
+                </div>
+              </div>
+              {executiveContentStudio.map((c) => (
+                <div
+                  key={c.id}
+                  onClick={() => setSelectedContent(c)}
+                  className={`p-4 rounded-lg border cursor-pointer transition-colors ${
+                    selectedContent.id === c.id ? 'border-amber-300 bg-amber-50/50' : 'border-background-200/70 bg-background-50 hover:border-background-300/60'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-secondary-100 text-secondary-700 font-medium whitespace-nowrap">{c.content_type}</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${getContentStatusChip(c.status)}`}>{c.status}</span>
+                  </div>
+                  <h4 className="text-sm font-semibold text-foreground-950 line-clamp-2">{c.title}</h4>
+                  <div className="flex items-center justify-between mt-2">
+                    <span className="text-xs text-foreground-500">{c.topic}</span>
+                    <span className="text-xs font-bold text-amber-600">{c.quality_score.toFixed(1)}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="lg:col-span-2">
+              <div className="bg-background-50 rounded-lg border border-background-200/70 p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-secondary-100 text-secondary-700 font-medium">{selectedContent.content_type}</span>
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${getContentStatusChip(selectedContent.status)}`}>{selectedContent.status}</span>
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-background-100 text-foreground-500 font-medium">{selectedContent.topic}</span>
+                  <span className="text-xs text-foreground-400 ml-auto">
+                    {selectedContent.scheduled_date ? new Date(selectedContent.scheduled_date).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : ''}
+                  </span>
+                </div>
+                <h2 className="text-lg font-bold text-foreground-950 mb-4">{selectedContent.title}</h2>
+                <div className="grid grid-cols-3 gap-4 mb-4">
+                  <div className="p-3 bg-background-100 rounded-lg text-center">
+                    <div className="flex justify-center">{renderGaugeCircle(selectedContent.quality_score, 10, '', 52, selectedContent.quality_score >= 9 ? '#22c55e' : selectedContent.quality_score >= 8.5 ? '#f59e0b' : '#ef4444')}</div>
+                    <div className="text-xs text-foreground-500">Score Qualité</div>
+                  </div>
+                  <div className="p-3 bg-background-100 rounded-lg text-center">
+                    <div className="text-sm font-bold text-foreground-950">{selectedContent.author}</div>
+                    <div className="text-xs text-foreground-500">Auteur</div>
+                  </div>
+                  <div className="p-3 bg-background-100 rounded-lg text-center">
+                    <div className="text-sm font-bold text-foreground-950">{selectedContent.target_audience}</div>
+                    <div className="text-xs text-foreground-500">Audience Cible</div>
+                  </div>
+                </div>
+                <div className="mb-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs text-foreground-500">Score qualité éditoriale</span>
+                  </div>
+                  {renderScoreBar(selectedContent.quality_score * 10, 100, 'bg-amber-500')}
+                </div>
+                {selectedContent.published_url && (
+                  <div className="p-3 bg-green-50/50 rounded-lg border border-green-100 mb-4">
+                    <div className="flex items-center gap-2">
+                      <i className="ri-external-link-line text-green-600 text-sm"></i>
+                      <span className="text-xs text-foreground-600 truncate">{selectedContent.published_url}</span>
+                    </div>
+                  </div>
+                )}
+                <div className="flex items-center justify-between pt-4 border-t border-background-200/70">
+                  <span className="text-xs text-foreground-500">Studio de contenu exécutif KHEPRA</span>
+                  <span className="text-xs font-semibold text-foreground-950">{executiveContentStudio.filter(c => c.status === 'Publié').length} publiés</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ===== ONGLET 4 : AUTHORITY & REPUTATION LAB ===== */}
+        {activeTab === 'authority' && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-1 space-y-3">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-rose-100 text-rose-700">
+                  <i className="ri-award-line text-lg"></i>
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-foreground-950">KOS Authority & Reputation Lab™</h3>
+                  <p className="text-xs text-foreground-500">{authorityReputationLab.length} activités — Score moyen {(authorityReputationLab.reduce((s, a) => s + a.authority_score, 0) / authorityReputationLab.length).toFixed(0)}/100</p>
+                </div>
+              </div>
+              {authorityReputationLab.map((a) => (
+                <div
+                  key={a.id}
+                  onClick={() => setSelectedAuthority(a)}
+                  className={`p-4 rounded-lg border cursor-pointer transition-colors ${
+                    selectedAuthority.id === a.id ? 'border-rose-300 bg-rose-50/50' : 'border-background-200/70 bg-background-50 hover:border-background-300/60'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-secondary-100 text-secondary-700 font-medium whitespace-nowrap">{a.activity_type}</span>
+                    <span className="text-sm font-bold text-rose-600">{a.authority_score}</span>
+                  </div>
+                  <h4 className="text-sm font-semibold text-foreground-950 line-clamp-2">{a.title}</h4>
+                  <div className="flex items-center justify-between mt-2">
+                    <span className="text-xs text-foreground-500">{a.platform}</span>
+                    <span className="text-xs text-foreground-400">{a.reach_estimate.toLocaleString('fr-FR')} portée</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="lg:col-span-2">
+              <div className="bg-background-50 rounded-lg border border-background-200/70 p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-secondary-100 text-secondary-700 font-medium">{selectedAuthority.activity_type}</span>
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${getAuthStatusChip(selectedAuthority.status)}`}>{selectedAuthority.status}</span>
+                  <span className="text-xs text-foreground-400 ml-auto">
+                    {new Date(selectedAuthority.published_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                  </span>
+                </div>
+                <h2 className="text-lg font-bold text-foreground-950 mb-4">{selectedAuthority.title}</h2>
+                <div className="grid grid-cols-3 gap-4 mb-4">
+                  <div className="p-4 bg-background-100 rounded-lg text-center">
+                    <div className="flex justify-center mb-1">{renderGaugeCircle(selectedAuthority.authority_score, 100, '', 56, selectedAuthority.authority_score >= 90 ? '#22c55e' : selectedAuthority.authority_score >= 80 ? '#06b6d4' : '#f59e0b')}</div>
+                    <div className="text-xs text-foreground-500 mt-1">Score d'Autorité</div>
+                  </div>
+                  <div className="p-4 bg-background-100 rounded-lg text-center">
+                    <div className="text-lg font-bold text-foreground-950">{selectedAuthority.reach_estimate.toLocaleString('fr-FR')}</div>
+                    <div className="text-xs text-foreground-500">Portée Estimée</div>
+                  </div>
+                  <div className="p-4 bg-background-100 rounded-lg text-center">
+                    <div className="text-lg font-bold text-foreground-950">{selectedAuthority.engagement_rate}%</div>
+                    <div className="text-xs text-foreground-500">Taux d'Engagement</div>
+                  </div>
+                </div>
+                <div className="mb-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs text-foreground-500">Score d'autorité</span>
+                  </div>
+                  {renderScoreBar(selectedAuthority.authority_score, 100, 'bg-rose-500')}
+                </div>
+                <div className="mb-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs text-foreground-500">Taux d'engagement</span>
+                  </div>
+                  {renderScoreBar(selectedAuthority.engagement_rate, 100, 'bg-accent-500')}
+                </div>
+                <div className="p-3 bg-rose-50/50 rounded-lg border border-rose-100">
+                  <div className="flex items-center gap-2">
+                    <i className="ri-global-line text-rose-600"></i>
+                    <span className="text-xs text-foreground-600">{selectedAuthority.platform}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ===== ONGLET 5 : PARTNER ECOSYSTEM ===== */}
+        {activeTab === 'partners' && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-1 space-y-3">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-teal-100 text-teal-700">
+                  <i className="ri-hand-heart-line text-lg"></i>
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-foreground-950">KOS Partner Ecosystem™</h3>
+                  <p className="text-xs text-foreground-500">{partnerEcosystem.length} partenaires — {totalPartnerCollabs} collaborations</p>
+                </div>
+              </div>
+              {partnerEcosystem.map((p) => (
+                <div
+                  key={p.id}
+                  onClick={() => setSelectedPartner(p)}
+                  className={`p-4 rounded-lg border cursor-pointer transition-colors ${
+                    selectedPartner.id === p.id ? 'border-teal-300 bg-teal-50/50' : 'border-background-200/70 bg-background-50 hover:border-background-300/60'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-secondary-100 text-secondary-700 font-medium whitespace-nowrap">{p.partner_type}</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${getPartnerStatusChip(p.status)}`}>{p.status}</span>
+                  </div>
+                  <h4 className="text-sm font-semibold text-foreground-950">{p.partner_name}</h4>
+                  <div className="flex items-center justify-between mt-2">
+                    <span className="text-xs text-foreground-500">{p.country}</span>
+                    <span className="text-xs font-bold text-teal-600">{p.collaboration_count} collab.</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="lg:col-span-2">
+              <div className="bg-background-50 rounded-lg border border-background-200/70 p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-secondary-100 text-secondary-700 font-medium">{selectedPartner.partner_type}</span>
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${getPartnerStatusChip(selectedPartner.status)}`}>{selectedPartner.status}</span>
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-background-100 text-foreground-500 font-medium">{selectedPartner.engagement_level}</span>
+                </div>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-14 h-14 rounded-lg bg-teal-100 flex items-center justify-center">
+                    <i className="ri-building-2-line text-2xl text-teal-600"></i>
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-bold text-foreground-950">{selectedPartner.partner_name}</h2>
+                    <p className="text-sm text-foreground-500">{selectedPartner.country} · {selectedPartner.expertise_area}</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-4 mb-4">
+                  <div className="p-3 bg-background-100 rounded-lg text-center">
+                    <div className="text-lg font-bold text-foreground-950">{selectedPartner.collaboration_count}</div>
+                    <div className="text-xs text-foreground-500">Collaborations</div>
+                  </div>
+                  <div className="p-3 bg-background-100 rounded-lg text-center">
+                    <div className="flex justify-center">{renderGaugeCircle(selectedPartner.satisfaction_score > 0 ? selectedPartner.satisfaction_score : 0, 10, '', 44, '#06b6d4')}</div>
+                    <div className="text-xs text-foreground-500">Satisfaction</div>
+                  </div>
+                  <div className="p-3 bg-background-100 rounded-lg text-center">
+                    <div className="text-sm font-bold text-foreground-950">{selectedPartner.engagement_level}</div>
+                    <div className="text-xs text-foreground-500">Niveau</div>
+                  </div>
+                </div>
+                <div className="p-3 bg-teal-50/50 rounded-lg border border-teal-100 mb-4">
+                  <h4 className="text-xs font-semibold text-foreground-950 mb-1">Expertise</h4>
+                  <p className="text-sm text-foreground-600">{selectedPartner.expertise_area}</p>
+                </div>
+                <div className="flex items-center justify-between pt-4 border-t border-background-200/70">
+                  <span className="text-xs text-foreground-500">Depuis {new Date(selectedPartner.created_at).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })}</span>
+                  <span className="text-xs font-semibold text-foreground-950">{partnerEcosystem.filter(p => p.status === 'Actif').length} partenaires actifs</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ===== ONGLET 6 : OPPORTUNITY DISCOVERY ===== */}
+        {activeTab === 'opportunities' && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-1 space-y-3">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-emerald-100 text-emerald-700">
+                  <i className="ri-lightbulb-flash-line text-lg"></i>
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-foreground-950">KOS Opportunity Discovery™</h3>
+                  <p className="text-xs text-foreground-500">{opportunityDiscovery.length} opportunités — {formatFCFA(totalOpportunitiesValue)} FCFA</p>
+                </div>
+              </div>
+              <div className="p-3 rounded-lg border border-emerald-200 bg-emerald-50/50 mb-3">
+                <div className="text-xs text-foreground-500 mb-1">Valeur totale du portefeuille</div>
+                <div className="text-lg font-bold text-emerald-700">{formatFCFA(totalOpportunitiesValue)} FCFA</div>
+                <div className="text-xs text-foreground-400 mt-1">{opportunityDiscovery.filter(o => o.feasibility_score >= 8).length} opportunités haute faisabilité</div>
+              </div>
+              {opportunityDiscovery.map((o) => (
+                <div
+                  key={o.id}
+                  onClick={() => setSelectedOpportunity(o)}
+                  className={`p-4 rounded-lg border cursor-pointer transition-colors ${
+                    selectedOpportunity.id === o.id ? 'border-emerald-300 bg-emerald-50/50' : 'border-background-200/70 bg-background-50 hover:border-background-300/60'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-secondary-100 text-secondary-700 font-medium whitespace-nowrap">{o.opportunity_type}</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${getOppStatusChip(o.status)}`}>{o.status.split('—')[0].trim()}</span>
+                  </div>
+                  <h4 className="text-sm font-semibold text-foreground-950 line-clamp-2">{o.title}</h4>
+                  <div className="flex items-center justify-between mt-2">
+                    <span className="text-xs text-foreground-500">{formatFCFA(o.estimated_value_fcfa)} FCFA</span>
+                    <span className="text-xs font-bold text-emerald-600">{o.feasibility_score.toFixed(1)}/10</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="lg:col-span-2">
+              <div className="bg-background-50 rounded-lg border border-background-200/70 p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-secondary-100 text-secondary-700 font-medium">{selectedOpportunity.opportunity_type}</span>
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${getOppStatusChip(selectedOpportunity.status)}`}>{selectedOpportunity.status}</span>
+                  <span className="text-xs text-foreground-400 ml-auto">
+                    Découvert le {new Date(selectedOpportunity.discovered_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                  </span>
+                </div>
+                <h2 className="text-lg font-bold text-foreground-950 mb-4">{selectedOpportunity.title}</h2>
+                <div className="grid grid-cols-3 gap-4 mb-4">
+                  <div className="p-3 bg-background-100 rounded-lg text-center">
+                    <div className="text-lg font-bold text-foreground-950">{formatFCFA(selectedOpportunity.estimated_value_fcfa)} FCFA</div>
+                    <div className="text-xs text-foreground-500">Valeur Estimée</div>
+                  </div>
+                  <div className="p-3 bg-background-100 rounded-lg text-center">
+                    <div className="flex justify-center">{renderGaugeCircle(selectedOpportunity.feasibility_score, 10, '', 44, selectedOpportunity.feasibility_score >= 8 ? '#22c55e' : selectedOpportunity.feasibility_score >= 7 ? '#f59e0b' : '#ef4444')}</div>
+                    <div className="text-xs text-foreground-500">Faisabilité</div>
+                  </div>
+                  <div className="p-3 bg-background-100 rounded-lg text-center">
+                    <div className="text-sm font-bold text-foreground-950">{selectedOpportunity.target_market}</div>
+                    <div className="text-xs text-foreground-500">Marché Cible</div>
+                  </div>
+                </div>
+                <div className="mb-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs text-foreground-500">Score de faisabilité</span>
+                  </div>
+                  {renderScoreBar(selectedOpportunity.feasibility_score * 10, 100, 'bg-emerald-500')}
+                </div>
+                <div className="p-4 bg-emerald-50/50 rounded-lg border border-emerald-100 mb-4">
+                  <h4 className="text-sm font-semibold text-foreground-950 mb-2">Avantage Concurrentiel</h4>
+                  <p className="text-sm text-foreground-600 leading-relaxed">{selectedOpportunity.competitive_advantage}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ===== ONGLET 7 : AUTONOMOUS GROWTH TEAM ===== */}
+        {activeTab === 'growthteam' && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-1 space-y-3">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-primary-100 text-primary-700">
+                  <i className="ri-robot-line text-lg"></i>
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-foreground-950">KOS Autonomous Growth Team™</h3>
+                  <p className="text-xs text-foreground-500">{autonomousGrowthTeam.length} canaux — ROI moyen {avgROI}%</p>
+                </div>
+              </div>
+              <div className="p-3 rounded-lg border border-primary-200 bg-primary-50/50 mb-3">
+                <div className="text-xs text-foreground-500 mb-1">Performance globale</div>
+                <div className="text-lg font-bold text-primary-700">ROI {avgROI}%</div>
+                <div className="text-xs text-foreground-400 mt-1">{autonomousGrowthTeam.filter(c => c.roi_pct >= 300).length} canaux à ROI ≥ 300%</div>
+              </div>
+              {autonomousGrowthTeam.map((c) => (
+                <div
+                  key={c.id}
+                  onClick={() => setSelectedGrowth(c)}
+                  className={`p-4 rounded-lg border cursor-pointer transition-colors ${
+                    selectedGrowth.id === c.id ? 'border-primary-300 bg-primary-50/50' : 'border-background-200/70 bg-background-50 hover:border-background-300/60'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-secondary-100 text-secondary-700 font-medium whitespace-nowrap">{c.growth_channel}</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${getGrowthStatusChip(c.status)}`}>
+                      {c.status.split('—')[0].trim()}
+                    </span>
+                  </div>
+                  <h4 className="text-sm font-semibold text-foreground-950 line-clamp-2">{c.strategy.split('—')[0]?.trim() || c.strategy}</h4>
+                  <div className="flex items-center justify-between mt-2">
+                    <span className="text-xs text-foreground-500">ROI {c.roi_pct}%</span>
+                    <span className="text-xs text-foreground-400">{c.kpi_current.toLocaleString('fr-FR')}/{c.kpi_target.toLocaleString('fr-FR')}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="lg:col-span-2">
+              <div className="bg-background-50 rounded-lg border border-background-200/70 p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-secondary-100 text-secondary-700 font-medium">{selectedGrowth.growth_channel}</span>
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${getGrowthStatusChip(selectedGrowth.status)}`}>{selectedGrowth.status}</span>
+                  <span className="text-xs text-foreground-400 ml-auto">
+                    Lancé le {new Date(selectedGrowth.launched_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}
+                  </span>
+                </div>
+                <h2 className="text-base font-bold text-foreground-950 mb-4">{selectedGrowth.growth_channel}</h2>
+                <div className="grid grid-cols-3 gap-4 mb-4">
+                  <div className="p-4 bg-background-100 rounded-lg text-center">
+                    <div className="text-2xl font-bold text-primary-500">{selectedGrowth.roi_pct}%</div>
+                    <div className="text-xs text-foreground-500">ROI</div>
+                  </div>
+                  <div className="p-4 bg-background-100 rounded-lg text-center">
+                    <div className="text-2xl font-bold text-foreground-950">{selectedGrowth.kpi_current.toLocaleString('fr-FR')}</div>
+                    <div className="text-xs text-foreground-500">KPI Actuel</div>
+                  </div>
+                  <div className="p-4 bg-background-100 rounded-lg text-center">
+                    <div className="text-2xl font-bold text-foreground-950">{selectedGrowth.kpi_target.toLocaleString('fr-FR')}</div>
+                    <div className="text-xs text-foreground-500">KPI Cible</div>
+                  </div>
+                </div>
+                <div className="mb-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs text-foreground-500">Progression vers la cible KPI</span>
+                  </div>
+                  {renderScoreBar(Math.round((selectedGrowth.kpi_current / selectedGrowth.kpi_target) * 100), 100, 'bg-primary-500')}
+                </div>
+                <div className="p-4 bg-background-100 rounded-lg border border-background-200/70 mb-4">
+                  <h4 className="text-sm font-semibold text-foreground-950 mb-2">Stratégie</h4>
+                  <p className="text-sm text-foreground-600 leading-relaxed">{selectedGrowth.strategy}</p>
+                </div>
+                <div className="flex items-center justify-between pt-4 border-t border-background-200/70">
+                  <span className="text-xs text-foreground-500">Performance canal</span>
+                  <span className="text-xs font-semibold text-foreground-950">ROI moyen : {avgROI}%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+      </div>
+
+      <section className="border-t border-background-200/70 bg-background-100">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 py-8">
+          <h4 className="text-sm font-bold text-foreground-950 mb-6">Indicateurs Clés — Autonomous Growth & Market Command</h4>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+            <div className="p-4 bg-background-50 rounded-lg border border-background-200/70">
+              <div className="text-xs text-foreground-500 mb-2">Pipeline Total</div>
+              <div className="text-lg font-bold text-foreground-950">{formatFCFA(totalPipeline)} FCFA</div>
+              <div className="text-xs text-foreground-400 mt-2">{growthEngine.length} leads actifs</div>
+            </div>
+            <div className="p-4 bg-background-50 rounded-lg border border-background-200/70">
+              <div className="text-xs text-foreground-500 mb-2">Taux Conversion</div>
+              <div className="text-lg font-bold text-accent-500">{avgConversion}%</div>
+              <div className="h-1.5 mt-2 bg-background-200/70 rounded-full overflow-hidden">
+                <div className="h-full bg-accent-500 rounded-full" style={{ width: `${avgConversion}%` }}></div>
+              </div>
+            </div>
+            <div className="p-4 bg-background-50 rounded-lg border border-background-200/70">
+              <div className="text-xs text-foreground-500 mb-2">ROI Croissance</div>
+              <div className="text-lg font-bold text-primary-500">{avgROI}%</div>
+              <div className="text-xs text-foreground-400 mt-2">{autonomousGrowthTeam.length} canaux</div>
+            </div>
+            <div className="p-4 bg-background-50 rounded-lg border border-background-200/70">
+              <div className="text-xs text-foreground-500 mb-2">Partenaires Actifs</div>
+              <div className="text-lg font-bold text-teal-600">{partnerEcosystem.filter(p => p.status === 'Actif').length}</div>
+              <div className="text-xs text-foreground-400 mt-2">{totalPartnerCollabs} collaborations</div>
+            </div>
+            <div className="p-4 bg-background-50 rounded-lg border border-background-200/70">
+              <div className="text-xs text-foreground-500 mb-2">Opportunités</div>
+              <div className="text-lg font-bold text-emerald-600">{formatFCFA(totalOpportunitiesValue)} FCFA</div>
+              <div className="text-xs text-foreground-400 mt-2">{opportunityDiscovery.length} découvertes</div>
+            </div>
+            <div className="p-4 bg-background-50 rounded-lg border border-background-200/70">
+              <div className="text-xs text-foreground-500 mb-2">Score Autorité</div>
+              <div className="text-lg font-bold text-rose-600">{(authorityReputationLab.reduce((s, a) => s + a.authority_score, 0) / authorityReputationLab.length).toFixed(0)}/100</div>
+              <div className="text-xs text-foreground-400 mt-2">{authorityReputationLab.filter(a => a.authority_score >= 90).length} activités premium</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </hubLayout>
+  );
+}
+
+
+

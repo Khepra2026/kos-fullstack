@@ -1,0 +1,183 @@
+export const iso27001Compliance = {
+  certification_status: "in_progress",
+  target_certification: "2026-12-15",
+  overall_score: 78,
+  maturity_level: "Defined (Niveau 3/5)",
+  gap_to_target: 17,
+  domains: [
+    { id: "A.5", name: "Politiques de sécurité de l'information", score: 85, status: "conform", controls_total: 2, controls_passed: 2, lead: "RSI", last_review: "2026-05-20" },
+    { id: "A.6", name: "Organisation de la sécurité de l'information", score: 80, status: "conform", controls_total: 7, controls_passed: 6, lead: "DG", last_review: "2026-04-15" },
+    { id: "A.7", name: "Sécurité des ressources humaines", score: 75, status: "partial", controls_total: 6, controls_passed: 5, lead: "DRH", last_review: "2026-03-10" },
+    { id: "A.8", name: "Gestion des actifs", score: 82, status: "conform", controls_total: 10, controls_passed: 9, lead: "DSI", last_review: "2026-05-01" },
+    { id: "A.9", name: "Contrôle d'accès", score: 88, status: "conform", controls_total: 14, controls_passed: 13, lead: "RSI", last_review: "2026-05-25" },
+    { id: "A.10", name: "Cryptographie", score: 92, status: "conform", controls_total: 2, controls_passed: 2, lead: "RSI", last_review: "2026-06-01" },
+    { id: "A.11", name: "Sécurité physique et environnementale", score: 65, status: "partial", controls_total: 15, controls_passed: 11, lead: "DAF", last_review: "2026-02-20" },
+    { id: "A.12", name: "Sécurité des opérations", score: 78, status: "conform", controls_total: 14, controls_passed: 12, lead: "DSI", last_review: "2026-05-10" },
+    { id: "A.13", name: "Sécurité des communications", score: 85, status: "conform", controls_total: 7, controls_passed: 6, lead: "RSI", last_review: "2026-05-18" },
+    { id: "A.14", name: "Acquisition, développement et maintenance", score: 70, status: "partial", controls_total: 13, controls_passed: 10, lead: "CTO", last_review: "2026-04-28" },
+    { id: "A.15", name: "Relations avec les fournisseurs", score: 68, status: "partial", controls_total: 5, controls_passed: 4, lead: "DAF", last_review: "2026-03-22" },
+    { id: "A.16", name: "Gestion des incidents de sécurité", score: 80, status: "conform", controls_total: 7, controls_passed: 6, lead: "RSI", last_review: "2026-05-30" },
+    { id: "A.17", name: "Continuité d'activité", score: 72, status: "partial", controls_total: 4, controls_passed: 3, lead: "DG", last_review: "2026-04-05" },
+    { id: "A.18", name: "Conformité", score: 74, status: "partial", controls_total: 8, controls_passed: 6, lead: "RC", last_review: "2026-05-12" },
+  ],
+  total_controls: 114,
+  controls_passed: 95,
+  controls_failed: 19,
+  critical_gaps: [
+    { id: "GAP-001", domain: "A.11", control: "A.11.1.3", description: "Périmètre de sécurité physique des bureaux — pas de contrôle d'accès biométrique", severity: "high", remediation_deadline: "2026-09-30", estimated_cost_fcfa: 4500000 },
+    { id: "GAP-002", domain: "A.14", control: "A.14.2.1", description: "Politique de développement sécurisé non formalisée (absence de SDLC documenté)", severity: "high", remediation_deadline: "2026-08-31", estimated_cost_fcfa: 2800000 },
+    { id: "GAP-003", domain: "A.15", control: "A.15.1.2", description: "Clauses de sécurité manquantes dans 3 contrats fournisseurs SaaS", severity: "medium", remediation_deadline: "2026-07-31", estimated_cost_fcfa: 1200000 },
+    { id: "GAP-004", domain: "A.7", control: "A.7.2.2", description: "Formation sécurité obligatoire non déployée pour 40% du personnel", severity: "medium", remediation_deadline: "2026-08-15", estimated_cost_fcfa: 3500000 },
+    { id: "GAP-005", domain: "A.17", control: "A.17.1.2", description: "PCA/PRA non testé depuis plus de 12 mois", severity: "high", remediation_deadline: "2026-07-15", estimated_cost_fcfa: 5200000 },
+  ],
+  audit_trail: [
+    { date: "2026-06-10", event: "Audit interne ISO 27001 — Phase 2/3", score: 78, findings: 12, auditor: "Khepra Quality Office" },
+    { date: "2026-04-22", event: "Revue de direction SMSI — Q1 2026", score: 74, findings: 18, auditor: "Comité Sécurité" },
+    { date: "2026-02-05", event: "Audit interne ISO 27001 — Phase 1/3", score: 68, findings: 24, auditor: "Khepra Quality Office" },
+    { date: "2025-11-18", event: "Gap Analysis initial ISO 27001:2022", score: 55, findings: 42, auditor: "Big Four Partner" },
+  ],
+};
+
+export const nistCSFProfile = {
+  version: "CSF 2.0",
+  overall_score: 82,
+  target_profile: "Tier 3 — Repeatable",
+  current_tier: "Tier 2 — Risk-Informed",
+  functions: [
+    {
+      id: "IDENTIFY",
+      name: "Identify (ID)",
+      description: "Développer la compréhension organisationnelle pour gérer les risques cyber",
+      score: 84,
+      target: 95,
+      categories: [
+        { id: "ID.AM", name: "Asset Management", score: 88, status: "strong" },
+        { id: "ID.BE", name: "Business Environment", score: 82, status: "adequate" },
+        { id: "ID.GV", name: "Governance", score: 90, status: "strong" },
+        { id: "ID.RA", name: "Risk Assessment", score: 80, status: "adequate" },
+        { id: "ID.RM", name: "Risk Management Strategy", score: 78, status: "needs_improvement" },
+        { id: "ID.SC", name: "Supply Chain Risk Management", score: 65, status: "needs_improvement" },
+      ],
+    },
+    {
+      id: "PROTECT",
+      name: "Protect (PR)",
+      description: "Développer et mettre en œuvre les mesures de protection",
+      score: 86,
+      target: 95,
+      categories: [
+        { id: "PR.AA", name: "Identity Management & Access Control", score: 88, status: "strong" },
+        { id: "PR.AT", name: "Awareness & Training", score: 72, status: "needs_improvement" },
+        { id: "PR.DS", name: "Data Security", score: 90, status: "strong" },
+        { id: "PR.IR", name: "Technology Infrastructure Resilience", score: 85, status: "adequate" },
+        { id: "PR.MA", name: "Maintenance", score: 80, status: "adequate" },
+        { id: "PR.PS", name: "Platform Security", score: 82, status: "adequate" },
+      ],
+    },
+    {
+      id: "DETECT",
+      name: "Detect (DE)",
+      description: "Développer et mettre en œuvre les activités de détection",
+      score: 78,
+      target: 92,
+      categories: [
+        { id: "DE.AE", name: "Adverse Event Analysis", score: 80, status: "adequate" },
+        { id: "DE.CM", name: "Continuous Monitoring", score: 75, status: "needs_improvement" },
+      ],
+    },
+    {
+      id: "RESPOND",
+      name: "Respond (RS)",
+      description: "Développer et mettre en œuvre les activités de réponse aux incidents",
+      score: 82,
+      target: 93,
+      categories: [
+        { id: "RS.AN", name: "Incident Analysis", score: 85, status: "adequate" },
+        { id: "RS.CO", name: "Incident Response Communications", score: 80, status: "adequate" },
+        { id: "RS.IM", name: "Incident Mitigation", score: 78, status: "needs_improvement" },
+        { id: "RS.MA", name: "Incident Management", score: 82, status: "adequate" },
+        { id: "RS.RP", name: "Response Planning & Recovery", score: 84, status: "adequate" },
+      ],
+    },
+    {
+      id: "RECOVER",
+      name: "Recover (RC)",
+      description: "Développer et mettre en œuvre les activités de restauration",
+      score: 76,
+      target: 90,
+      categories: [
+        { id: "RC.RP", name: "Recovery Plan Execution", score: 72, status: "needs_improvement" },
+        { id: "RC.CO", name: "Recovery Communications", score: 80, status: "adequate" },
+      ],
+    },
+  ],
+  improvement_roadmap: [
+    { id: "NIST-001", function: "IDENTIFY", action: "Formaliser le Supply Chain Risk Management avec due diligence fournisseurs", priority: "high", deadline: "2026-09-30" },
+    { id: "NIST-002", function: "PROTECT", action: "Déployer programme de sensibilisation sécurité trimestriel pour 100% du personnel", priority: "high", deadline: "2026-08-31" },
+    { id: "NIST-003", function: "DETECT", action: "Mettre en place SIEM avec alerting 24/7 et threat intelligence feed", priority: "critical", deadline: "2026-07-31" },
+    { id: "NIST-004", function: "RECOVER", action: "Tester le PCA/PRA deux fois par an avec scénarios ransomware et APT", priority: "high", deadline: "2026-10-15" },
+    { id: "NIST-005", function: "RESPOND", action: "Automatiser le playbook de réponse incidents (SOAR) avec 12 scénarios", priority: "medium", deadline: "2026-11-30" },
+  ],
+};
+
+export const socOperations = {
+  status: "active",
+  tier: "SOC 24/7 — Niveau 2",
+  uptime_current: 99.93,
+  uptime_target: 99.99,
+  mttd_current: 18,
+  mttd_target: 5,
+  mttr_current: 45,
+  mttr_target: 15,
+  sla_compliance: 96.5,
+  team: [
+    { role: "SOC Manager", name: "Cdt. Amara Diop", shift: "Day + On-call", certs: ["CISSP", "GCIH", "ISO 27001 Lead Auditor"], availability: "available" },
+    { role: "Security Analyst L3", name: "Dr. Fatou Ndiaye", shift: "Day (08-18 UTC)", certs: ["OSCP", "GCFA", "CEH Master"], availability: "available" },
+    { role: "Security Analyst L2", name: "Ibrahim Touré", shift: "Night (18-02 UTC)", certs: ["Security+", "CySA+", "SSCP"], availability: "available" },
+    { role: "Security Analyst L2", name: "Aminata Keita", shift: "Night (02-08 UTC)", certs: ["Security+", "GSEC", "BTL2"], availability: "on_leave" },
+    { role: "Security Analyst L1", name: "Moussa Barry", shift: "Day (08-18 UTC)", certs: ["Security+", "CCNA Security"], availability: "available" },
+    { role: "Security Analyst L1", name: "Nafissatou Sow", shift: "Day (08-18 UTC)", certs: ["Network+", "Security+"], availability: "available" },
+    { role: "Threat Intelligence", name: "Dr. Pascal Zongo", shift: "Flex", certs: ["CTIA", "GCTI", "OSINT"], availability: "available" },
+    { role: "Forensic Analyst", name: "Seydou Coulibaly", shift: "On-call", certs: ["GCFE", "EnCE", "CHFI"], availability: "available" },
+  ],
+  active_alerts: [
+    { id: "ALERT-042", severity: "medium", type: "Brute Force SSH", source: "185.220.101.x", target: "prod-bastion-01", timestamp: "2026-06-16T08:32:00Z", status: "investigating", analyst: "Ibrahim Touré", ttr: 12 },
+    { id: "ALERT-041", severity: "low", type: "CSP Violation Report", source: "Internal", target: "khepraexperts.com", timestamp: "2026-06-16T08:15:00Z", status: "triaging", analyst: "Moussa Barry", ttr: 29 },
+    { id: "ALERT-040", severity: "low", type: "Certificat SSL Expiration — 14 jours", source: "Monitoring", target: "api.khepraexperts.com", timestamp: "2026-06-16T07:00:00Z", status: "acknowledged", analyst: "Nafissatou Sow", ttr: 104 },
+  ],
+  recent_incidents: [
+    { id: "INC-028", severity: "medium", type: "DDoS Layer 7", start: "2026-06-15T14:22:00Z", end: "2026-06-15T14:38:00Z", duration_min: 16, impact: "Latence accrue 2.3s", resolution: "Rate limiting Cloudflare activé", analyst: "Dr. Fatou Ndiaye", status: "resolved" },
+    { id: "INC-027", severity: "low", type: "SQL Injection Attempt", start: "2026-06-14T23:10:00Z", end: "2026-06-14T23:10:00Z", duration_min: 0, impact: "Bloqué par WAF", resolution: "WAF règle mise à jour", analyst: "Ibrahim Touré", status: "resolved" },
+    { id: "INC-026", severity: "high", type: "Suspicious Data Exfiltration", start: "2026-06-13T03:45:00Z", end: "2026-06-13T04:30:00Z", duration_min: 45, impact: "12 Mo exfiltrés (logs)", resolution: "Endpoint isolé, investigation forensic en cours", analyst: "Seydou Coulibaly", status: "investigating" },
+    { id: "INC-025", severity: "medium", type: "Phishing Campaign — 8 utilisateurs ciblés", start: "2026-06-12T09:00:00Z", end: "2026-06-12T11:00:00Z", duration_min: 120, impact: "2 comptes compromis", resolution: "Reset MFA, formation ciblée", analyst: "Cdt. Amara Diop", status: "resolved" },
+    { id: "INC-024", severity: "low", type: "Port Scan", start: "2026-06-11T01:00:00Z", end: "2026-06-11T01:20:00Z", duration_min: 20, impact: "Aucun", resolution: "IP bannie automatiquement", analyst: "Aminata Keita", status: "resolved" },
+  ],
+  kpi_trends: {
+    alerts_24h: { value: 47, change: -12, trend: "down" },
+    incidents_7d: { value: 5, change: -2, trend: "down" },
+    mttd_minutes: { value: 18, change: -5, trend: "improving" },
+    mttr_minutes: { value: 45, change: -8, trend: "improving" },
+    false_positive_rate: { value: 8.5, change: -2.1, trend: "improving" },
+  },
+};
+
+export const enterpriseSecurityStats = {
+  total_scans: 247,
+  issues_resolved: 218,
+  issues_open: 29,
+  average_score: 85,
+  trend: "up",
+  last_scan_date: "2026-06-16T06:00:00Z",
+  iso27001_progress: 78,
+  nist_csf_score: 82,
+  soc_uptime: 99.93,
+  certifications_held: 2,
+  certifications_target: 4,
+  risk_posture: "Moderate — Improving",
+  next_audit: "2026-08-15 (ISO 27001 Phase 3/3)",
+};
+
+
+
+
+

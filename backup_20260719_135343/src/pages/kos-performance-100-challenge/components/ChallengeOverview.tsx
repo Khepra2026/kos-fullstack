@@ -1,0 +1,228 @@
+import type { ChallengeManifest, ProgressPoint, WhatIfScenario, PerformanceGap } from '@/hooks/usePerformance100Challenge';
+import { challengeManifest as mockManifest, progressHistory as mockProgress, whatIfScenarios as mockScenarios } from '@/mocks/performance100Challenge';
+
+function CircularGauge({ current, target, size = 120, sprintActive = false }: { current: number; target: number; size?: number; sprintActive?: boolean }) {
+  const radius = (size - 16) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const pct = Math.min(current / target, 1);
+  const offset = circumference - pct * circumference;
+  const strokeColor = sprintActive ? 'oklch(var(--emerald-500))' : 'oklch(var(--primary-500))';
+
+  return (
+    <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="-rotate-90">
+        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="oklch(var(--background-200))" strokeWidth="6" />
+        <circle
+          cx={size / 2} cy={size / 2} r={radius} fill="none" stroke={strokeColor}
+          strokeWidth="6" strokeLinecap="round"
+          strokeDasharray={circumference} strokeDashoffset={offset}
+          className="transition-all duration-1000 ease-out"
+        />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span className="text-3xl font-bold text-foreground-950 font-heading">{current.toFixed(1)}</span>
+        <span className="text-[10px] text-foreground-500 font-body">/ {target}</span>
+      </div>
+    </div>
+  );
+}
+
+function GapBar({ label, current, target, colorClass }: { label: string; current: number; target: number; colorClass: string }) {
+  const pct = Math.min((current / target) * 100, 100);
+  const gap = target - current;
+
+  return (
+    <div className="flex items-center gap-3">
+      <span className="text-xs text-foreground-600 font-body w-24 whitespace-nowrap">{label}</span>
+      <div className="flex-1 h-2 bg-background-200/70 rounded-full overflow-hidden">
+        <div
+          className={`h-full rounded-full transition-all duration-700 ease-out ${colorClass}`}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+      <span className="text-xs font-semibold text-foreground-950 font-body w-10 text-right">{current}</span>
+      {gap > 0 && <span className="text-[10px] text-red-500 font-body w-8">-{gap}</span>}
+    </div>
+  );
+}
+
+interface ChallengeOverviewProps {
+  sprintActive?: boolean;
+  liveGaps?: PerformanceGap[];
+  liveGlobalScore?: number;
+  manifest?: ChallengeManifest;
+  progressHistory?: ProgressPoint[];
+  whatIfScenarios?: WhatIfScenario[];
+}
+
+export default function ChallengeOverview({
+  sprintActive = false,
+  liveGaps,
+  liveGlobalScore,
+  manifest,
+  progressHistory,
+  whatIfScenarios,
+}: ChallengeOverviewProps) {
+  const gaps = liveGaps || [];
+  const challengeManifestData = manifest || mockManifest;
+  const progressData = progressHistory || mockProgress;
+  const scenarios = whatIfScenarios || mockScenarios;
+  const effectiveGlobalScore = liveGlobalScore ?? challengeManifestData.currentGlobalScore;
+  const closedCount = gaps.filter(g => g.status === 'closed').length;
+  const inProgressCount = gaps.filter(g => g.status === 'in_progress').length;
+  const openCount = gaps.filter(g => g.status === 'open').length;
+
+  return (
+    <div className="space-y-8">
+      {/* Hero Mission Card */}
+      <div className="relative overflow-hidden bg-background-50 rounded-lg border border-background-200/70 p-8">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-primary-100/40 rounded-full -translate-y-1/2 translate-x-1/2" />
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-accent-100/30 rounded-full translate-y-1/2 -translate-x-1/2" />
+
+        <div className="relative flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+          <div className="flex-1">
+            <div className="flex items-center gap-3 mb-4">
+              {sprintActive ? (
+                <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500 text-white font-body tracking-wide animate-pulse">
+                  SPRINT ACTIF
+                </span>
+              ) : (
+                <span className="px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700 font-body tracking-wide animate-pulse">
+                  MISSION CRITIQUE
+                </span>
+              )}
+              <span className="px-3 py-1 rounded-full text-xs font-semibold bg-primary-100 text-primary-700 font-body tracking-wide">
+                {challengeManifestData.daysRemaining} JOURS RESTANTS
+              </span>
+              <span className="px-3 py-1 rounded-full text-xs font-semibold bg-accent-100 text-accent-700 font-body tracking-wide">
+                {challengeManifestData.agentsMobilized} AGENTS MOBILISÉS
+              </span>
+            </div>
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground-950 mb-2 font-heading">
+              {challengeManifestData.title}
+            </h2>
+            <p className="text-sm text-foreground-600 max-w-2xl font-body mb-6">
+              {challengeManifestData.subtitle}
+            </p>
+            <div className="flex items-center gap-6">
+              <div>
+                <div className="text-3xl font-bold text-red-600 font-heading">{challengeManifestData.totalGaps}</div>
+                <div className="text-xs text-foreground-500 font-body">GAPS à fermer</div>
+              </div>
+              <div className="w-px h-10 bg-background-200/70" />
+              <div>
+                <div className={`text-3xl font-bold font-heading ${openCount > 0 ? 'text-amber-600' : 'text-emerald-600'}`}>{openCount}</div>
+                <div className="text-xs text-foreground-500 font-body">Ouverts</div>
+              </div>
+              <div className="w-px h-10 bg-background-200/70" />
+              <div>
+                <div className={`text-3xl font-bold font-heading ${sprintActive ? 'text-primary-500 animate-pulse' : 'text-primary-500'}`}>{inProgressCount}</div>
+                <div className="text-xs text-foreground-500 font-body">En cours</div>
+              </div>
+              <div className="w-px h-10 bg-background-200/70" />
+              <div>
+                <div className="text-3xl font-bold text-emerald-600 font-heading">{closedCount}</div>
+                <div className="text-xs text-foreground-500 font-body">Fermés</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex-shrink-0 flex flex-col items-center">
+            <CircularGauge current={effectiveGlobalScore} target={100} size={140} sprintActive={sprintActive} />
+            <span className="text-xs text-foreground-500 font-body mt-2">Score Global</span>
+            <div className={`mt-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold font-body ${
+              effectiveGlobalScore >= 100
+                ? 'bg-emerald-100 text-emerald-700'
+                : effectiveGlobalScore >= 97
+                ? 'bg-primary-100 text-primary-700'
+                : 'bg-amber-100 text-amber-700'
+            }`}>
+              {effectiveGlobalScore >= 100 ? 'OBJECTIF ATTEINT !' : `Objectif : ${challengeManifestData.certificationTarget}`}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Performance Gap Bars */}
+      <div className="bg-background-50 rounded-lg border border-background-200/70 p-6">
+        <h3 className="text-sm font-semibold text-foreground-950 mb-5 font-heading">INDICATEURS CLÉS — CHEMIN VERS 100%</h3>
+        <div className="space-y-3">
+          <GapBar label="Lighthouse Mobile" current={94} target={100} colorClass="bg-primary-500" />
+          <GapBar label="Lighthouse Desktop" current={98} target={100} colorClass="bg-primary-500" />
+          <GapBar label="SEO Score" current={95} target={100} colorClass="bg-accent-500" />
+          <GapBar label="Accessibilité" current={96} target={100} colorClass="bg-accent-500" />
+          <GapBar label="Sécurité" current={95} target={100} colorClass="bg-secondary-500" />
+          <GapBar label="Schema.org" current={88} target={100} colorClass="bg-secondary-500" />
+          <GapBar label="CDN Edge Cache" current={85} target={100} colorClass="bg-primary-500" />
+          <GapBar label="Page Weight (inverse)" current={70} target={100} colorClass="bg-accent-500" />
+        </div>
+      </div>
+
+      {/* Progress History + Projection */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-background-50 rounded-lg border border-background-200/70 p-6">
+          <h3 className="text-sm font-semibold text-foreground-950 mb-4 font-heading">TRAJECTOIRE DE PROGRESSION</h3>
+          <div className="relative h-48">
+            <div className="absolute inset-0 flex items-end">
+              {progressData.map((point, i) => {
+                const maxScore = 100;
+                const scoreVal = point.score !== null ? point.score : (point.projected ?? 0);
+                const h = (scoreVal / maxScore) * 100;
+                const isProjected = point.score === null;
+                return (
+                  <div key={point.date} className="flex-1 flex flex-col items-center justify-end h-full" style={{ height: '100%' }}>
+                    <div className="flex flex-col items-center mb-1">
+                      {!isProjected && (
+                        <span className="text-[10px] font-semibold text-foreground-950 font-body">{point.score}</span>
+                      )}
+                      {isProjected && (
+                        <span className="text-[10px] font-semibold text-primary-500 font-body">{point.projected}</span>
+                      )}
+                    </div>
+                    <div
+                      className={`w-2 rounded-t-sm mx-px transition-all duration-500 ${isProjected ? 'bg-primary-300 border border-dashed border-primary-500' : 'bg-primary-500'}`}
+                      style={{ height: `${h}%` }}
+                    />
+                    <span className="text-[9px] text-foreground-400 font-body mt-1.5 whitespace-nowrap">{point.date}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          <div className="flex items-center gap-4 mt-4 pt-4 border-t border-background-200/70">
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded-sm bg-primary-500" />
+              <span className="text-[10px] text-foreground-500 font-body">Réalisé</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded-sm bg-primary-300 border border-dashed border-primary-500" />
+              <span className="text-[10px] text-foreground-500 font-body">Projeté</span>
+            </div>
+          </div>
+        </div>
+
+        {/* What-If Scenarios */}
+        <div className="bg-background-50 rounded-lg border border-background-200/70 p-6">
+          <h3 className="text-sm font-semibold text-foreground-950 mb-4 font-heading">SCÉNARIOS WHAT-IF</h3>
+          <div className="space-y-3">
+            {scenarios.map((s, i) => (
+              <div key={i} className="flex items-start gap-3 p-3 rounded-md bg-background-100/70">
+                <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${s.probability === 'Très probable' ? 'bg-emerald-500' : s.probability === 'Probable' ? 'bg-primary-500' : 'bg-amber-500'}`} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold text-foreground-950 font-body">{s.scenario}</p>
+                  <p className="text-[11px] text-foreground-500 font-body mt-0.5">{s.impact}</p>
+                </div>
+                <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold font-body whitespace-nowrap ${s.probability === 'Très probable' ? 'bg-emerald-100 text-emerald-700' : s.probability === 'Probable' ? 'bg-primary-100 text-primary-700' : 'bg-amber-100 text-amber-700'}`}>
+                  {s.confidence}%
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+

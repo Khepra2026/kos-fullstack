@@ -1,0 +1,427 @@
+import { useState, useMemo } from 'react';
+import hubLayout from '@/components/feature/hubLayout';
+import hubSwitcher from '@/components/feature/hubSwitcher';
+import {
+  validatorSummary,
+  fichiersAuditResult,
+  validatedCitations,
+  verificationLogs,
+  planActionCorrectif,
+  validatorKPIs,
+} from '@/mocks/regulatoryCitationValidator';
+import type { ValidatedCitation, FichierAuditResult } from '@/mocks/regulatoryCitationValidator';
+
+const TABS = [
+  { id: 'dashboard', label: 'Tableau de Bord', icon: 'ri-dashboard-line' },
+  { id: 'citations', label: 'Citations Auditées', icon: 'ri-file-search-line' },
+  { id: 'fichiers', label: 'Fichiers Sources', icon: 'ri-folder-open-line' },
+  { id: 'correctif', label: 'Plan Correctif', icon: 'ri-tools-line' },
+  { id: 'journal', label: 'Journal d\'Audit', icon: 'ri-history-line' },
+];
+
+const NIVEAU_LABELS: Record<string, string> = {
+  NIVEAU_1_SOURCE_IDENTIFIEE: 'Niveau 1 — Source Identifiée',
+  NIVEAU_2_SOURCE_CERTIFIEE: 'Niveau 2 — Source Certifiée',
+  NIVEAU_3_SOURCE_PUBLIABLE: 'Niveau 3 — Source Publiable',
+};
+
+const getFiabiliteColor = (score: number): string => {
+  if (score >= 95) return 'bg-accent-500 text-background-50';
+  if (score >= 75) return 'bg-secondary-500 text-background-50';
+  if (score >= 50) return 'bg-amber-500 text-white';
+  if (score >= 25) return 'bg-orange-500 text-white';
+  return 'bg-red-600 text-white';
+};
+
+const getStatutBadge = (statut: string) => {
+  const map: Record<string, { bg: string; text: string; label: string }> = {
+    CONFORME: { bg: 'bg-accent-100 text-accent-900', text: 'text-accent-900', label: 'Conforme' },
+    SURVEILLANCE: { bg: 'bg-amber-100 text-amber-900', text: 'text-amber-900', label: 'Surveillance' },
+    NON_CONFORME: { bg: 'bg-red-100 text-red-900', text: 'text-red-900', label: 'Non Conforme' },
+  };
+  const s = map[statut] || map.SURVEILLANCE;
+  return <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${s.bg}`}>{s.label}</span>;
+};
+
+const getEcartBadge = (type: string) => {
+  const map: Record<string, string> = {
+    CRITIQUE: 'bg-red-600 text-white',
+    MAJEURE: 'bg-orange-500 text-white',
+    MINEURE: 'bg-amber-400 text-black',
+  };
+  return <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${map[type] || 'bg-gray-500 text-white'}`}>{type}</span>;
+};
+
+export default function regulatoryCitationValidatorPage() {
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [selectedCitation, setSelectedCitation] = useState<ValidatedCitation | null>(null);
+  const [selectedFichier, setSelectedFichier] = useState<FichierAuditResult | null>(null);
+  const [filtreFiabilite, setFiltreFiabilite] = useState<'TOUS' | 'PUBLIABLE' | 'AVERIFIER' | 'BLOQUE'>('TOUS');
+
+  const filteredCitations = useMemo(() => {
+    switch (filtreFiabilite) {
+      case 'PUBLIABLE': return validatedCitations.filter(c => c.indiceFiabilite >= 95);
+      case 'AVERIFIER': return validatedCitations.filter(c => c.indiceFiabilite >= 50 && c.indiceFiabilite < 95);
+      case 'BLOQUE': return validatedCitations.filter(c => c.indiceFiabilite < 50);
+      default: return validatedCitations;
+    }
+  }, [filtreFiabilite]);
+
+  const counts = useMemo(() => ({
+    tous: validatedCitations.length,
+    publiables: validatedCitations.filter(c => c.indiceFiabilite >= 95).length,
+    averifier: validatedCitations.filter(c => c.indiceFiabilite >= 50 && c.indiceFiabilite < 95).length,
+    bloques: validatedCitations.filter(c => c.indiceFiabilite < 50).length,
+  }), []);
+
+  return (
+    <hubLayout hubId={120}>
+      <hubSwitcher currentHubId={120} activeTab={activeTab} tabLabel={TABS.find(t => t.id === activeTab)?.label || ''} />
+
+      {/* Hero */}
+      <div className="bg-background-100 border-b border-background-200/70">
+        <div className="max-w-7xl mx-auto px-4 md:px-6 py-6">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center">
+                  <i className="ri-shield-check-line text-white text-lg"></i>
+                </div>
+                <span className="text-xs font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                  Agent Dédié — Big Four Standard
+                </span>
+              </div>
+              <h1 className="text-xl md:text-2xl font-bold text-foreground-950 font-heading">
+                KOS Regulatory Citation Validator™
+              </h1>
+              <p className="text-sm text-foreground-600 mt-1 max-w-2xl">
+                Audit automatique des citations réglementaires — Triple Validation (Intelligence → Vérification → Legal Review).
+                Indice de Fiabilité KOS. Tolérance Zéro.
+              </p>
+            </div>
+            <div className="flex items-center gap-3 shrink-0">
+              <div className="text-center px-3 py-2 rounded-lg bg-red-50 border border-red-200">
+                <div className="text-2xl font-bold text-red-600">{validatorSummary.indiceFiabiliteGlobal}</div>
+                <div className="text-[10px] text-red-500 font-semibold uppercase">/100 — SURVEILLANCE</div>
+              </div>
+              <div className="text-center px-3 py-2 rounded-lg bg-background-50 border border-background-200/70">
+                <div className="text-2xl font-bold text-foreground-950">{validatorSummary.totalCitations}</div>
+                <div className="text-[10px] text-foreground-500 font-semibold uppercase">Citations</div>
+              </div>
+              <div className="text-center px-3 py-2 rounded-lg bg-background-50 border border-background-200/70">
+                <div className="text-2xl font-bold text-red-600">{validatorSummary.ecartsCritiquesTotal}</div>
+                <div className="text-[10px] text-red-500 font-semibold uppercase">Écarts Critiques</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="bg-background-50 border-b border-background-200/70 sticky top-0 z-20">
+        <div className="max-w-7xl mx-auto px-4 md:px-6">
+          <div className="flex gap-0 overflow-x-auto">
+            {TABS.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-1.5 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors cursor-pointer ${
+                  activeTab === tab.id
+                    ? 'border-red-600 text-red-600'
+                    : 'border-transparent text-foreground-500 hover:text-foreground-700'
+                }`}
+              >
+                <i className={`${tab.icon} text-sm`}></i>
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Tab Content */}
+      <div className="max-w-7xl mx-auto px-4 md:px-6 py-6">
+        {/* DASHBOARD */}
+        {activeTab === 'dashboard' && (
+          <div className="space-y-6">
+            {/* KPI Cards */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {[
+                { label: 'Indice Global', value: `${validatorKPIs.scoreFiabiliteGlobal}/100`, sub: `Objectif ≥ ${validatorKPIs.objectifMinimum}`, color: 'text-red-600' },
+                { label: 'Citations Bloquées', value: validatorKPIs.citationsBloquees, sub: '< 50/100', color: 'text-red-600' },
+                { label: 'Fichiers Non Conformes', value: validatorKPIs.fichiersNonConformes, sub: 'Sur 7 audités', color: 'text-red-600' },
+                { label: 'Prochain Audit Auto', value: '01 Juillet', sub: '04:00 UTC', color: 'text-foreground-600' },
+              ].map((kpi, i) => (
+                <div key={i} className="bg-background-50 border border-background-200/70 rounded-lg p-4">
+                  <div className="text-xs text-foreground-500 mb-1">{kpi.label}</div>
+                  <div className={`text-xl font-bold ${kpi.color}`}>{kpi.value}</div>
+                  <div className="text-[10px] text-foreground-400 mt-0.5">{kpi.sub}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* System Status Banner */}
+            <div className="bg-amber-50 border border-amber-300 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <i className="ri-alert-line text-amber-600 text-xl mt-0.5"></i>
+                <div>
+                  <div className="font-bold text-amber-900 text-sm">SYSTÈME EN SURVEILLANCE — 0/56 citations publiables</div>
+                  <div className="text-xs text-amber-700 mt-1">
+                    Aucune citation n'atteint le seuil de publication ≥ 95/100. 48 citations nécessitent une vérification sur sources officielles. 8 écarts CRITIQUES détectés.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* File Summary */}
+            <div>
+              <h3 className="text-sm font-bold text-foreground-950 mb-3">Résumé par Fichier Source</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className="bg-background-100 text-foreground-600">
+                      <th className="text-left px-3 py-2 font-semibold">Fichier</th>
+                      <th className="text-center px-3 py-2 font-semibold">Citations</th>
+                      <th className="text-center px-3 py-2 font-semibold">Score</th>
+                      <th className="text-center px-3 py-2 font-semibold">Critiques</th>
+                      <th className="text-center px-3 py-2 font-semibold">Majeurs</th>
+                      <th className="text-center px-3 py-2 font-semibold">Mineurs</th>
+                      <th className="text-center px-3 py-2 font-semibold">Statut</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {fichiersAuditResult.map(f => (
+                      <tr key={f.nomFichier} className="border-b border-background-100 hover:bg-background-50 cursor-pointer" onClick={() => { setSelectedFichier(f); setActiveTab('fichiers'); }}>
+                        <td className="px-3 py-2.5 font-medium text-foreground-800">{f.nomFichier}</td>
+                        <td className="px-3 py-2.5 text-center text-foreground-600">{f.totalCitations}</td>
+                        <td className="px-3 py-2.5 text-center">
+                          <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${getFiabiliteColor(f.indiceFiabiliteMoyen)}`}>{f.indiceFiabiliteMoyen}/100</span>
+                        </td>
+                        <td className="px-3 py-2.5 text-center text-red-600 font-bold">{f.ecartsCritiques}</td>
+                        <td className="px-3 py-2.5 text-center text-orange-500 font-bold">{f.ecartsMajeurs}</td>
+                        <td className="px-3 py-2.5 text-center text-amber-500">{f.ecartsMineurs}</td>
+                        <td className="px-3 py-2.5 text-center">{getStatutBadge(f.statutGlobal)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* CITATIONS */}
+        {activeTab === 'citations' && (
+          <div className="space-y-4">
+            {/* Filters */}
+            <div className="flex items-center gap-2 flex-wrap">
+              {(['TOUS', 'PUBLIABLE', 'AVERIFIER', 'BLOQUE'] as const).map(f => (
+                <button
+                  key={f}
+                  onClick={() => setFiltreFiabilite(f)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap cursor-pointer transition-colors ${
+                    filtreFiabilite === f
+                      ? 'bg-red-600 text-white'
+                      : 'bg-background-100 text-foreground-600 hover:bg-background-200'
+                  }`}
+                >
+                  {f === 'TOUS' && `Toutes (${counts.tous})`}
+                  {f === 'PUBLIABLE' && `≥ 95 (${counts.publiables})`}
+                  {f === 'AVERIFIER' && `50-94 (${counts.averifier})`}
+                  {f === 'BLOQUE' && `< 50 (${counts.bloques})`}
+                </button>
+              ))}
+            </div>
+
+            {/* Citations List */}
+            <div className="space-y-2">
+              {filteredCitations.map(c => (
+                <div
+                  key={c.id}
+                  className={`border rounded-lg p-4 cursor-pointer transition-colors ${
+                    selectedCitation?.id === c.id
+                      ? 'border-red-400 bg-red-50/50'
+                      : 'border-background-200/70 bg-background-50 hover:border-background-300'
+                  }`}
+                  onClick={() => setSelectedCitation(selectedCitation?.id === c.id ? null : c)}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-[10px] font-bold text-foreground-400 bg-background-100 px-1.5 py-0.5 rounded uppercase">{c.autorite}</span>
+                        <span className="text-[10px] font-bold text-foreground-500">{c.reference}</span>
+                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${getFiabiliteColor(c.indiceFiabilite)}`}>
+                          {c.indiceFiabilite}/100
+                        </span>
+                      </div>
+                      <div className="text-sm font-semibold text-foreground-900 truncate">{c.titre}</div>
+                      <div className="text-[11px] text-foreground-500 mt-0.5">{c.fichierSource} · {c.date} · {c.statutJuridique}</div>
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      {c.ecarts.map((e, i) => (
+                        <span key={i}>{getEcartBadge(e.type)}</span>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Expanded Detail */}
+                  {selectedCitation?.id === c.id && (
+                    <div className="mt-3 pt-3 border-t border-background-200/50 space-y-2">
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-[11px]">
+                        <div><span className="text-foreground-400">Source:</span> <span className="text-foreground-700 font-medium">{c.sourceOfficielle}</span></div>
+                        <div><span className="text-foreground-400">Niveau:</span> <span className="text-foreground-700 font-medium">{NIVEAU_LABELS[c.niveauValidation]}</span></div>
+                        <div><span className="text-foreground-400">Vérifié sur source:</span> <span className={c.verifieeSurSourceOfficielle ? 'text-accent-600 font-bold' : 'text-red-600 font-bold'}>{c.verifieeSurSourceOfficielle ? 'OUI' : 'NON'}</span></div>
+                        <div><span className="text-foreground-400">Publiable:</span> <span className={c.estPubliable ? 'text-accent-600 font-bold' : 'text-red-600 font-bold'}>{c.estPubliable ? 'OUI' : 'NON'}</span></div>
+                      </div>
+                      {c.ecarts.length > 0 && (
+                        <div className="space-y-1">
+                          <div className="text-[11px] font-semibold text-foreground-800">Écarts détectés:</div>
+                          {c.ecarts.map((e, i) => (
+                            <div key={i} className="flex items-start gap-2 text-[11px]">
+                              {getEcartBadge(e.type)}
+                              <span className="text-foreground-600">{e.description}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <div className="text-[11px] text-foreground-500 bg-background-100 p-2 rounded">
+                        <span className="font-semibold">Recommandation:</span> {c.recommandation}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* FICHIERS */}
+        {activeTab === 'fichiers' && (
+          <div className="space-y-4">
+            {fichiersAuditResult.map(f => (
+              <div
+                key={f.nomFichier}
+                className={`border rounded-lg p-4 cursor-pointer transition-colors ${
+                  selectedFichier?.nomFichier === f.nomFichier
+                    ? 'border-red-400 bg-red-50/50'
+                    : 'border-background-200/70 bg-background-50 hover:border-background-300'
+                }`}
+                onClick={() => setSelectedFichier(selectedFichier?.nomFichier === f.nomFichier ? null : f)}
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <i className="ri-file-code-line text-foreground-400"></i>
+                      <span className="font-semibold text-sm text-foreground-900">{f.nomFichier}</span>
+                      {getStatutBadge(f.statutGlobal)}
+                    </div>
+                    <div className="text-[11px] text-foreground-500 mt-0.5">{f.chemin}</div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="text-center">
+                      <div className="text-lg font-bold text-foreground-800">{f.totalCitations}</div>
+                      <div className="text-[9px] text-foreground-400">Citations</div>
+                    </div>
+                    <div className={`text-lg font-bold ${f.indiceFiabiliteMoyen >= 75 ? 'text-accent-600' : f.indiceFiabiliteMoyen >= 50 ? 'text-amber-600' : 'text-red-600'}`}>{f.indiceFiabiliteMoyen}/100</div>
+                  </div>
+                </div>
+                {selectedFichier?.nomFichier === f.nomFichier && (
+                  <div className="mt-3 pt-3 border-t border-background-200/50">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                      <div><span className="text-foreground-400">Publiables (≥95):</span> <span className="text-accent-600 font-bold">{f.citationsValidees}</span></div>
+                      <div><span className="text-foreground-400">À vérifier (50-94):</span> <span className="text-amber-600 font-bold">{f.citationsNonVerifiees}</span></div>
+                      <div><span className="text-foreground-400">Bloquées (&lt;50):</span> <span className="text-red-600 font-bold">{f.citationsCritiques}</span></div>
+                      <div><span className="text-foreground-400">Dernière vérif:</span> <span className="text-foreground-700">{f.dateDerniereVerification}</span></div>
+                    </div>
+                    <div className="flex gap-3 mt-2 text-xs">
+                      <span className="text-red-600 font-semibold">{f.ecartsCritiques} Critiques</span>
+                      <span className="text-orange-500 font-semibold">{f.ecartsMajeurs} Majeurs</span>
+                      <span className="text-amber-500 font-semibold">{f.ecartsMineurs} Mineurs</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* PLAN CORRECTIF */}
+        {activeTab === 'correctif' && (
+          <div className="space-y-6">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <i className="ri-error-warning-line text-red-600 text-xl mt-0.5"></i>
+                <div>
+                  <div className="font-bold text-red-900 text-sm">PLAN D'ACTION CORRECTIF — 4 phases</div>
+                  <div className="text-xs text-red-700 mt-1">8 écarts CRITIQUES, 22 écarts MAJEURS, 31 écarts MINEURS. Effort total estimé: 40 heures.</div>
+                </div>
+              </div>
+            </div>
+
+            {planActionCorrectif.map((plan, i) => (
+              <div key={i} className="border border-background-200/70 rounded-lg p-4 bg-background-50">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                    plan.priorite === 'P0_CRITIQUE' ? 'bg-red-100 text-red-700' :
+                    plan.priorite === 'P1_HAUTE' ? 'bg-orange-100 text-orange-700' :
+                    plan.priorite === 'P2_MOYENNE' ? 'bg-amber-100 text-amber-700' :
+                    'bg-blue-100 text-blue-700'
+                  }`}>{plan.priorite.replace('_', ' ')}</span>
+                  <span className="text-xs text-foreground-500">Deadline: {plan.deadline} · Effort: {plan.effortEstime}</span>
+                </div>
+                <div className="text-sm font-semibold text-foreground-900 mb-2">{plan.action}</div>
+                <div className="flex flex-wrap gap-1">
+                  {plan.citationsConcernees.map(c => (
+                    <span key={c} className="text-[10px] bg-background-100 text-foreground-500 px-1.5 py-0.5 rounded">{c}</span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* JOURNAL */}
+        {activeTab === 'journal' && (
+          <div className="space-y-2">
+            {verificationLogs.map((log, i) => (
+              <div key={i} className="flex items-start gap-3 border-b border-background-100 pb-3 text-xs">
+                <div className="text-[10px] text-foreground-400 font-mono whitespace-nowrap mt-0.5 w-24">{log.date.replace('T', ' ').slice(0, 16)}</div>
+                <div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-semibold text-foreground-700">{log.action.replace(/_/g, ' ')}</span>
+                    <span className="text-[10px] text-foreground-400">— {log.agent}</span>
+                  </div>
+                  <div className="text-foreground-500 mt-0.5">{log.resultat}</div>
+                </div>
+                <div className="ml-auto shrink-0">
+                  <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${getFiabiliteColor(log.score)}`}>{log.score}/100</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Footer KPI Bar */}
+        <div className="mt-8 border-t border-background-200/70 pt-4 grid grid-cols-2 md:grid-cols-5 gap-3 text-xs">
+          {[
+            { label: 'Agent Actif', value: validatorKPIs.agentsActifs[0] },
+            { label: 'Fréquence Audit', value: 'Hebdomadaire (lundi 04:00 UTC)' },
+            { label: 'Standard', value: 'Zero-Defect Protocol™ v2.0' },
+            { label: 'Triple Validation', value: 'Intelligence → Vérification → Legal Review' },
+            { label: 'Seuil Publication', value: '≥ 95/100' },
+          ].map((kpi, i) => (
+            <div key={i} className="text-center">
+              <div className="text-[10px] text-foreground-400 mb-0.5">{kpi.label}</div>
+              <div className="text-foreground-700 font-medium">{kpi.value}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </hubLayout>
+  );
+}
+
+
+
+
+

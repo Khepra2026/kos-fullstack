@@ -1,0 +1,645 @@
+export interface DataModelTable {
+  table_name: string;
+  description: string;
+  hub_refs: string[];
+  row_estimate: number;
+  has_rls: boolean;
+  category: string;
+  key_columns: string[];
+  relations: { foreign_table: string; relationship: string }[];
+}
+
+export interface DataDomainSummary {
+  domain_id: string;
+  domain_name: string;
+  description: string;
+  table_count: number;
+  total_rows_estimate: number;
+  icon: string;
+  color: string;
+  hub_refs: string[];
+  standards: string[];
+  tables: DataModelTable[];
+}
+
+export interface RelationalSchemaLink {
+  from_table: string;
+  from_domain: string;
+  to_table: string;
+  to_domain: string;
+  relationship: string;
+  cardinality: '1:1' | '1:N' | 'N:M';
+}
+
+export interface DataGovernanceRule {
+  rule_id: string;
+  rule_name: string;
+  category: 'naming' | 'security' | 'quality' | 'lifecycle' | 'audit' | 'performance';
+  description: string;
+  standard_ref: string;
+  compliance: 'compliant' | 'partial' | 'non_compliant';
+  affected_tables_count: number;
+}
+
+export interface DataQualityMetric {
+  metric_name: string;
+  current_value: number;
+  target_value: number;
+  unit: string;
+  trend: 'up' | 'down' | 'stable';
+  domain: string;
+  last_checked: string;
+}
+
+export interface ValidationWorkflow {
+  step: number;
+  step_name: string;
+  description: string;
+  responsible: string;
+  tool: string;
+  frequency: string;
+  status: 'active' | 'pending' | 'draft';
+}
+
+export interface EnterpriseDataModel {
+  bloc_id: string;
+  bloc_name: string;
+  version: string;
+  executive_summary: string;
+  total_tables: number;
+  total_rows_estimate: number;
+  domains: number;
+  certification_target: string;
+  current_maturity: number;
+  target_maturity: number;
+  standards: string[];
+  domains_summary: DataDomainSummary[];
+  relational_schema: RelationalSchemaLink[];
+  governance_rules: DataGovernanceRule[];
+  quality_metrics: DataQualityMetric[];
+  validation_workflow: ValidationWorkflow[];
+}
+
+export const ENTERPRISE_DATA_MODEL: EnterpriseDataModel = {
+  bloc_id: 'BLOC 2',
+  bloc_name: 'KOS Enterprise Data Model™',
+  version: 'v1.0',
+  executive_summary: 'Source unique de vérité du KOS™. Cartographie exhaustive des 244 tables Supabase réparties en 18 domaines fonctionnels interconnectés. Dictionnaire de données, schéma relationnel, règles de gouvernance, métriques qualité et workflow de validation — conforme ISO 8000, ISO 38505, DAMA-DMBOK et COBIT 2019.',
+  total_tables: 244,
+  total_rows_estimate: 12850,
+  domains: 18,
+  certification_target: 'ISO 8000 (Data Quality) + ISO 38505 (Data Governance) + DAMA-DMBOK + COBIT 2019 (DSS06)',
+  current_maturity: 95,
+  target_maturity: 95,
+  standards: ['ISO 8000', 'ISO 38505', 'DAMA-DMBOK', 'COBIT 2019', 'GDPR', 'ISO 27001'],
+  domains_summary: [
+    {
+      domain_id: 'DM-001',
+      domain_name: 'Core Platform & Auth',
+      description: 'Fondations de la plateforme : utilisateurs, organisations, sessions, quotas, abonnements',
+      table_count: 18,
+      total_rows_estimate: 320,
+      icon: 'ri-shield-keyhole-line',
+      color: 'foreground',
+      hub_refs: ['Enterprise OS Core Command', 'KOS Dashboard'],
+      standards: ['ISO 27001', 'GDPR', 'SOC2'],
+      tables: [
+        { table_name: 'profiles', description: 'Profils utilisateurs KHEPRA Experts', hub_refs: ['Enterprise Core'], row_estimate: 45, has_rls: true, category: 'auth', key_columns: ['id', 'email', 'role'], relations: [{ foreign_table: 'organizations', relationship: 'Membre de' }] },
+        { table_name: 'organizations', description: 'Organisations clientes', hub_refs: ['CRM'], row_estimate: 28, has_rls: true, category: 'auth', key_columns: ['id', 'name', 'plan_id'], relations: [{ foreign_table: 'subscriptions', relationship: 'Abonnement actif' }] },
+        { table_name: 'organization_members', description: 'Membres par organisation', hub_refs: ['Enterprise Core'], row_estimate: 52, has_rls: true, category: 'auth', key_columns: ['org_id', 'user_id', 'role'], relations: [{ foreign_table: 'profiles', relationship: 'Utilisateur lié' }] },
+        { table_name: 'api_keys', description: 'Clés API pour intégrations externes', hub_refs: ['API Gateway'], row_estimate: 12, has_rls: true, category: 'auth', key_columns: ['id', 'org_id', 'key_hash'], relations: [{ foreign_table: 'organizations', relationship: 'Appartient à' }] },
+        { table_name: 'subscriptions', description: 'Abonnements aux plans KOS', hub_refs: ['Enterprise Core'], row_estimate: 15, has_rls: true, category: 'billing', key_columns: ['id', 'org_id', 'plan_id'], relations: [{ foreign_table: 'subscription_plans', relationship: 'Plan souscrit' }] },
+        { table_name: 'subscription_plans', description: 'Plans tarifaires KOS', hub_refs: ['Enterprise Core'], row_estimate: 5, has_rls: false, category: 'billing', key_columns: ['id', 'name', 'price'], relations: [] },
+        { table_name: 'usage_quotas', description: 'Quotas d\'utilisation par organisation', hub_refs: ['Enterprise Core'], row_estimate: 22, has_rls: true, category: 'billing', key_columns: ['id', 'org_id', 'feature'], relations: [{ foreign_table: 'organizations', relationship: 'Consommation' }] },
+        { table_name: 'rate_limits', description: 'Limites de taux API', hub_refs: ['API Gateway'], row_estimate: 18, has_rls: true, category: 'infra', key_columns: ['id', 'key', 'max_requests'], relations: [] },
+        { table_name: 'admin_sessions', description: 'Sessions administrateur KOS', hub_refs: ['Admin'], row_estimate: 8, has_rls: true, category: 'auth', key_columns: ['id', 'user_id', 'token'], relations: [{ foreign_table: 'profiles', relationship: 'Administrateur' }] },
+        { table_name: 'admin_settings', description: 'Configuration globale KOS', hub_refs: ['Admin'], row_estimate: 24, has_rls: true, category: 'config', key_columns: ['key', 'value'], relations: [] },
+        { table_name: 'admin_notifications', description: 'Notifications administrateur', hub_refs: ['Admin'], row_estimate: 45, has_rls: true, category: 'notifications', key_columns: ['id', 'type', 'read'], relations: [] },
+        { table_name: 'admin_conversations', description: 'Conversations administrateur', hub_refs: ['Admin'], row_estimate: 30, has_rls: true, category: 'comms', key_columns: ['id', 'user_id', 'status'], relations: [] },
+        { table_name: 'admin_messages', description: 'Messages conversations admin', hub_refs: ['Admin'], row_estimate: 180, has_rls: true, category: 'comms', key_columns: ['id', 'conversation_id', 'sender'], relations: [{ foreign_table: 'admin_conversations', relationship: 'Fil de discussion' }] },
+        { table_name: 'admin_resources', description: 'Ressources documentaires admin', hub_refs: ['Admin'], row_estimate: 35, has_rls: true, category: 'docs', key_columns: ['id', 'type', 'url'], relations: [] },
+        { table_name: 'activity_logs', description: 'Journal d\'activité plateforme', hub_refs: ['Enterprise Core'], row_estimate: 4200, has_rls: true, category: 'audit', key_columns: ['id', 'user_id', 'action'], relations: [{ foreign_table: 'profiles', relationship: 'Action de' }] },
+        { table_name: 'cookie_consent', description: 'Consentements cookies RGPD', hub_refs: ['Public'], row_estimate: 1200, has_rls: false, category: 'compliance', key_columns: ['id', 'session_id', 'accepted'], relations: [] },
+        { table_name: 'certificates', description: 'Certificats et accréditations', hub_refs: ['About'], row_estimate: 12, has_rls: false, category: 'docs', key_columns: ['id', 'name', 'issuer'], relations: [] },
+        { table_name: 'manual_accreditations', description: 'Accréditations manuelles', hub_refs: ['About'], row_estimate: 8, has_rls: true, category: 'docs', key_columns: ['id', 'type', 'status'], relations: [] },
+      ],
+    },
+    {
+      domain_id: 'DM-002',
+      domain_name: 'CRM & Growth Pipeline',
+      description: 'Gestion de la relation client, leads, scoring, pipeline commercial et moteur de croissance',
+      table_count: 16,
+      total_rows_estimate: 680,
+      icon: 'ri-user-heart-line',
+      color: 'accent',
+      hub_refs: ['Autonomous Growth & Market', 'CRM Dashboard', 'Lead Scoring Command'],
+      standards: ['GDPR', 'ISO 27001'],
+      tables: [
+        { table_name: 'leads', description: 'Prospects et leads qualifiés', hub_refs: ['CRM', 'Growth'], row_estimate: 185, has_rls: true, category: 'crm', key_columns: ['id', 'email', 'status', 'score'], relations: [{ foreign_table: 'lead_activities', relationship: 'Activités du lead' }] },
+        { table_name: 'lead_activities', description: 'Historique interactions leads', hub_refs: ['CRM'], row_estimate: 1200, has_rls: true, category: 'crm', key_columns: ['id', 'lead_id', 'action'], relations: [{ foreign_table: 'leads', relationship: 'Lead concerné' }] },
+        { table_name: 'lead_scores', description: 'Scores prédictifs des leads', hub_refs: ['Lead Scoring Command'], row_estimate: 155, has_rls: true, category: 'crm', key_columns: ['id', 'lead_id', 'score', 'probability'], relations: [{ foreign_table: 'leads', relationship: 'Score du lead' }] },
+        { table_name: 'proposals', description: 'Propositions commerciales', hub_refs: ['CRM', 'Proposals'], row_estimate: 42, has_rls: true, category: 'crm', key_columns: ['id', 'lead_id', 'status', 'value'], relations: [{ foreign_table: 'leads', relationship: 'Proposition pour' }] },
+        { table_name: 'proposal_drafts', description: 'Brouillons de propositions', hub_refs: ['Proposals'], row_estimate: 28, has_rls: true, category: 'crm', key_columns: ['id', 'title', 'status'], relations: [] },
+        { table_name: 'proposal_intelligence', description: 'Intelligence des propositions', hub_refs: ['Growth Intelligence'], row_estimate: 35, has_rls: true, category: 'intel', key_columns: ['id', 'proposal_id', 'score'], relations: [{ foreign_table: 'proposals', relationship: 'Analyse de' }] },
+        { table_name: 'client_health', description: 'Santé des comptes clients', hub_refs: ['Client Success'], row_estimate: 22, has_rls: true, category: 'crm', key_columns: ['id', 'client_id', 'health_score'], relations: [{ foreign_table: 'organizations', relationship: 'Santé du client' }] },
+        { table_name: 'growth_engine', description: 'Moteur de croissance autonome', hub_refs: ['Autonomous Growth'], row_estimate: 24, has_rls: true, category: 'growth', key_columns: ['id', 'lead_id', 'stage', 'value'], relations: [{ foreign_table: 'leads', relationship: 'Opportunité' }] },
+        { table_name: 'market_intelligence_center', description: 'Veille et intelligence marché', hub_refs: ['Market Intelligence Command'], row_estimate: 48, has_rls: true, category: 'intel', key_columns: ['id', 'trend', 'impact_score'], relations: [] },
+        { table_name: 'opportunity_discovery_engine', description: 'Découverte d\'opportunités', hub_refs: ['Autonomous Growth'], row_estimate: 32, has_rls: true, category: 'growth', key_columns: ['id', 'type', 'value_estimate'], relations: [] },
+        { table_name: 'partner_ecosystem_manager', description: 'Gestion écosystème partenaires', hub_refs: ['Autonomous Growth'], row_estimate: 18, has_rls: true, category: 'growth', key_columns: ['id', 'partner_name', 'status'], relations: [] },
+        { table_name: 'autonomous_growth_team', description: 'Équipe croissance autonome', hub_refs: ['Autonomous Growth'], row_estimate: 24, has_rls: true, category: 'growth', key_columns: ['id', 'channel', 'roi'], relations: [] },
+        { table_name: 'email_templates', description: 'Templates emails marketing', hub_refs: ['Email Sequences'], row_estimate: 35, has_rls: true, category: 'marketing', key_columns: ['id', 'name', 'type'], relations: [] },
+        { table_name: 'email_sequence_enrollments', description: 'Inscriptions aux séquences email', hub_refs: ['Email Sequences'], row_estimate: 220, has_rls: true, category: 'marketing', key_columns: ['id', 'lead_id', 'sequence_id'], relations: [{ foreign_table: 'leads', relationship: 'Lead inscrit' }] },
+        { table_name: 'email_logs', description: 'Logs d\'envoi emails', hub_refs: ['Email Sequences'], row_estimate: 1850, has_rls: true, category: 'marketing', key_columns: ['id', 'template_id', 'status'], relations: [{ foreign_table: 'email_templates', relationship: 'Template utilisé' }] },
+        { table_name: 'dashboard_metrics', description: 'Métriques dashboard CRM', hub_refs: ['CRM Dashboard'], row_estimate: 60, has_rls: true, category: 'analytics', key_columns: ['id', 'metric', 'value'], relations: [] },
+      ],
+    },
+    {
+      domain_id: 'DM-003',
+      domain_name: 'KOS Automates Catalog',
+      description: 'Catalogue complet des 15 familles d\'automates KOS : SEO, CRM, Cybersécurité, Conformité, etc.',
+      table_count: 16,
+      total_rows_estimate: 480,
+      icon: 'ri-robot-2-line',
+      color: 'primary',
+      hub_refs: ['Automaton Engine', 'Automation Factory', 'Web Ops Automates'],
+      standards: ['ISO 42001', 'EU AI Act'],
+      tables: [
+        { table_name: 'kos_blog_writing_automates', description: 'Automates de rédaction blog niveau Big Four', hub_refs: ['Blog Writing Automates'], row_estimate: 18, has_rls: true, category: 'automate', key_columns: ['id', 'agent_name', 'status'], relations: [] },
+        { table_name: 'kos_web_ops_automates', description: 'Automates opérations web', hub_refs: ['Web Ops Automates'], row_estimate: 22, has_rls: true, category: 'automate', key_columns: ['id', 'task', 'frequency'], relations: [] },
+        { table_name: 'kos_dev_automates', description: 'Automates développement fullstack', hub_refs: ['Fullstack Dev Automates'], row_estimate: 16, has_rls: true, category: 'automate', key_columns: ['id', 'stack', 'status'], relations: [] },
+        { table_name: 'kos_cyber_security_automates', description: 'Automates cybersécurité', hub_refs: ['Cyber Security Automates'], row_estimate: 24, has_rls: true, category: 'automate', key_columns: ['id', 'scan_type', 'severity'], relations: [] },
+        { table_name: 'kos_regulatory_compliance_automates', description: 'Automates conformité réglementaire', hub_refs: ['Regulatory Compliance Automates'], row_estimate: 20, has_rls: true, category: 'automate', key_columns: ['id', 'regulation', 'status'], relations: [] },
+        { table_name: 'kos_interactive_tools_review', description: 'Revue des outils interactifs', hub_refs: ['Interactive Tools Review'], row_estimate: 35, has_rls: true, category: 'automate', key_columns: ['id', 'tool_name', 'score'], relations: [] },
+        { table_name: 'kos_referents_metiers_automates', description: 'Automates référents métiers', hub_refs: ['Referents Metiers Automates'], row_estimate: 28, has_rls: true, category: 'automate', key_columns: ['id', 'domain', 'expert'], relations: [] },
+        { table_name: 'kos_commercial_marketing_automates', description: 'Automates commerciaux et marketing', hub_refs: ['Commercial Marketing Automates'], row_estimate: 22, has_rls: true, category: 'automate', key_columns: ['id', 'campaign', 'roi'], relations: [] },
+        { table_name: 'kos_community_manager_automates', description: 'Automates community management', hub_refs: ['Social Media Command'], row_estimate: 30, has_rls: true, category: 'automate', key_columns: ['id', 'platform', 'posts'], relations: [] },
+        { table_name: 'kos_designer_infographe_automates', description: 'Automates design et infographie', hub_refs: ['Interactive Tools'], row_estimate: 15, has_rls: true, category: 'automate', key_columns: ['id', 'design_type', 'status'], relations: [] },
+        { table_name: 'kos_organisation_qualite_automates', description: 'Automates organisation et qualité', hub_refs: ['Organisation Qualite Automates'], row_estimate: 32, has_rls: true, category: 'automate', key_columns: ['id', 'process', 'score'], relations: [] },
+        { table_name: 'kos_llm_experts_automates', description: 'Automates experts LLM', hub_refs: ['LLM Experts Automates'], row_estimate: 25, has_rls: true, category: 'automate', key_columns: ['id', 'model', 'benchmark'], relations: [] },
+        { table_name: 'kos_think_tank_automates', description: 'Automates think tank et recherche', hub_refs: ['Think Tank Automates'], row_estimate: 28, has_rls: true, category: 'automate', key_columns: ['id', 'publication_type', 'citations'], relations: [] },
+        { table_name: 'kos_business_intelligence_automates', description: 'Automates business intelligence', hub_refs: ['Market Intelligence'], row_estimate: 20, has_rls: true, category: 'automate', key_columns: ['id', 'report_type', 'frequency'], relations: [] },
+        { table_name: 'automation_optimizer', description: 'Optimiseur d\'automatisation', hub_refs: ['Control Tower'], row_estimate: 24, has_rls: true, category: 'automate', key_columns: ['id', 'workflow', 'efficiency'], relations: [] },
+        { table_name: 'automation_auditor', description: 'Audit des automatisations', hub_refs: ['Data Analytics'], row_estimate: 18, has_rls: true, category: 'automate', key_columns: ['id', 'automation_id', 'compliance_score'], relations: [] },
+      ],
+    },
+    {
+      domain_id: 'DM-004',
+      domain_name: 'KOS Correction & Quality System',
+      description: 'Système complet de correction automatique : tickets, scans, boucles qualité, moteurs de correction',
+      table_count: 22,
+      total_rows_estimate: 1850,
+      icon: 'ri-tools-line',
+      color: 'secondary',
+      hub_refs: ['Correction Engine', 'Corrective Execution', 'Content Correction', 'Cyber Tech Correction', 'Digital Growth Correction'],
+      standards: ['ISO 9001', 'ITIL', 'Six Sigma'],
+      tables: [
+        { table_name: 'kos_auto_correction_tickets', description: 'Tickets d\'auto-correction centralisés', hub_refs: ['URL Auto-Pointage', 'Correction Engine'], row_estimate: 85, has_rls: true, category: 'correction', key_columns: ['ticket_id', 'source_engine', 'status', 'priority'], relations: [{ foreign_table: 'url_check_results', relationship: 'Lien vérifié' }] },
+        { table_name: 'kos_correction_tickets', description: 'Tickets de correction legacy', hub_refs: ['Correction Engine'], row_estimate: 60, has_rls: true, category: 'correction', key_columns: ['id', 'type', 'status'], relations: [] },
+        { table_name: 'kos_correction_loop_log', description: 'Log de boucle de correction', hub_refs: ['Correction Engine'], row_estimate: 320, has_rls: true, category: 'correction', key_columns: ['id', 'loop_id', 'action'], relations: [] },
+        { table_name: 'kos_correction_loop_status', description: 'Statut des boucles de correction', hub_refs: ['Correction Engine'], row_estimate: 28, has_rls: true, category: 'correction', key_columns: ['id', 'loop_type', 'status'], relations: [] },
+        { table_name: 'kos_correction_manifest', description: 'Manifeste de correction', hub_refs: ['Correction Engine'], row_estimate: 12, has_rls: true, category: 'correction', key_columns: ['id', 'version', 'scope'], relations: [] },
+        { table_name: 'kos_correction_scan_results', description: 'Résultats de scan de correction', hub_refs: ['Correction Engine'], row_estimate: 240, has_rls: true, category: 'correction', key_columns: ['id', 'scan_type', 'issues'], relations: [] },
+        { table_name: 'kos_correction_fix_history', description: 'Historique des corrections appliquées', hub_refs: ['Correction Engine'], row_estimate: 480, has_rls: true, category: 'correction', key_columns: ['id', 'ticket_id', 'fix_type'], relations: [{ foreign_table: 'kos_auto_correction_tickets', relationship: 'Ticket corrigé' }] },
+        { table_name: 'kos_correction_before_after', description: 'Comparaisons avant/après correction', hub_refs: ['Correction Engine'], row_estimate: 120, has_rls: true, category: 'correction', key_columns: ['id', 'ticket_id', 'score_before', 'score_after'], relations: [] },
+        { table_name: 'kos_correction_executive_report', description: 'Rapports exécutifs de correction', hub_refs: ['Managing Partner Office'], row_estimate: 18, has_rls: true, category: 'correction', key_columns: ['id', 'period', 'total_fixes'], relations: [] },
+        { table_name: 'kos_correction_security_plan', description: 'Plans de correction sécurité', hub_refs: ['Cyber Tech Correction'], row_estimate: 14, has_rls: true, category: 'correction', key_columns: ['id', 'vulnerability', 'plan'], relations: [] },
+        { table_name: 'kos_correction_seo_queue', description: 'File d\'attente correction SEO', hub_refs: ['SEO AEO Command'], row_estimate: 45, has_rls: true, category: 'correction', key_columns: ['id', 'page_url', 'issue_type'], relations: [] },
+        { table_name: 'kos_correction_accessibility_queue', description: 'File correction accessibilité', hub_refs: ['Correction Engine'], row_estimate: 30, has_rls: true, category: 'correction', key_columns: ['id', 'page_url', 'wcag_level'], relations: [] },
+        { table_name: 'kos_correction_image_queue', description: 'File correction images', hub_refs: ['Correction Engine'], row_estimate: 55, has_rls: true, category: 'correction', key_columns: ['id', 'image_url', 'issue'], relations: [] },
+        { table_name: 'kos_correction_js_optimization', description: 'Optimisations JavaScript', hub_refs: ['Correction Engine'], row_estimate: 22, has_rls: true, category: 'correction', key_columns: ['id', 'file', 'size_before', 'size_after'], relations: [] },
+        { table_name: 'kos_correction_compression_audit', description: 'Audit compression assets', hub_refs: ['Correction Engine'], row_estimate: 35, has_rls: true, category: 'correction', key_columns: ['id', 'asset_type', 'compression_ratio'], relations: [] },
+        { table_name: 'kos_cross_resolution_logs', description: 'Logs de résolution cross-moteur', hub_refs: ['Correction Engine'], row_estimate: 65, has_rls: true, category: 'correction', key_columns: ['id', 'source_engine', 'resolution'], relations: [] },
+        { table_name: 'kos_block_scans', description: 'Scans de blocs KOS', hub_refs: ['Global Agent Performance'], row_estimate: 24, has_rls: true, category: 'correction', key_columns: ['id', 'block_id', 'scan_date'], relations: [] },
+        { table_name: 'kos_block_detections', description: 'Détections par bloc', hub_refs: ['Global Agent Performance'], row_estimate: 86, has_rls: true, category: 'correction', key_columns: ['id', 'scan_id', 'issue_type'], relations: [{ foreign_table: 'kos_block_scans', relationship: 'Scan associé' }] },
+        { table_name: 'kos_corrective_blocks', description: 'Blocs correctifs exécutables', hub_refs: ['Global Agent Performance'], row_estimate: 12, has_rls: true, category: 'correction', key_columns: ['id', 'block_name', 'status'], relations: [] },
+        { table_name: 'kos_execution_logs', description: 'Logs d\'exécution des blocs', hub_refs: ['Global Agent Performance'], row_estimate: 180, has_rls: true, category: 'correction', key_columns: ['id', 'block_id', 'execution_status'], relations: [{ foreign_table: 'kos_corrective_blocks', relationship: 'Bloc exécuté' }] },
+        { table_name: 'kos_critical_events', description: 'Événements critiques cross-hub', hub_refs: ['Tous les hubs'], row_estimate: 55, has_rls: true, category: 'correction', key_columns: ['id', 'hub_id', 'event_type'], relations: [] },
+        { table_name: 'url_check_results', description: 'Résultats de vérification d\'URL', hub_refs: ['URL Auto-Pointage'], row_estimate: 420, has_rls: true, category: 'correction', key_columns: ['id', 'url', 'status_code'], relations: [] },
+      ],
+    },
+    {
+      domain_id: 'DM-005',
+      domain_name: 'Enterprise Intelligence OS',
+      description: 'Cœur du système d\'exploitation KOS : cerveau, jumeaux numériques, mémoire stratégique, auto-amélioration',
+      table_count: 18,
+      total_rows_estimate: 720,
+      icon: 'ri-brain-line',
+      color: 'primary',
+      hub_refs: ['Enterprise Brain OS', 'Managing Partner Office', 'Enterprise OS Core'],
+      standards: ['ISO 42001', 'ISO 38505', 'NIST AI RMF'],
+      tables: [
+        { table_name: 'enterprise_brain', description: 'Cerveau central KOS — domaines de connaissance', hub_refs: ['Enterprise Brain OS'], row_estimate: 8, has_rls: true, category: 'intelligence', key_columns: ['id', 'domain', 'connection_strength'], relations: [] },
+        { table_name: 'enterprise_os', description: 'Système d\'exploitation enterprise', hub_refs: ['Enterprise OS Core'], row_estimate: 12, has_rls: true, category: 'intelligence', key_columns: ['id', 'module_name', 'maturity_score'], relations: [] },
+        { table_name: 'enterprise_intelligence_os_v2', description: 'Intelligence OS v2 — composants', hub_refs: ['Enterprise Brain OS'], row_estimate: 8, has_rls: true, category: 'intelligence', key_columns: ['id', 'component', 'health_score'], relations: [] },
+        { table_name: 'digital_twin', description: 'Jumeaux numériques prédictifs', hub_refs: ['Enterprise Brain OS'], row_estimate: 6, has_rls: true, category: 'intelligence', key_columns: ['id', 'twin_name', 'precision'], relations: [] },
+        { table_name: 'strategic_memory', description: 'Mémoire stratégique KHEPRA', hub_refs: ['Managing Partner Office'], row_estimate: 24, has_rls: true, category: 'intelligence', key_columns: ['id', 'memory_type', 'access_count'], relations: [] },
+        { table_name: 'self_improvement', description: 'Auto-amélioration continue', hub_refs: ['Enterprise Brain OS'], row_estimate: 12, has_rls: true, category: 'intelligence', key_columns: ['id', 'loop_name', 'progress'], relations: [] },
+        { table_name: 'self_improvement_engine_v2', description: 'Moteur auto-amélioration v2', hub_refs: ['Enterprise Brain OS'], row_estimate: 18, has_rls: true, category: 'intelligence', key_columns: ['id', 'cycle', 'target_area'], relations: [] },
+        { table_name: 'hallucination_detection_engine', description: 'Détection anti-hallucination IA', hub_refs: ['Enterprise Brain OS'], row_estimate: 24, has_rls: true, category: 'intelligence', key_columns: ['id', 'claim', 'confidence_score'], relations: [] },
+        { table_name: 'managing_partner_office', description: 'Bureau du Managing Partner', hub_refs: ['Managing Partner Office'], row_estimate: 15, has_rls: true, category: 'executive', key_columns: ['id', 'decision_type', 'status'], relations: [] },
+        { table_name: 'executive_copilot', description: 'Copilote exécutif IA', hub_refs: ['Managing Partner Office'], row_estimate: 18, has_rls: true, category: 'executive', key_columns: ['id', 'task_type', 'priority'], relations: [] },
+        { table_name: 'executive_content_studio', description: 'Studio de contenu exécutif', hub_refs: ['Autonomous Growth', 'Managing Partner'], row_estimate: 32, has_rls: true, category: 'executive', key_columns: ['id', 'content_type', 'quality_score'], relations: [] },
+        { table_name: 'strategic_alert_engine', description: 'Moteur d\'alertes stratégiques', hub_refs: ['Managing Partner Office'], row_estimate: 20, has_rls: true, category: 'executive', key_columns: ['id', 'alert_type', 'severity'], relations: [] },
+        { table_name: 'early_warning_system', description: 'Système d\'alerte précoce', hub_refs: ['Managing Partner Office'], row_estimate: 15, has_rls: true, category: 'executive', key_columns: ['id', 'warning_type', 'threshold'], relations: [] },
+        { table_name: 'executive_dashboards', description: 'Tableaux de bord exécutifs', hub_refs: ['Executive Dashboard'], row_estimate: 8, has_rls: true, category: 'executive', key_columns: ['id', 'dashboard_type', 'refresh_rate'], relations: [] },
+        { table_name: 'executive_command_center', description: 'Centre de commandement exécutif', hub_refs: ['Executive Command'], row_estimate: 6, has_rls: true, category: 'executive', key_columns: ['id', 'command_type', 'status'], relations: [] },
+        { table_name: 'executive_kpi_tower', description: 'Tour KPI exécutive — 280 KPIs', hub_refs: ['Enterprise KPI Tower'], row_estimate: 15, has_rls: true, category: 'executive', key_columns: ['id', 'domain', 'kpi_count'], relations: [] },
+        { table_name: 'kos_enterprise_strategic_memory', description: 'Mémoire stratégique enterprise', hub_refs: ['Enterprise Brain'], row_estimate: 18, has_rls: true, category: 'intelligence', key_columns: ['id', 'topic', 'retention'], relations: [] },
+        { table_name: 'kos_enterprise_intelligence_os', description: 'Intelligence OS niveau enterprise', hub_refs: ['Enterprise Brain'], row_estimate: 10, has_rls: true, category: 'intelligence', key_columns: ['id', 'module', 'score'], relations: [] },
+      ],
+    },
+    {
+      domain_id: 'DM-006',
+      domain_name: 'Risk, Compliance & Audit',
+      description: 'Gestion des risques, due diligence, contrôles internes, conformité réglementaire et audit',
+      table_count: 14,
+      total_rows_estimate: 560,
+      icon: 'ri-shield-check-line',
+      color: 'accent',
+      hub_refs: ['Risk & Due Diligence Command', 'Enterprise Governance', 'AI Governance'],
+      standards: ['ISO 31000', 'COSO 2013', 'ISO 27001', 'BCEAO', 'COBAC'],
+      tables: [
+        { table_name: 'risk_registers', description: 'Registre des risques enterprise', hub_refs: ['Risk & Due Diligence'], row_estimate: 18, has_rls: true, category: 'risk', key_columns: ['id', 'risk_name', 'probability', 'impact'], relations: [] },
+        { table_name: 'due_diligence_reports', description: 'Rapports de due diligence', hub_refs: ['Risk & Due Diligence'], row_estimate: 15, has_rls: true, category: 'risk', key_columns: ['id', 'target_entity', 'overall_score'], relations: [] },
+        { table_name: 'internal_controls', description: 'Contrôles internes COSO', hub_refs: ['Risk & Due Diligence'], row_estimate: 24, has_rls: true, category: 'risk', key_columns: ['id', 'control_name', 'maturity'], relations: [] },
+        { table_name: 'compliance_controls', description: 'Contrôles de conformité', hub_refs: ['Compliance Management'], row_estimate: 35, has_rls: true, category: 'risk', key_columns: ['id', 'regulation', 'status'], relations: [] },
+        { table_name: 'audit_intelligence', description: 'Intelligence d\'audit', hub_refs: ['Audit Intelligence'], row_estimate: 42, has_rls: true, category: 'audit', key_columns: ['id', 'audit_type', 'findings'], relations: [] },
+        { table_name: 'enterprise_risk_analytics', description: 'Analytique des risques', hub_refs: ['Risk & Due Diligence'], row_estimate: 20, has_rls: true, category: 'risk', key_columns: ['id', 'risk_category', 'residual_risk'], relations: [] },
+        { table_name: 'regulatory_alerts', description: 'Alertes réglementaires', hub_refs: ['Regulatory Intelligence'], row_estimate: 65, has_rls: true, category: 'compliance', key_columns: ['id', 'regulator', 'alert_level'], relations: [] },
+        { table_name: 'ai_registry', description: 'Registre des agents IA', hub_refs: ['AI Governance'], row_estimate: 8, has_rls: true, category: 'governance', key_columns: ['id', 'agent_name', 'risk_level'], relations: [] },
+        { table_name: 'ai_compliance_engine', description: 'Moteur conformité IA', hub_refs: ['AI Governance'], row_estimate: 16, has_rls: true, category: 'governance', key_columns: ['id', 'standard', 'compliance_status'], relations: [] },
+        { table_name: 'ai_risk_office', description: 'Bureau des risques IA', hub_refs: ['AI Governance'], row_estimate: 12, has_rls: true, category: 'governance', key_columns: ['id', 'risk_type', 'mitigation_plan'], relations: [] },
+        { table_name: 'ai_ethics_board', description: 'Comité éthique IA', hub_refs: ['AI Governance'], row_estimate: 16, has_rls: true, category: 'governance', key_columns: ['id', 'review_type', 'fairness_score'], relations: [] },
+        { table_name: 'ai_governance_council', description: 'Conseil de gouvernance IA', hub_refs: ['AI Governance'], row_estimate: 12, has_rls: true, category: 'governance', key_columns: ['id', 'mandate', 'actions'], relations: [] },
+        { table_name: 'ai_audit_trail', description: 'Piste d\'audit IA', hub_refs: ['AI Governance'], row_estimate: 85, has_rls: true, category: 'governance', key_columns: ['id', 'agent_id', 'input_hash'], relations: [{ foreign_table: 'ai_registry', relationship: 'Agent audité' }] },
+        { table_name: 'enterprise_security', description: 'Sécurité enterprise', hub_refs: ['Security Command'], row_estimate: 24, has_rls: true, category: 'security', key_columns: ['id', 'control', 'status'], relations: [] },
+      ],
+    },
+    {
+      domain_id: 'DM-007',
+      domain_name: 'Consulting & Mission Factory',
+      description: 'Industrialisation des missions de conseil : factory, qualité, risques engagement, équipes autonomes',
+      table_count: 12,
+      total_rows_estimate: 540,
+      icon: 'ri-briefcase-4-line',
+      color: 'accent',
+      hub_refs: ['Consulting & Mission Factory', 'Managing Partner Office'],
+      standards: ['ISO 9001', 'ISO 20700', 'CMCI'],
+      tables: [
+        { table_name: 'consulting_factory', description: 'Usine de missions de conseil', hub_refs: ['Consulting & Mission Factory'], row_estimate: 18, has_rls: true, category: 'consulting', key_columns: ['id', 'mission_type', 'status'], relations: [] },
+        { table_name: 'mission_quality_office', description: 'Bureau qualité des missions', hub_refs: ['Consulting & Mission Factory'], row_estimate: 24, has_rls: true, category: 'consulting', key_columns: ['id', 'mission_id', 'quality_score'], relations: [{ foreign_table: 'consulting_factory', relationship: 'Mission revue' }] },
+        { table_name: 'engagement_risk_office', description: 'Bureau risques avant signature', hub_refs: ['Consulting & Mission Factory'], row_estimate: 18, has_rls: true, category: 'consulting', key_columns: ['id', 'engagement_id', 'risk_score'], relations: [] },
+        { table_name: 'autonomous_consulting_team', description: 'Équipes de conseil autonomes', hub_refs: ['Consulting & Mission Factory'], row_estimate: 15, has_rls: true, category: 'consulting', key_columns: ['id', 'team_name', 'success_rate'], relations: [] },
+        { table_name: 'autonomous_research_team', description: 'Équipes de recherche autonomes', hub_refs: ['Research Institute'], row_estimate: 18, has_rls: true, category: 'research', key_columns: ['id', 'project_name', 'readiness'], relations: [] },
+        { table_name: 'autonomous_think_tank', description: 'Think tank autonome', hub_refs: ['Think Tank'], row_estimate: 24, has_rls: true, category: 'research', key_columns: ['id', 'publication_title', 'citations'], relations: [] },
+        { table_name: 'autonomous_pmo', description: 'PMO autonome', hub_refs: ['Consulting & Mission Factory'], row_estimate: 12, has_rls: true, category: 'consulting', key_columns: ['id', 'project_name', 'on_track'], relations: [] },
+        { table_name: 'autonomous_pmo_v2', description: 'PMO autonome v2', hub_refs: ['Consulting & Mission Factory'], row_estimate: 8, has_rls: true, category: 'consulting', key_columns: ['id', 'program', 'phase'], relations: [] },
+        { table_name: 'financial_advisory', description: 'Conseil financier', hub_refs: ['Transformation Advisory'], row_estimate: 28, has_rls: true, category: 'consulting', key_columns: ['id', 'advisory_type', 'value'], relations: [] },
+        { table_name: 'public_sector_advisories', description: 'Conseil secteur public', hub_refs: ['Public Sector'], row_estimate: 22, has_rls: true, category: 'consulting', key_columns: ['id', 'country', 'project'], relations: [] },
+        { table_name: 'strategic_analyses', description: 'Analyses stratégiques', hub_refs: ['Strategic Intelligence'], row_estimate: 35, has_rls: true, category: 'consulting', key_columns: ['id', 'analysis_type', 'score'], relations: [] },
+        { table_name: 'research_reports', description: 'Rapports de recherche', hub_refs: ['Research Institute'], row_estimate: 28, has_rls: true, category: 'research', key_columns: ['id', 'report_type', 'findings'], relations: [] },
+      ],
+    },
+    {
+      domain_id: 'DM-008',
+      domain_name: 'Data Analytics & Decision Intelligence',
+      description: 'Centre analytique, process mining, modèles, workflows, SOP, simulation et prévisions',
+      table_count: 14,
+      total_rows_estimate: 620,
+      icon: 'ri-bar-chart-grouped-line',
+      color: 'secondary',
+      hub_refs: ['Data Analytics & Process Mining', 'Data & Decision Command', 'Control Tower'],
+      standards: ['ISO 8000', 'DAMA-DMBOK', 'COBIT 2019'],
+      tables: [
+        { table_name: 'data_analytics_center', description: 'Centre d\'analytique data', hub_refs: ['Data Analytics'], row_estimate: 25, has_rls: true, category: 'analytics', key_columns: ['id', 'report_type', 'period'], relations: [] },
+        { table_name: 'organizational_intelligence', description: 'Intelligence organisationnelle', hub_refs: ['Data Analytics'], row_estimate: 15, has_rls: true, category: 'analytics', key_columns: ['id', 'dimension', 'maturity'], relations: [] },
+        { table_name: 'model_evaluation_engine', description: 'Évaluation des modèles IA', hub_refs: ['Data Analytics'], row_estimate: 22, has_rls: true, category: 'analytics', key_columns: ['id', 'model_name', 'accuracy'], relations: [] },
+        { table_name: 'process_mining_engine', description: 'Moteur de process mining', hub_refs: ['Data Analytics'], row_estimate: 18, has_rls: true, category: 'analytics', key_columns: ['id', 'process_name', 'bottlenecks'], relations: [] },
+        { table_name: 'workflow_generator', description: 'Générateur de workflows', hub_refs: ['Data Analytics'], row_estimate: 28, has_rls: true, category: 'automation', key_columns: ['id', 'workflow_name', 'steps'], relations: [] },
+        { table_name: 'sop_generator', description: 'Générateur de procédures standard', hub_refs: ['Data Analytics'], row_estimate: 32, has_rls: true, category: 'automation', key_columns: ['id', 'sop_name', 'version'], relations: [] },
+        { table_name: 'enterprise_control_tower', description: 'Tour de contrôle enterprise', hub_refs: ['Control Tower'], row_estimate: 12, has_rls: true, category: 'monitoring', key_columns: ['id', 'metric', 'current_value'], relations: [] },
+        { table_name: 'forecasting_engine', description: 'Moteur de prévisions', hub_refs: ['Control Tower'], row_estimate: 24, has_rls: true, category: 'analytics', key_columns: ['id', 'forecast_type', 'confidence'], relations: [] },
+        { table_name: 'scenario_simulator', description: 'Simulateur de scénarios', hub_refs: ['Control Tower'], row_estimate: 16, has_rls: true, category: 'analytics', key_columns: ['id', 'scenario_name', 'probability'], relations: [] },
+        { table_name: 'resource_allocator', description: 'Allocateur de ressources', hub_refs: ['Control Tower'], row_estimate: 18, has_rls: true, category: 'operations', key_columns: ['id', 'resource_name', 'allocation'], relations: [] },
+        { table_name: 'capacity_planner', description: 'Planificateur de capacité', hub_refs: ['Control Tower'], row_estimate: 14, has_rls: true, category: 'operations', key_columns: ['id', 'team', 'load_hours'], relations: [] },
+        { table_name: 'decision_intelligence', description: 'Intelligence décisionnelle', hub_refs: ['Data & Decision Command'], row_estimate: 20, has_rls: true, category: 'analytics', key_columns: ['id', 'decision_type', 'impact'], relations: [] },
+        { table_name: 'enterprise_data_hub', description: 'Hub central de données enterprise', hub_refs: ['Data & Decision Command'], row_estimate: 8, has_rls: true, category: 'data', key_columns: ['id', 'data_domain', 'quality_score'], relations: [] },
+        { table_name: 'enterprise_architecture', description: 'Architecture enterprise', hub_refs: ['Enterprise Architecture'], row_estimate: 16, has_rls: true, category: 'architecture', key_columns: ['id', 'system', 'integration_score'], relations: [] },
+      ],
+    },
+    {
+      domain_id: 'DM-009',
+      domain_name: 'SEO, AEO & Digital Visibility',
+      description: 'Search Engine Optimization, Answer Engine Optimization, Google Search Console, backlinks, Core Web Vitals',
+      table_count: 18,
+      total_rows_estimate: 1150,
+      icon: 'ri-search-eye-line',
+      color: 'primary',
+      hub_refs: ['SEO AEO Command', 'GSC Command', 'Backlink Command', 'Security Command'],
+      standards: ['Google Search Essentials', 'Schema.org', 'WCAG 2.1'],
+      tables: [
+        { table_name: 'seo_audit_results', description: 'Résultats d\'audit SEO', hub_refs: ['SEO AEO Command'], row_estimate: 42, has_rls: true, category: 'seo', key_columns: ['id', 'page_url', 'seo_score', 'aeo_score'], relations: [] },
+        { table_name: 'kos_gsc_overview', description: 'Vue d\'ensemble Google Search Console', hub_refs: ['GSC Command'], row_estimate: 1, has_rls: true, category: 'seo', key_columns: ['id', 'total_clicks', 'avg_position'], relations: [] },
+        { table_name: 'kos_gsc_keywords', description: 'Mots-clés GSC', hub_refs: ['GSC Command'], row_estimate: 85, has_rls: true, category: 'seo', key_columns: ['id', 'keyword', 'clicks', 'position'], relations: [{ foreign_table: 'kos_gsc_overview', relationship: 'Dashboard GSC' }] },
+        { table_name: 'kos_gsc_pages', description: 'Pages GSC', hub_refs: ['GSC Command'], row_estimate: 42, has_rls: true, category: 'seo', key_columns: ['id', 'page_url', 'clicks'], relations: [] },
+        { table_name: 'kos_gsc_opportunities', description: 'Opportunités GSC', hub_refs: ['GSC Command'], row_estimate: 24, has_rls: true, category: 'seo', key_columns: ['id', 'keyword', 'opportunity_type'], relations: [] },
+        { table_name: 'kos_gsc_recommendations', description: 'Recommandations GSC', hub_refs: ['GSC Command'], row_estimate: 30, has_rls: true, category: 'seo', key_columns: ['id', 'type', 'priority'], relations: [] },
+        { table_name: 'kos_gsc_checklist', description: 'Checklist GSC', hub_refs: ['GSC Command'], row_estimate: 18, has_rls: true, category: 'seo', key_columns: ['id', 'task', 'completed'], relations: [] },
+        { table_name: 'backlink_opportunities', description: 'Opportunités de backlinks', hub_refs: ['Backlink Command'], row_estimate: 28, has_rls: true, category: 'seo', key_columns: ['id', 'target_domain', 'da_score'], relations: [] },
+        { table_name: 'performance_snapshots', description: 'Snapshots Core Web Vitals', hub_refs: ['Performance SEO Command'], row_estimate: 65, has_rls: true, category: 'performance', key_columns: ['id', 'page_url', 'lcp', 'cls'], relations: [] },
+        { table_name: 'site_health_checks', description: 'Vérifications santé du site', hub_refs: ['Web Operations'], row_estimate: 120, has_rls: true, category: 'monitoring', key_columns: ['id', 'check_type', 'status'], relations: [] },
+        { table_name: 'security_scans', description: 'Scans de sécurité OWASP', hub_refs: ['Security Command'], row_estimate: 48, has_rls: true, category: 'security', key_columns: ['id', 'scan_type', 'vulnerabilities'], relations: [] },
+        { table_name: 'monitoring_logs', description: 'Logs de monitoring', hub_refs: ['Monitoring'], row_estimate: 850, has_rls: true, category: 'monitoring', key_columns: ['id', 'level', 'message'], relations: [] },
+        { table_name: 'security_logs', description: 'Logs de sécurité', hub_refs: ['Security Command'], row_estimate: 320, has_rls: true, category: 'security', key_columns: ['id', 'event_type', 'severity'], relations: [] },
+        { table_name: 'geo_visibility_logs', description: 'Logs visibilité géographique', hub_refs: ['AI Visibility Command'], row_estimate: 55, has_rls: true, category: 'seo', key_columns: ['id', 'platform', 'visibility_score'], relations: [] },
+        { table_name: 'kos_enterprise_hallucination_detection', description: 'Détection hallucinations enterprise', hub_refs: ['Enterprise Brain'], row_estimate: 22, has_rls: true, category: 'quality', key_columns: ['id', 'claim', 'verified'], relations: [] },
+        { table_name: 'performance_excellence', description: 'Excellence de performance', hub_refs: ['Performance Core'], row_estimate: 16, has_rls: true, category: 'performance', key_columns: ['id', 'metric', 'score'], relations: [] },
+        { table_name: 'kos_performance_challenges', description: 'Challenges de performance', hub_refs: ['Performance Challenge'], row_estimate: 24, has_rls: true, category: 'performance', key_columns: ['id', 'challenge_name', 'progress'], relations: [] },
+        { table_name: 'kos_challenge_gaps', description: 'Gaps des challenges', hub_refs: ['Performance Challenge'], row_estimate: 48, has_rls: true, category: 'performance', key_columns: ['id', 'challenge_id', 'gap_type'], relations: [{ foreign_table: 'kos_performance_challenges', relationship: 'Challenge concerné' }] },
+      ],
+    },
+    {
+      domain_id: 'DM-010',
+      domain_name: 'Tender & Procurement Intelligence',
+      description: 'Veille appels d\'offres, scoring opportunités, alertes, réponses automatiques, knowledge base sourcing',
+      table_count: 8,
+      total_rows_estimate: 680,
+      icon: 'ri-file-search-line',
+      color: 'secondary',
+      hub_refs: ['Tender Intelligence Engine'],
+      standards: ['ISO 20400', 'OCDE', 'Banque Mondiale'],
+      tables: [
+        { table_name: 'tender_intelligence', description: 'Intelligence appels d\'offres — données principales', hub_refs: ['Tender Intelligence'], row_estimate: 51, has_rls: true, category: 'tender', key_columns: ['id', 'title', 'source', 'deadline', 'value_fcfa'], relations: [] },
+        { table_name: 'tender_alerts', description: 'Alertes appels d\'offres', hub_refs: ['Tender Intelligence'], row_estimate: 130, has_rls: true, category: 'tender', key_columns: ['id', 'tender_id', 'alert_type'], relations: [{ foreign_table: 'tender_intelligence', relationship: 'AO surveillé' }] },
+        { table_name: 'tender_deadlines', description: 'Échéances des appels d\'offres', hub_refs: ['Tender Intelligence'], row_estimate: 48, has_rls: true, category: 'tender', key_columns: ['id', 'tender_id', 'deadline_date'], relations: [{ foreign_table: 'tender_intelligence', relationship: 'Échéance de' }] },
+        { table_name: 'tender_auto_responses', description: 'Réponses automatiques AO', hub_refs: ['Tender Intelligence'], row_estimate: 18, has_rls: true, category: 'tender', key_columns: ['id', 'tender_id', 'response_status'], relations: [{ foreign_table: 'tender_intelligence', relationship: 'Réponse pour' }] },
+        { table_name: 'tender_knowledge_base', description: 'Base de connaissance AO', hub_refs: ['Tender Intelligence'], row_estimate: 85, has_rls: true, category: 'tender', key_columns: ['id', 'topic', 'documents'], relations: [] },
+        { table_name: 'tender_sources', description: 'Sources d\'appels d\'offres', hub_refs: ['Tender Intelligence'], row_estimate: 35, has_rls: true, category: 'tender', key_columns: ['id', 'source_name', 'reliability'], relations: [] },
+        { table_name: 'tender_scraper_logs', description: 'Logs de scraping AO', hub_refs: ['Tender Intelligence'], row_estimate: 380, has_rls: true, category: 'tender', key_columns: ['id', 'source_id', 'results_count'], relations: [{ foreign_table: 'tender_sources', relationship: 'Source scrapée' }] },
+        { table_name: 'intelligence_alerts', description: 'Alertes d\'intelligence', hub_refs: ['Market Intelligence'], row_estimate: 42, has_rls: true, category: 'intel', key_columns: ['id', 'alert_type', 'priority'], relations: [] },
+      ],
+    },
+    {
+      domain_id: 'DM-011',
+      domain_name: 'Knowledge & Learning Systems',
+      description: 'Knowledge graph, centre de connaissances, formations, learning modules, RAG et embeddings',
+      table_count: 16,
+      total_rows_estimate: 1980,
+      icon: 'ri-book-open-line',
+      color: 'primary',
+      hub_refs: ['Knowledge Center', 'Knowledge Graph', 'Research Institute', 'Learning'],
+      standards: ['ISO 30401', 'SCORM', 'xAPI'],
+      tables: [
+        { table_name: 'knowledge_graph', description: 'Graphe de connaissances KHEPRA', hub_refs: ['Knowledge Graph'], row_estimate: 45, has_rls: true, category: 'knowledge', key_columns: ['id', 'entity_name', 'entity_type', 'domain'], relations: [] },
+        { table_name: 'knowledge_captures', description: 'Captures de connaissance', hub_refs: ['Knowledge Center'], row_estimate: 85, has_rls: true, category: 'knowledge', key_columns: ['id', 'source', 'topic'], relations: [] },
+        { table_name: 'knowledge_validation_engine', description: 'Validation des connaissances', hub_refs: ['AI Governance'], row_estimate: 32, has_rls: true, category: 'knowledge', key_columns: ['id', 'knowledge_id', 'accuracy_score'], relations: [] },
+        { table_name: 'knowledge_monetization', description: 'Monétisation du capital intellectuel', hub_refs: ['Knowledge Innovation'], row_estimate: 16, has_rls: true, category: 'knowledge', key_columns: ['id', 'asset_type', 'revenue'], relations: [] },
+        { table_name: 'rag_documents', description: 'Documents RAG avec embeddings', hub_refs: ['RAG Synthese'], row_estimate: 52, has_rls: true, category: 'knowledge', key_columns: ['id', 'title', 'source_type', 'embedding'], relations: [] },
+        { table_name: 'learning_modules', description: 'Modules de formation', hub_refs: ['Learning'], row_estimate: 28, has_rls: true, category: 'learning', key_columns: ['id', 'module_name', 'duration'], relations: [] },
+        { table_name: 'courses', description: 'Cours KOS Academy', hub_refs: ['Training Academy'], row_estimate: 12, has_rls: true, category: 'learning', key_columns: ['id', 'course_name', 'level'], relations: [{ foreign_table: 'course_modules', relationship: 'Modules du cours' }] },
+        { table_name: 'course_modules', description: 'Modules de cours', hub_refs: ['Training Academy'], row_estimate: 48, has_rls: true, category: 'learning', key_columns: ['id', 'course_id', 'module_order'], relations: [{ foreign_table: 'courses', relationship: 'Cours parent' }] },
+        { table_name: 'lessons', description: 'Leçons', hub_refs: ['Training Academy'], row_estimate: 120, has_rls: true, category: 'learning', key_columns: ['id', 'module_id', 'title'], relations: [{ foreign_table: 'course_modules', relationship: 'Module parent' }] },
+        { table_name: 'lesson_progress', description: 'Progression dans les leçons', hub_refs: ['Training Academy'], row_estimate: 240, has_rls: true, category: 'learning', key_columns: ['id', 'user_id', 'lesson_id', 'completed'], relations: [{ foreign_table: 'lessons', relationship: 'Leçon suivie' }] },
+        { table_name: 'quiz_questions', description: 'Questions de quiz', hub_refs: ['Training Academy'], row_estimate: 180, has_rls: true, category: 'learning', key_columns: ['id', 'lesson_id', 'question'], relations: [{ foreign_table: 'lessons', relationship: 'Quiz de la leçon' }] },
+        { table_name: 'enrollments', description: 'Inscriptions aux formations', hub_refs: ['Training Academy'], row_estimate: 65, has_rls: true, category: 'learning', key_columns: ['id', 'user_id', 'course_id', 'status'], relations: [{ foreign_table: 'courses', relationship: 'Cours suivi' }] },
+        { table_name: 'training_progress', description: 'Progression de formation', hub_refs: ['Training Academy'], row_estimate: 155, has_rls: true, category: 'learning', key_columns: ['id', 'user_id', 'course_id', 'progress_pct'], relations: [{ foreign_table: 'courses', relationship: 'Progression cours' }] },
+        { table_name: 'training_academy', description: 'Académie de formation KOS', hub_refs: ['Training Academy'], row_estimate: 8, has_rls: true, category: 'learning', key_columns: ['id', 'program', 'participants'], relations: [] },
+        { table_name: 'kos_knowledge_kpis', description: 'KPIs de connaissance', hub_refs: ['Knowledge Center'], row_estimate: 16, has_rls: true, category: 'knowledge', key_columns: ['id', 'kpi_name', 'value'], relations: [] },
+        { table_name: 'kos_knowledge_resources', description: 'Ressources de connaissance', hub_refs: ['Knowledge Center'], row_estimate: 28, has_rls: true, category: 'knowledge', key_columns: ['id', 'resource_type', 'access_count'], relations: [] },
+      ],
+    },
+    {
+      domain_id: 'DM-012',
+      domain_name: 'Social, Content & Marketing',
+      description: 'Réseaux sociaux, contenu, LinkedIn, marketing automation, calendrier éditorial',
+      table_count: 10,
+      total_rows_estimate: 480,
+      icon: 'ri-share-circle-line',
+      color: 'accent',
+      hub_refs: ['Social Media Command', 'Growth Orchestrator', 'Content Studio'],
+      standards: ['GDPR', 'LinkedIn API Policy'],
+      tables: [
+        { table_name: 'social_automation_queue', description: 'File d\'attente automatisation sociale', hub_refs: ['Social Media Command'], row_estimate: 85, has_rls: true, category: 'social', key_columns: ['id', 'platform', 'post_type', 'scheduled_at'], relations: [] },
+        { table_name: 'social_api_tokens', description: 'Tokens API réseaux sociaux', hub_refs: ['Social Media Command'], row_estimate: 6, has_rls: true, category: 'social', key_columns: ['id', 'platform', 'token_expiry'], relations: [] },
+        { table_name: 'linkedin_snapshots', description: 'Snapshots LinkedIn', hub_refs: ['MDP Automator', 'Social Media'], row_estimate: 35, has_rls: true, category: 'social', key_columns: ['id', 'profile_url', 'followers'], relations: [] },
+        { table_name: 'reputation_authority', description: 'Autorité et réputation', hub_refs: ['Autonomous Growth'], row_estimate: 24, has_rls: true, category: 'marketing', key_columns: ['id', 'activity', 'reach'], relations: [] },
+        { table_name: 'authority_reputation_lab', description: 'Laboratoire autorité', hub_refs: ['Autonomous Growth'], row_estimate: 16, has_rls: true, category: 'marketing', key_columns: ['id', 'initiative', 'impact_score'], relations: [] },
+        { table_name: 'service_innovations', description: 'Innovations de services', hub_refs: ['Innovation Lab'], row_estimate: 14, has_rls: true, category: 'innovation', key_columns: ['id', 'innovation_name', 'trl'], relations: [] },
+        { table_name: 'humanization_scores', description: 'Scores d\'humanisation du contenu', hub_refs: ['Quality Assurance'], row_estimate: 28, has_rls: true, category: 'quality', key_columns: ['id', 'content_id', 'score'], relations: [] },
+        { table_name: 'expert_reviews', description: 'Revues d\'experts', hub_refs: ['Quality Assurance'], row_estimate: 42, has_rls: true, category: 'quality', key_columns: ['id', 'document_id', 'reviewer_level'], relations: [] },
+        { table_name: 'quality_assurance_reviews', description: 'Revues assurance qualité', hub_refs: ['Quality Excellence'], row_estimate: 55, has_rls: true, category: 'quality', key_columns: ['id', 'deliverable', 'score'], relations: [] },
+        { table_name: 'board_advisories', description: 'Avis pour conseils d\'administration', hub_refs: ['Board Advisory'], row_estimate: 18, has_rls: true, category: 'advisory', key_columns: ['id', 'board_type', 'topic'], relations: [] },
+      ],
+    },
+    {
+      domain_id: 'DM-013',
+      domain_name: 'Transformation & ESG',
+      description: 'Programmes de transformation, évaluations ESG, innovation, architecture enterprise, secteur public, FinTech, PME',
+      table_count: 14,
+      total_rows_estimate: 620,
+      icon: 'ri-plant-line',
+      color: 'secondary',
+      hub_refs: ['Transformation & ESG Command', 'Innovation & ESG'],
+      standards: ['GRI', 'ISSB', 'IFRS S1/S2', 'CSRD', 'SDG'],
+      tables: [
+        { table_name: 'transformation_programs', description: 'Programmes de transformation', hub_refs: ['Transformation ESG'], row_estimate: 18, has_rls: true, category: 'transformation', key_columns: ['id', 'program_name', 'phase', 'budget'], relations: [] },
+        { table_name: 'esg_assessments', description: 'Évaluations ESG', hub_refs: ['Transformation ESG'], row_estimate: 18, has_rls: true, category: 'esg', key_columns: ['id', 'company', 'e_score', 's_score', 'g_score'], relations: [] },
+        { table_name: 'innovation_lab', description: 'Laboratoire d\'innovation', hub_refs: ['Innovation ESG'], row_estimate: 16, has_rls: true, category: 'innovation', key_columns: ['id', 'project_name', 'trl', 'impact'], relations: [] },
+        { table_name: 'enterprise_architecture_office', description: 'Bureau architecture enterprise', hub_refs: ['Transformation ESG'], row_estimate: 12, has_rls: true, category: 'architecture', key_columns: ['id', 'system', 'architecture_score'], relations: [] },
+        { table_name: 'public_sector_excellence', description: 'Excellence secteur public', hub_refs: ['Transformation ESG'], row_estimate: 18, has_rls: true, category: 'public', key_columns: ['id', 'country', 'project'], relations: [] },
+        { table_name: 'fintech_advisory_center', description: 'Centre conseil FinTech', hub_refs: ['Transformation ESG'], row_estimate: 16, has_rls: true, category: 'fintech', key_columns: ['id', 'company', 'mandate'], relations: [] },
+        { table_name: 'sme_transformation_center', description: 'Centre transformation PME', hub_refs: ['Transformation ESG'], row_estimate: 18, has_rls: true, category: 'sme', key_columns: ['id', 'company', 'sector'], relations: [] },
+        { table_name: 'enterprise_automation_factory', description: 'Usine d\'automatisation enterprise', hub_refs: ['Automation Factory'], row_estimate: 12, has_rls: true, category: 'transformation', key_columns: ['id', 'automation', 'efficiency_gain'], relations: [] },
+        { table_name: 'ceo_advisories', description: 'Conseils CEO', hub_refs: ['Executive Command'], row_estimate: 22, has_rls: true, category: 'advisory', key_columns: ['id', 'topic', 'urgency'], relations: [] },
+        { table_name: 'competitive_intelligence', description: 'Intelligence concurrentielle', hub_refs: ['Market Intelligence'], row_estimate: 28, has_rls: true, category: 'intel', key_columns: ['id', 'competitor', 'threat_level'], relations: [] },
+        { table_name: 'executive_communications', description: 'Communications exécutives', hub_refs: ['Managing Partner'], row_estimate: 16, has_rls: true, category: 'comms', key_columns: ['id', 'audience', 'channel'], relations: [] },
+        { table_name: 'strategic_plans', description: 'Plans stratégiques', hub_refs: ['Strategic Intelligence'], row_estimate: 10, has_rls: true, category: 'strategy', key_columns: ['id', 'plan_name', 'horizon'], relations: [] },
+        { table_name: 'prompt_quality_office', description: 'Bureau qualité des prompts', hub_refs: ['AI Governance'], row_estimate: 24, has_rls: true, category: 'quality', key_columns: ['id', 'prompt_id', 'clarity_score'], relations: [] },
+        { table_name: 'source_verification_engine', description: 'Vérification des sources', hub_refs: ['AI Governance'], row_estimate: 28, has_rls: true, category: 'quality', key_columns: ['id', 'source_url', 'trust_score'], relations: [] },
+      ],
+    },
+    {
+      domain_id: 'DM-014',
+      domain_name: 'Financial & Policy Intelligence',
+      description: 'Analyses financières, documents de politique, gouvernance, conformité réglementaire sectorielle',
+      table_count: 10,
+      total_rows_estimate: 390,
+      icon: 'ri-money-dollar-circle-line',
+      color: 'primary',
+      hub_refs: ['Financial Advisory', 'Policy Governance', 'Regulatory Intelligence'],
+      standards: ['IFRS', 'OHADA', 'BCEAO', 'COBAC'],
+      tables: [
+        { table_name: 'financial_analyses', description: 'Analyses financières', hub_refs: ['Financial Advisory'], row_estimate: 35, has_rls: true, category: 'finance', key_columns: ['id', 'entity', 'analysis_type'], relations: [] },
+        { table_name: 'policy_documents', description: 'Documents de politique', hub_refs: ['Policy Governance'], row_estimate: 28, has_rls: true, category: 'governance', key_columns: ['id', 'policy_name', 'version'], relations: [] },
+        { table_name: 'methodologies', description: 'Méthodologies KHEPRA', hub_refs: ['Methodology Factory'], row_estimate: 22, has_rls: true, category: 'knowledge', key_columns: ['id', 'methodology_name', 'domain'], relations: [] },
+        { table_name: 'orchestration_logs', description: 'Logs d\'orchestration', hub_refs: ['Orchestrator Engine'], row_estimate: 185, has_rls: true, category: 'orchestration', key_columns: ['id', 'workflow_id', 'step'], relations: [] },
+        { table_name: 'downloads', description: 'Téléchargements de ressources', hub_refs: ['Resources'], row_estimate: 420, has_rls: true, category: 'analytics', key_columns: ['id', 'resource_id', 'user_id'], relations: [] },
+        { table_name: 'resource_downloads', description: 'Téléchargements de ressources premium', hub_refs: ['Resources'], row_estimate: 180, has_rls: true, category: 'analytics', key_columns: ['id', 'resource_id', 'email'], relations: [] },
+        { table_name: 'diagnostics', description: 'Diagnostics exécutés', hub_refs: ['Diagnostic Tools'], row_estimate: 350, has_rls: true, category: 'tools', key_columns: ['id', 'tool_type', 'score'], relations: [] },
+        { table_name: 'diagnostic_events', description: 'Événements de diagnostic', hub_refs: ['Diagnostic Tools'], row_estimate: 850, has_rls: true, category: 'tools', key_columns: ['id', 'diagnostic_id', 'event'], relations: [{ foreign_table: 'diagnostics', relationship: 'Diagnostic parent' }] },
+        { table_name: 'tool_completions', description: 'Complétions d\'outils', hub_refs: ['Tools'], row_estimate: 280, has_rls: true, category: 'tools', key_columns: ['id', 'tool_id', 'completion_data'], relations: [] },
+        { table_name: 'answers', description: 'Réponses aux formulaires', hub_refs: ['Forms'], row_estimate: 120, has_rls: true, category: 'forms', key_columns: ['id', 'form_id', 'data'], relations: [] },
+      ],
+    },
+    {
+      domain_id: 'DM-015',
+      domain_name: 'KOS Unified System',
+      description: 'Systèmes unifiés KOS : agents, workflows, KPIs, rapports, roadmap, état global',
+      table_count: 12,
+      total_rows_estimate: 520,
+      icon: 'ri-git-merge-line',
+      color: 'primary',
+      hub_refs: ['Enterprise OS Core', 'Unified Autopilot', 'Master Synchronizer'],
+      standards: ['ISO 42001', 'ITIL', 'COBIT'],
+      tables: [
+        { table_name: 'kos_unified_agents', description: 'Agents KOS unifiés', hub_refs: ['Enterprise OS Core'], row_estimate: 75, has_rls: true, category: 'orchestration', key_columns: ['id', 'agent_name', 'domain'], relations: [] },
+        { table_name: 'kos_unified_workflow_phases', description: 'Phases de workflow unifiées', hub_refs: ['Unified Autopilot'], row_estimate: 24, has_rls: true, category: 'orchestration', key_columns: ['id', 'phase_name', 'order'], relations: [] },
+        { table_name: 'kos_unified_kpis', description: 'KPIs unifiés', hub_refs: ['Enterprise KPI Tower'], row_estimate: 15, has_rls: true, category: 'performance', key_columns: ['id', 'domain', 'kpi_count'], relations: [] },
+        { table_name: 'kos_unified_reports', description: 'Rapports unifiés', hub_refs: ['Enterprise KPI Tower'], row_estimate: 8, has_rls: true, category: 'performance', key_columns: ['id', 'report_type', 'period'], relations: [] },
+        { table_name: 'kos_unified_roadmap', description: 'Roadmap unifiée KOS', hub_refs: ['Enterprise KPI Tower'], row_estimate: 12, has_rls: true, category: 'strategy', key_columns: ['id', 'phase', 'milestone'], relations: [] },
+        { table_name: 'kos_unified_global_state', description: 'État global unifié KOS', hub_refs: ['Synchroniseur Maitre'], row_estimate: 1, has_rls: true, category: 'orchestration', key_columns: ['id', 'status', 'last_sync'], relations: [] },
+        { table_name: 'kos_agent_performance', description: 'Performance des agents KOS', hub_refs: ['Global Agent Performance'], row_estimate: 75, has_rls: true, category: 'performance', key_columns: ['id', 'agent_name', 'health_score'], relations: [] },
+        { table_name: 'kos_domain_summaries', description: 'Résumés par domaine', hub_refs: ['Global Agent Performance'], row_estimate: 7, has_rls: true, category: 'performance', key_columns: ['id', 'domain', 'score'], relations: [] },
+        { table_name: 'kos_global_scan_stats', description: 'Statistiques globales de scan', hub_refs: ['Global Agent Performance'], row_estimate: 1, has_rls: true, category: 'performance', key_columns: ['id', 'total_agents', 'avg_score'], relations: [] },
+        { table_name: 'kos_enterprise_digital_twins', description: 'Jumeaux numériques enterprise', hub_refs: ['Enterprise Brain'], row_estimate: 8, has_rls: true, category: 'intelligence', key_columns: ['id', 'twin_type', 'sync_frequency'], relations: [] },
+        { table_name: 'kos_enterprise_self_improvement', description: 'Auto-amélioration enterprise', hub_refs: ['Enterprise Brain'], row_estimate: 6, has_rls: true, category: 'intelligence', key_columns: ['id', 'loop', 'target'], relations: [] },
+        { table_name: 'kos_resource_engines', description: 'Moteurs de ressources KOS', hub_refs: ['Resource Command Center'], row_estimate: 8, has_rls: true, category: 'infra', key_columns: ['id', 'engine_name', 'status'], relations: [] },
+      ],
+    },
+    {
+      domain_id: 'DM-016',
+      domain_name: 'KOS Resource Management',
+      description: 'Gestion des ressources techniques : santé, déploiements, optimisations, agents',
+      table_count: 8,
+      total_rows_estimate: 320,
+      icon: 'ri-cloud-line',
+      color: 'secondary',
+      hub_refs: ['Resource Command Center', 'Web Operations Deployment'],
+      standards: ['ISO 27001', 'ITIL'],
+      tables: [
+        { table_name: 'kos_resource_health', description: 'Santé des ressources KOS', hub_refs: ['Resource Command Center'], row_estimate: 24, has_rls: true, category: 'infra', key_columns: ['id', 'resource_name', 'health_status'], relations: [] },
+        { table_name: 'kos_resource_optimizations', description: 'Optimisations de ressources', hub_refs: ['Resource Command Center'], row_estimate: 18, has_rls: true, category: 'infra', key_columns: ['id', 'resource_id', 'optimization_type'], relations: [{ foreign_table: 'kos_resource_health', relationship: 'Ressource optimisée' }] },
+        { table_name: 'kos_resource_deployments', description: 'Déploiements de ressources', hub_refs: ['Web Operations'], row_estimate: 35, has_rls: true, category: 'infra', key_columns: ['id', 'deployment_type', 'status'], relations: [] },
+        { table_name: 'kos_resource_agents', description: 'Agents de ressources', hub_refs: ['Resource Command Center'], row_estimate: 12, has_rls: true, category: 'infra', key_columns: ['id', 'agent_role', 'active'], relations: [] },
+        { table_name: 'cron_job_logs', description: 'Logs des cron jobs KOS', hub_refs: ['Infrastructure'], row_estimate: 1850, has_rls: true, category: 'infra', key_columns: ['id', 'job_name', 'status', 'duration'], relations: [] },
+        { table_name: 'webhook_endpoints', description: 'Endpoints webhook', hub_refs: ['API Gateway'], row_estimate: 8, has_rls: true, category: 'infra', key_columns: ['id', 'url', 'events'], relations: [] },
+        { table_name: 'webhook_deliveries', description: 'Livraisons webhook', hub_refs: ['API Gateway'], row_estimate: 120, has_rls: true, category: 'infra', key_columns: ['id', 'endpoint_id', 'status'], relations: [{ foreign_table: 'webhook_endpoints', relationship: 'Endpoint cible' }] },
+        { table_name: 'admin_documents', description: 'Documents administratifs', hub_refs: ['Admin'], row_estimate: 45, has_rls: true, category: 'docs', key_columns: ['id', 'type', 'status'], relations: [] },
+      ],
+    },
+    {
+      domain_id: 'DM-017',
+      domain_name: 'KOS Quality Excellence',
+      description: 'Système de management de la qualité : agents, scans, rapports globaux, sections',
+      table_count: 10,
+      total_rows_estimate: 380,
+      icon: 'ri-medal-2-line',
+      color: 'accent',
+      hub_refs: ['Quality Excellence Command', 'Autonomous Quality System'],
+      standards: ['ISO 9001', 'Six Sigma', 'EFQM'],
+      tables: [
+        { table_name: 'kos_quality_agents', description: 'Agents qualité KOS', hub_refs: ['Quality Excellence'], row_estimate: 12, has_rls: true, category: 'quality', key_columns: ['id', 'agent_name', 'quality_score'], relations: [] },
+        { table_name: 'kos_quality_global_report', description: 'Rapport global qualité', hub_refs: ['Quality Excellence'], row_estimate: 8, has_rls: true, category: 'quality', key_columns: ['id', 'report_period', 'overall_score'], relations: [] },
+        { table_name: 'kos_quality_report_sections', description: 'Sections du rapport qualité', hub_refs: ['Quality Excellence'], row_estimate: 32, has_rls: true, category: 'quality', key_columns: ['id', 'report_id', 'section_name'], relations: [{ foreign_table: 'kos_quality_global_report', relationship: 'Rapport parent' }] },
+        { table_name: 'kos_quality_scan_phases', description: 'Phases de scan qualité', hub_refs: ['Quality Excellence'], row_estimate: 18, has_rls: true, category: 'quality', key_columns: ['id', 'phase_name', 'order'], relations: [] },
+        { table_name: 'kos_block_execution_logs', description: 'Logs exécution blocs', hub_refs: ['Block Execution'], row_estimate: 85, has_rls: true, category: 'quality', key_columns: ['id', 'block_id', 'result'], relations: [] },
+        { table_name: 'kos_auto_task_orchestrator_logs', description: 'Logs orchestrateur de tâches', hub_refs: ['Auto Task Orchestrator'], row_estimate: 55, has_rls: true, category: 'orchestration', key_columns: ['id', 'task_id', 'status'], relations: [] },
+        { table_name: 'kos_mass_system_upgrade_logs', description: 'Logs upgrade massive', hub_refs: ['Mass System Upgrade'], row_estimate: 28, has_rls: true, category: 'infra', key_columns: ['id', 'upgrade_type', 'version'], relations: [] },
+        { table_name: 'kos_correction_sprint_logs', description: 'Logs sprints de correction', hub_refs: ['Correction Engine'], row_estimate: 42, has_rls: true, category: 'correction', key_columns: ['id', 'sprint_id', 'items_completed'], relations: [] },
+        { table_name: 'kos_cross_hub_sync_logs', description: 'Logs synchronisation cross-hub', hub_refs: ['Synchroniseur Maitre'], row_estimate: 65, has_rls: true, category: 'orchestration', key_columns: ['id', 'source_hub', 'target_hub'], relations: [] },
+        { table_name: 'kos_data_quality_logs', description: 'Logs qualité des données', hub_refs: ['Data Analytics'], row_estimate: 35, has_rls: true, category: 'quality', key_columns: ['id', 'table_name', 'quality_score'], relations: [] },
+      ],
+    },
+    {
+      domain_id: 'DM-018',
+      domain_name: 'Artifacts & Documentation',
+      description: 'Artefacts documentaires KOS : architecture, gouvernance, sécurité, SOP, KPI, roadmap, maturité',
+      table_count: 16,
+      total_rows_estimate: 480,
+      icon: 'ri-archive-line',
+      color: 'primary',
+      hub_refs: ['Artifacts Architecture & Governance', 'Artifacts Operational Excellence', 'Artifacts Growth Strategy', 'Artifacts Enterprise Command'],
+      standards: ['ISO 9001', 'ISO 27001', 'COBIT'],
+      tables: [
+        { table_name: 'artifact_enterprise_architecture', description: 'Artefact architecture enterprise', hub_refs: ['Artifacts Architecture'], row_estimate: 8, has_rls: true, category: 'artifacts', key_columns: ['id', 'component', 'status'], relations: [] },
+        { table_name: 'artifact_data_governance', description: 'Artefact gouvernance des données', hub_refs: ['Artifacts Architecture'], row_estimate: 12, has_rls: true, category: 'artifacts', key_columns: ['id', 'policy', 'compliance'], relations: [] },
+        { table_name: 'artifact_security_framework', description: 'Artefact framework sécurité', hub_refs: ['Artifacts Architecture'], row_estimate: 10, has_rls: true, category: 'artifacts', key_columns: ['id', 'control', 'status'], relations: [] },
+        { table_name: 'artifact_sre_framework', description: 'Artefact SRE framework', hub_refs: ['Artifacts Architecture'], row_estimate: 8, has_rls: true, category: 'artifacts', key_columns: ['id', 'sli', 'slo'], relations: [] },
+        { table_name: 'artifact_seo_authority', description: 'Artefact autorité SEO', hub_refs: ['Artifacts Growth'], row_estimate: 8, has_rls: true, category: 'artifacts', key_columns: ['id', 'strategy', 'score'], relations: [] },
+        { table_name: 'artifact_agent_catalog', description: 'Catalogue des agents', hub_refs: ['Artifacts Enterprise'], row_estimate: 12, has_rls: true, category: 'artifacts', key_columns: ['id', 'agent_name', 'domain'], relations: [] },
+        { table_name: 'artifact_sop_library', description: 'Bibliothèque de SOP', hub_refs: ['Artifacts Operational'], row_estimate: 24, has_rls: true, category: 'artifacts', key_columns: ['id', 'sop_name', 'version'], relations: [] },
+        { table_name: 'artifact_kpi_dictionary', description: 'Dictionnaire des KPIs', hub_refs: ['Artifacts Enterprise'], row_estimate: 15, has_rls: true, category: 'artifacts', key_columns: ['id', 'kpi_name', 'domain'], relations: [] },
+        { table_name: 'artifact_knowledge_architecture', description: 'Artefact architecture connaissance', hub_refs: ['Artifacts Architecture'], row_estimate: 8, has_rls: true, category: 'artifacts', key_columns: ['id', 'layer', 'description'], relations: [] },
+        { table_name: 'artifact_ai_governance', description: 'Artefact gouvernance IA', hub_refs: ['Artifacts Architecture'], row_estimate: 8, has_rls: true, category: 'artifacts', key_columns: ['id', 'policy', 'iso_ref'], relations: [] },
+        { table_name: 'artifact_automation_blueprint', description: 'Blueprint d\'automatisation', hub_refs: ['Artifacts Operational'], row_estimate: 10, has_rls: true, category: 'artifacts', key_columns: ['id', 'automation_name', 'status'], relations: [] },
+        { table_name: 'artifact_pmo_framework', description: 'Framework PMO', hub_refs: ['Artifacts Operational'], row_estimate: 12, has_rls: true, category: 'artifacts', key_columns: ['id', 'process', 'maturity'], relations: [] },
+        { table_name: 'artifact_quality_management', description: 'Artefact management qualité', hub_refs: ['Artifacts Operational'], row_estimate: 8, has_rls: true, category: 'artifacts', key_columns: ['id', 'standard', 'compliance'], relations: [] },
+        { table_name: 'artifact_client_success', description: 'Artefact succès client', hub_refs: ['Artifacts Growth'], row_estimate: 8, has_rls: true, category: 'artifacts', key_columns: ['id', 'strategy', 'nps_target'], relations: [] },
+        { table_name: 'artifact_executive_dashboard', description: 'Artefact dashboard exécutif', hub_refs: ['Artifacts Enterprise'], row_estimate: 6, has_rls: true, category: 'artifacts', key_columns: ['id', 'dashboard_type', 'metrics_count'], relations: [] },
+        { table_name: 'artifact_roadmap', description: 'Roadmap KOS', hub_refs: ['Artifacts Enterprise'], row_estimate: 12, has_rls: true, category: 'artifacts', key_columns: ['id', 'phase', 'milestone'], relations: [] },
+      ],
+    },
+  ],
+  relational_schema: [
+    { from_table: 'leads', from_domain: 'CRM & Growth', to_table: 'lead_activities', to_domain: 'CRM & Growth', relationship: 'Activités tracées', cardinality: '1:N' },
+    { from_table: 'leads', from_domain: 'CRM & Growth', to_table: 'lead_scores', to_domain: 'CRM & Growth', relationship: 'Score prédictif', cardinality: '1:1' },
+    { from_table: 'leads', from_domain: 'CRM & Growth', to_table: 'proposals', to_domain: 'CRM & Growth', relationship: 'Proposition commerciale', cardinality: '1:N' },
+    { from_table: 'organizations', from_domain: 'Core Platform', to_table: 'subscriptions', to_domain: 'Core Platform', relationship: 'Abonnement actif', cardinality: '1:1' },
+    { from_table: 'organizations', from_domain: 'Core Platform', to_table: 'client_health', to_domain: 'CRM & Growth', relationship: 'Santé client', cardinality: '1:1' },
+    { from_table: 'profiles', from_domain: 'Core Platform', to_table: 'organization_members', to_domain: 'Core Platform', relationship: 'Membre de l\'organisation', cardinality: 'N:M' },
+    { from_table: 'courses', from_domain: 'Knowledge & Learning', to_table: 'course_modules', to_domain: 'Knowledge & Learning', relationship: 'Structure du cours', cardinality: '1:N' },
+    { from_table: 'course_modules', from_domain: 'Knowledge & Learning', to_table: 'lessons', to_domain: 'Knowledge & Learning', relationship: 'Leçons du module', cardinality: '1:N' },
+    { from_table: 'lessons', from_domain: 'Knowledge & Learning', to_table: 'lesson_progress', to_domain: 'Knowledge & Learning', relationship: 'Progression apprenant', cardinality: '1:N' },
+    { from_table: 'tender_intelligence', from_domain: 'Tender & Procurement', to_table: 'tender_alerts', to_domain: 'Tender & Procurement', relationship: 'Alertes AO', cardinality: '1:N' },
+    { from_table: 'tender_intelligence', from_domain: 'Tender & Procurement', to_table: 'tender_deadlines', to_domain: 'Tender & Procurement', relationship: 'Échéances', cardinality: '1:N' },
+    { from_table: 'consulting_factory', from_domain: 'Consulting', to_table: 'mission_quality_office', to_domain: 'Consulting', relationship: 'Revue qualité', cardinality: '1:N' },
+    { from_table: 'kos_corrective_blocks', from_domain: 'Correction & Quality', to_table: 'kos_execution_logs', to_domain: 'Correction & Quality', relationship: 'Exécution tracée', cardinality: '1:N' },
+    { from_table: 'ai_registry', from_domain: 'Risk & Compliance', to_table: 'ai_audit_trail', to_domain: 'Risk & Compliance', relationship: 'Piste d\'audit', cardinality: '1:N' },
+    { from_table: 'kos_block_scans', from_domain: 'Correction & Quality', to_table: 'kos_block_detections', to_domain: 'Correction & Quality', relationship: 'Détections du scan', cardinality: '1:N' },
+    { from_table: 'kos_agent_performance', from_domain: 'Unified System', to_table: 'kos_domain_summaries', to_domain: 'Unified System', relationship: 'Agrégation domaine', cardinality: 'N:1' },
+    { from_table: 'tender_sources', from_domain: 'Tender & Procurement', to_table: 'tender_scraper_logs', to_domain: 'Tender & Procurement', relationship: 'Logs scraping', cardinality: '1:N' },
+    { from_table: 'kos_resource_health', from_domain: 'Resource Management', to_table: 'kos_resource_optimizations', to_domain: 'Resource Management', relationship: 'Optimisation', cardinality: '1:N' },
+    { from_table: 'diagnostics', from_domain: 'Financial & Policy', to_table: 'diagnostic_events', to_domain: 'Financial & Policy', relationship: 'Événements tracés', cardinality: '1:N' },
+    { from_table: 'webhook_endpoints', from_domain: 'Resource Management', to_table: 'webhook_deliveries', to_domain: 'Resource Management', relationship: 'Livraisons', cardinality: '1:N' },
+    { from_table: 'kos_performance_challenges', from_domain: 'SEO & Digital', to_table: 'kos_challenge_gaps', to_domain: 'SEO & Digital', relationship: 'Gaps identifiés', cardinality: '1:N' },
+    { from_table: 'email_templates', from_domain: 'CRM & Growth', to_table: 'email_logs', to_domain: 'CRM & Growth', relationship: 'Envois tracés', cardinality: '1:N' },
+    { from_table: 'kos_quality_global_report', from_domain: 'Quality Excellence', to_table: 'kos_quality_report_sections', to_domain: 'Quality Excellence', relationship: 'Sections du rapport', cardinality: '1:N' },
+    { from_table: 'profiles', from_domain: 'Core Platform', to_table: 'activity_logs', to_domain: 'Core Platform', relationship: 'Activité tracée', cardinality: '1:N' },
+  ],
+  governance_rules: [
+    { rule_id: 'DG-001', rule_name: 'Naming Convention — snake_case obligatoire', category: 'naming', description: 'Tous les noms de tables et colonnes doivent utiliser snake_case (minuscules + underscores). Interdiction des CamelCase, espaces, caractères spéciaux.', standard_ref: 'ISO 11179-5', compliance: 'compliant', affected_tables_count: 244 },
+    { rule_id: 'DG-002', rule_name: 'Préfixe kos_ pour les tables KOS natives', category: 'naming', description: 'Les tables propres au système KOS doivent utiliser le préfixe kos_. Les tables externes (profiles, leads, etc.) utilisent des noms métier.', standard_ref: 'DAMA-DMBOK', compliance: 'compliant', affected_tables_count: 94 },
+    { rule_id: 'DG-003', rule_name: 'RLS — Row Level Security obligatoire', category: 'security', description: 'Toute table contenant des données utilisateur ou métier doit avoir RLS activée avec des policies SELECT/INSERT/UPDATE/DELETE appropriées.', standard_ref: 'ISO 27001 A.9.4', compliance: 'compliant', affected_tables_count: 220 },
+    { rule_id: 'DG-004', rule_name: 'PII — Données personnelles chiffrées', category: 'security', description: 'Les colonnes contenant des données personnelles (email, téléphone, nom) doivent être protégées par RLS et jamais exposées publiquement sans authentification.', standard_ref: 'GDPR Art.32', compliance: 'compliant', affected_tables_count: 45 },
+    { rule_id: 'DG-005', rule_name: 'Audit Trail — Journalisation obligatoire', category: 'audit', description: 'Toute opération sensible (CREATE/UPDATE/DELETE) sur les tables métier doit être journalisée dans activity_logs ou une table d\'audit dédiée.', standard_ref: 'ISO 27001 A.12.4', compliance: 'compliant', affected_tables_count: 180 },
+    { rule_id: 'DG-006', rule_name: 'Backup — Sauvegarde quotidienne PITR', category: 'lifecycle', description: 'Point-in-Time Recovery activé sur toutes les tables. Rétention minimum 7 jours. Backup complet quotidien vers stockage secondaire.', standard_ref: 'ISO 22301', compliance: 'compliant', affected_tables_count: 244 },
+    { rule_id: 'DG-007', rule_name: 'Indexation — Clés étrangères et colonnes de filtrage', category: 'performance', description: 'Toutes les clés étrangères et les colonnes utilisées dans les clauses WHERE fréquentes doivent être indexées.', standard_ref: 'DAMA-DMBOK', compliance: 'partial', affected_tables_count: 85 },
+    { rule_id: 'DG-008', rule_name: 'Documentation — Chaque table doit avoir une description', category: 'quality', description: 'Toute table doit être documentée avec : description, colonnes clés, relations, hub(s) propriétaire(s), standard de référence.', standard_ref: 'ISO 8000', compliance: 'partial', affected_tables_count: 244 },
+    { rule_id: 'DG-009', rule_name: 'No Hard Deletes — Soft delete obligatoire', category: 'lifecycle', description: 'Les données ne doivent jamais être supprimées définitivement. Utiliser une colonne deleted_at ou archived_at pour le soft delete.', standard_ref: 'COBIT DSS06', compliance: 'partial', affected_tables_count: 120 },
+    { rule_id: 'DG-010', rule_name: 'Data Classification — Classification des données par sensibilité', category: 'security', description: 'Chaque table doit avoir un niveau de classification : Public, Interne, Confidentiel, Secret. Les tables Confidentiel et Secret nécessitent un chiffrement additionnel.', standard_ref: 'ISO 27001 A.8.2', compliance: 'partial', affected_tables_count: 244 },
+  ],
+  quality_metrics: [
+    { metric_name: 'Complétude du dictionnaire', current_value: 98, target_value: 95, unit: '%', trend: 'up', domain: 'Documentation', last_checked: '2026-06-18' },
+    { metric_name: 'Couverture RLS', current_value: 100, target_value: 100, unit: '%', trend: 'up', domain: 'Sécurité', last_checked: '2026-06-18' },
+    { metric_name: 'Tables documentées', current_value: 244, target_value: 244, unit: 'tables', trend: 'up', domain: 'Documentation', last_checked: '2026-06-18' },
+    { metric_name: 'Indexation optimale', current_value: 95, target_value: 95, unit: '%', trend: 'up', domain: 'Performance', last_checked: '2026-06-18' },
+    { metric_name: 'Conformité naming convention', current_value: 100, target_value: 100, unit: '%', trend: 'stable', domain: 'Gouvernance', last_checked: '2026-06-18' },
+    { metric_name: 'Soft delete implémenté', current_value: 90, target_value: 90, unit: '%', trend: 'up', domain: 'Cycle de vie', last_checked: '2026-06-18' },
+    { metric_name: 'Maturité gouvernance', current_value: 95, target_value: 95, unit: '/100', trend: 'up', domain: 'Gouvernance', last_checked: '2026-06-18' },
+    { metric_name: 'Qualité données (score moyen)', current_value: 95, target_value: 95, unit: '/100', trend: 'up', domain: 'Qualité', last_checked: '2026-06-18' },
+  ],
+  validation_workflow: [
+    { step: 1, step_name: 'Création de table', description: 'Toute nouvelle table doit être proposée via le hub KOS Enterprise Data Model avec : nom, domaine, colonnes, relations, standards applicables.', responsible: 'Data Architect KOS', tool: 'KOS Enterprise Data Model Hub', frequency: 'À la demande', status: 'active' },
+    { step: 2, step_name: 'Validation schéma', description: 'Le schéma est validé automatiquement contre les règles de naming convention (DG-001, DG-002), RLS (DG-003), et indexation (DG-007).', responsible: 'KOS Automaton Engine', tool: 'KOS Data Quality Scanner', frequency: 'À chaque création/modification', status: 'active' },
+    { step: 3, step_name: 'Revue gouvernance', description: 'Revue manuelle ou automatique de la conformité aux 10 règles de gouvernance (DG-001 à DG-010). Score minimum requis : 80/100.', responsible: 'KOS Data Governance Council', tool: 'KOS Governance Dashboard', frequency: 'À chaque nouvelle table', status: 'active' },
+    { step: 4, step_name: 'Seed & Test', description: 'Peuplement initial avec des données de test (mock) et vérification de l\'intégrité référentielle, des contraintes, et des performances.', responsible: 'KOS Automaton Engine', tool: 'Supabase SQL Editor', frequency: 'À chaque création', status: 'active' },
+    { step: 5, step_name: 'Documentation', description: 'Mise à jour du dictionnaire de données KOS avec : description, colonnes, relations, hub(s), standards, niveau de classification.', responsible: 'Data Architect KOS', tool: 'KOS Enterprise Data Model', frequency: 'À chaque création', status: 'active' },
+    { step: 6, step_name: 'Déploiement Production', description: 'Migration validée → déployée en production. Activation des cron jobs, edge functions et policies associés.', responsible: 'KOS Web Operations', tool: 'KOS Web Operations Deployment', frequency: 'À chaque validation', status: 'active' },
+    { step: 7, step_name: 'Monitoring continu', description: 'Surveillance post-déploiement : performances, utilisation, anomalies. Alerte si qualité < 80% ou performance dégradée.', responsible: 'KOS Control Tower', tool: 'KOS Enterprise Control Tower', frequency: 'Continue 24/7', status: 'active' },
+  ],
+};
+
+
+
+
+

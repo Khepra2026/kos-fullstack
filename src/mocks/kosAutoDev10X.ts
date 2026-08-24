@@ -1,0 +1,218 @@
+// KOS AUTO-DEV 10X — Accélérateur 3 Switches
+// Switch 1: Autopilot RAG · Switch 2: Royalty Engine · Switch 3: KaaS Public API
+
+export const autopilotRAG = {
+  switch: 'AUTOPILOT RAG',
+  status: 'ACTIVÉ',
+  hub: 'kos-unified-autopilot',
+  embedding_model: {
+    previous: '1.1M',
+    current: '3M',
+    upgrade_date: '2026-07-03T08:00:00Z',
+    nodes_indexed: 3000000,
+    vector_dimensions: 384,
+    model: 'KHEPRA Embedding Engine v3.0 — all-MiniLM-L6-v2 fine-tuned UEMOA corpus',
+    auto_reembed: {
+      status: 'ACTIF',
+      trigger: 'Nouveau document détecté → re-embeddé automatiquement',
+      documents_processed_day: 285,
+      avg_latency_ms: 340,
+      queue_size: 0,
+      last_batch: '2026-07-03T07:55:00Z',
+    },
+  },
+  performance_kpis: {
+    time_to_find_ms: 42,
+    time_to_find_before_ms: 85,
+    improvement_percent: 50.6,
+    google_sge_rank: 2,
+    google_sge_rank_before: 3,
+    queries_per_day: 4850,
+    cache_hit_rate: 78.5,
+    avg_precision: 96.2,
+  },
+  edge_functions: ['kos-rag-semantic-search', 'kos-knowledge-manager', 'kos-auto-development-seed'],
+  tables_impacted: ['rag_chunks', 'rag_embeddings', 'rag_documents', 'rag_citations', 'rag_metadata'],
+  effect_90j: 'Time-to-find -50%. Google SGE rank +1',
+};
+
+export const royaltyEngine = {
+  switch: 'ROYALTY ENGINE',
+  status: 'ACTIVÉ',
+  hub: 'kos-ai-governance-ethics',
+  creator_royalty_score: {
+    status: 'ACTIF',
+    description: 'Score de contribution capitalisée tracé dans audit_logs. Chaque SME accumule des points de royalty basés sur les Knowledge Atoms publiés, les méthodologies documentées et les cas clients anonymisés.',
+    calculation_formula: 'royalty = (atoms_published × 10) + (methodologies_created × 25) + (case_studies_anonymized × 50) + (peer_reviews_completed × 15)',
+    iso_reference: 'ISO 30401 §8.2 — Recognition and Incentive Mechanisms',
+    last_calculation: '2026-07-03T06:00:00Z',
+  },
+  top10_creators: [
+    { rank: 1, name: 'Dr. Amadou Diallo', role: 'Director BU1 — Régulation', atoms: 48, methodologies: 8, cases: 3, reviews: 22, royalty_score: 1430, bonus_fcfa: 5250000, trend: 'up' },
+    { rank: 2, name: 'Mariama Ba', role: 'Senior Consultant — Due Diligence', atoms: 42, methodologies: 5, cases: 4, reviews: 18, royalty_score: 1315, bonus_fcfa: 4200000, trend: 'up' },
+    { rank: 3, name: 'Jean-Paul Kouassi', role: 'Director BU3 — GRC', atoms: 38, methodologies: 7, cases: 2, reviews: 25, royalty_score: 1280, bonus_fcfa: 3850000, trend: 'stable' },
+    { rank: 4, name: 'Fatou Ndiaye', role: 'Compliance Officer — LBC/FT', atoms: 45, methodologies: 4, cases: 1, reviews: 30, royalty_score: 1275, bonus_fcfa: 3500000, trend: 'up' },
+    { rank: 5, name: 'Koffi Mensah', role: 'Data Science Lead', atoms: 35, methodologies: 6, cases: 3, reviews: 15, royalty_score: 1175, bonus_fcfa: 2800000, trend: 'up' },
+    { rank: 6, name: 'Aminata Sow', role: 'Director BU4 — Think Tank', atoms: 32, methodologies: 5, cases: 2, reviews: 20, royalty_score: 1045, bonus_fcfa: 2400000, trend: 'stable' },
+    { rank: 7, name: 'Yves Tchinda', role: 'Senior Auditor — Inspection COBAC', atoms: 28, methodologies: 7, cases: 1, reviews: 12, royalty_score: 935, bonus_fcfa: 2100000, trend: 'up' },
+    { rank: 8, name: 'Grace Ekambi', role: 'Consultant — ESG/Climat', atoms: 25, methodologies: 4, cases: 2, reviews: 18, royalty_score: 850, bonus_fcfa: 1800000, trend: 'up' },
+    { rank: 9, name: 'Moussa Traoré', role: 'Senior Consultant — Prix Transfert', atoms: 22, methodologies: 3, cases: 3, reviews: 14, royalty_score: 775, bonus_fcfa: 1500000, trend: 'stable' },
+    { rank: 10, name: 'Céline Kouamé', role: 'Knowledge Manager', atoms: 30, methodologies: 2, cases: 1, reviews: 25, royalty_score: 760, bonus_fcfa: 1200000, trend: 'up' },
+  ],
+  quarterly_dashboard: {
+    q1_2026: { total_royalty: 8500, creators_active: 12, bonus_distributed_fcfa: 18500000 },
+    q2_2026: { total_royalty: 12800, creators_active: 18, bonus_distributed_fcfa: 28200000 },
+    q3_2026_projection: { total_royalty: 18000, creators_active: 25, bonus_distributed_fcfa: 42000000 },
+    total_atoms_published: 487,
+    total_methodologies: 68,
+    total_case_studies: 22,
+    total_peer_reviews: 224,
+  },
+  sme_contributions_growth: 215,
+  units: 'Knowledge Atoms & Méthodologies',
+  effect_90j: 'Contributions SME +200%. ISO §8.2',
+  tables_impacted: ['audit_logs', 'kos_knowledge_capitalization', 'kos_competency_modules'],
+};
+
+export const kaasPublicAPI = {
+  switch: 'KaaS PUBLIC API',
+  status: 'ACTIVÉ',
+  hub: 'kos-banking-stack',
+  layer: 'BS-L5 — Output Factory Layer',
+  api_version: 'v1',
+  base_path: '/api/v1/kos',
+  endpoints: [
+    {
+      path: '/api/v1/kos/search',
+      method: 'POST',
+      description: 'Recherche sémantique réglementaire — BCEAO, COBAC, BEAC, OHADA, GAFI, CIMA',
+      freemium_limit: 100,
+      period: 'mois',
+      auth: 'Email + API Key (générée automatiquement)',
+      request_body: {
+        query: 'string (obligatoire) — La requête de recherche réglementaire',
+        regulator: 'string (optionnel) — bceao | cobac | beac | ohada | gafi | cima | all',
+        language: 'string (optionnel) — fr | en',
+        max_results: 'integer (optionnel, max 20, défaut 10)',
+      },
+      response: {
+        status: 'success | error',
+        results: 'Array<{id, title, regulator, excerpt, relevance_score, source_url, published_date}>',
+        meta: '{total_results, query_time_ms, remaining_calls_this_month}',
+      },
+      example_curl: 'curl -X POST https://khepraexperts.com/api/v1/kos/search \\\n  -H "Content-Type: application/json" \\\n  -H "X-API-Key: YOUR_API_KEY" \\\n  -d \'{"query": "exigences fonds propres banques UEMOA 2026", "regulator": "bceao", "max_results": 5}\'',
+    },
+    {
+      path: '/api/v1/kos/regulators',
+      method: 'GET',
+      description: 'Liste des régulateurs disponibles avec nombre de documents indexés',
+      freemium_limit: 100,
+      period: 'mois',
+      auth: 'Email + API Key',
+      response: {
+        regulators: 'Array<{key, name, documents_count, last_updated}>',
+      },
+    },
+    {
+      path: '/api/v1/kos/document/{id}',
+      method: 'GET',
+      description: 'Obtenir le détail d\'un document réglementaire par son ID',
+      freemium_limit: 100,
+      period: 'mois',
+      auth: 'Email + API Key',
+      response: {
+        document: '{id, title, regulator, full_text, published_date, effective_date, articles_count, obligations_count}',
+      },
+    },
+  ],
+  pricing_tiers: [
+    { tier: 'Freemium', calls_per_month: 100, price_fcfa: 0, features: ['Recherche sémantique', '3 régulateurs', '10 résultats/requête'] },
+    { tier: 'Starter', calls_per_month: 1000, price_fcfa: 25000, features: ['Recherche sémantique', 'Tous régulateurs', '20 résultats/requête', 'Export CSV'] },
+    { tier: 'Professional', calls_per_month: 10000, price_fcfa: 150000, features: ['Recherche avancée', 'API Search + Document', 'Export PDF/CSV', 'Webhook alerts', 'Support email'] },
+    { tier: 'Enterprise', calls_per_month: 'Illimité', price_fcfa: 'Sur devis', features: ['Accès complet', 'API illimitée', 'SLA 99.95%', 'Support dédié', 'On-premise option', 'Custom embeddings'] },
+  ],
+  api_key_management: {
+    generation: 'Automatique via inscription email',
+    rate_limiting: 'Token bucket — 100 req/mois (freemium), 1000 req/mois (starter)',
+    headers: 'X-API-Key: sk-kos-xxxxxxxxxxxx',
+    monitoring: 'Dashboard temps réel dans kos-banking-stack > API Analytics',
+    edge_function: 'kos-rag-billing-router',
+  },
+  stats: {
+    total_registered_developers: 2480,
+    active_developers_monthly: 1520,
+    api_calls_this_month: 84500,
+    avg_response_time_ms: 85,
+    uptime_percent: 99.95,
+    top_countries: ['Sénégal', 'Côte d\'Ivoire', 'Cameroun', 'Gabon', 'Burkina Faso'],
+    developer_growth_rate: 28,
+    projected_devs_90j: 10000,
+  },
+  effect_90j: '10k devs/testers = notoriété + leads. Big Four ne font pas.',
+  edge_functions_impacted: ['kos-rag-billing-router', 'kos-rag-semantic-search'],
+};
+
+export const plan30_60_90J = {
+  title: 'PLAN 30-60-90 JOURS — KOS AUTO-DEV 10X',
+  phases: [
+    {
+      phase: 'J+7',
+      date: '2026-07-10',
+      milestones: [
+        { item: 'Lead Magnet #1 — Solvabilité UEMOA 2026 Simulator LIVE', status: 'completed' },
+        { item: 'Switch 1: Autopilot RAG activé — Embedding 3M + auto_reembed', status: 'completed' },
+        { item: 'KPI: Time-to-find passe de 85ms à 42ms (-50%)', status: 'completed' },
+      ],
+      icon: 'ri-rocket-line',
+      color: '#86BC25',
+    },
+    {
+      phase: 'J+30',
+      date: '2026-08-03',
+      milestones: [
+        { item: '5 Lead Magnets LIVE — tous les aimants à leads déployés', status: 'in_progress' },
+        { item: 'Système A: RegTrooper actif — 100 assets/mois auto-générés', status: 'in_progress' },
+        { item: 'Switch 2: Royalty Engine — Premier dashboard trimestriel publié', status: 'pending' },
+        { item: 'KPI: 2 847 → 4 500 nœuds Knowledge Graph', status: 'pending' },
+      ],
+      icon: 'ri-flight-takeoff-line',
+      color: '#E8C547',
+    },
+    {
+      phase: 'J+60',
+      date: '2026-09-02',
+      milestones: [
+        { item: 'Système B: Client Brain Mining actif — 10 missions × 10 atoms/mois', status: 'pending' },
+        { item: 'Royalty Engine — Premier bonus payé aux top 3 créateurs', status: 'pending' },
+        { item: 'Switch 3: KaaS Public API — 5000 développeurs enregistrés', status: 'pending' },
+        { item: 'KPI: 4 500 → 7 000 nœuds Knowledge Graph', status: 'pending' },
+      ],
+      icon: 'ri-speed-up-line',
+      color: '#0D7B5F',
+    },
+    {
+      phase: 'J+90',
+      date: '2026-10-02',
+      milestones: [
+        { item: '10 000 nœuds Knowledge Graph — CIBLE ATTEINTE', status: 'pending' },
+        { item: 'KaaS Public API — 10 000 développeurs, 2000+ actifs/mois', status: 'pending' },
+        { item: 'Certification ISO 30401 Stage 2 — PASSÉE', status: 'pending' },
+        { item: 'ROI: +3.77 Md FCFA pipeline ×2 via Lead Magnets + marge +15% via reuse', status: 'pending' },
+      ],
+      icon: 'ri-trophy-line',
+      color: '#86BC25',
+    },
+  ],
+  roi_calculation: {
+    cost_dev: 0,
+    gain_pipeline: 3770000000,
+    gain_margin_improvement: '15% via knowledge reuse automation',
+    payback_period: 'Immédiat (0 investissement)',
+    vs_big_four: 'Equivalent Big Four : 8 consultants × 18 mois × 35M FCFA/mois = 5.04 Md FCFA',
+  },
+};
+
+
+
+
+

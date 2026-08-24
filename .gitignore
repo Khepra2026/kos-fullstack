@@ -1,0 +1,12 @@
+node_modules/
+.env
+.env.*
+dist/
+.vscode/
+.DS_Store
+
+# KOS Secrets
+.env.local
+.env.production
+*.pem
+*.key

@@ -1,0 +1,198 @@
+import { useState, useMemo, useCallback, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
+import {
+  KNOWLEDGE_DOMAINS,
+  GLOSSARY,
+  FAQ_ENTRIES,
+  CASE_STUDIES,
+  TEMPLATES,
+  TRAINING_SCRIPTS,
+  KNOWLEDGE_FACTORY_KPIS,
+  KNOWLEDGE_FACTORY_STATS,
+} from '@/mocks/knowledgeFactory';
+import type {
+  KnowledgeTaxonomyDomain,
+  GlossaryEntry,
+  FAQEntry,
+  CaseStudy,
+  TemplateItem,
+  TrainingScript,
+} from '@/mocks/knowledgeFactory';
+
+export function useKOSKnowledgeFactory() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [domainFilter, setDomainFilter] = useState<string>('all');
+  const [isLive, setIsLive] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function check() {
+      try {
+        const { data } = await supabase.from('knowledge_capsules').select('id').limit(1);
+        if (!cancelled && data && data.length > 0) setIsLive(true);
+      } catch { /* fallback mock */ }
+    }
+    check();
+    return () => { cancelled = true; };
+  }, []);
+
+  const domains = useMemo(() => KNOWLEDGE_DOMAINS, []);
+
+  // --- Taxonomy ---
+  const getDomainById = useCallback((id: string) => domains.find(d => d.id === id) || null, [domains]);
+
+  const getDomainsBySearch = useCallback((q: string) => {
+    const lower = q.toLowerCase();
+    return domains.filter(d =>
+      d.name.toLowerCase().includes(lower) ||
+      d.description.toLowerCase().includes(lower) ||
+      d.subThemes.some(s => s.toLowerCase().includes(lower)) ||
+      d.keywords.some(k => k.toLowerCase().includes(lower))
+    );
+  }, [domains]);
+
+  // --- Glossary ---
+  const getGlossaryByDomain = useCallback((domainId: string) => {
+    if (domainId === 'all') return GLOSSARY;
+    return GLOSSARY.filter(g => g.domainId === domainId);
+  }, []);
+
+  const searchGlossary = useCallback((q: string) => {
+    const lower = q.toLowerCase();
+    return GLOSSARY.filter(g =>
+      g.term.toLowerCase().includes(lower) ||
+      g.definition.toLowerCase().includes(lower) ||
+      g.context.toLowerCase().includes(lower) ||
+      g.relatedTerms.some(r => r.toLowerCase().includes(lower))
+    );
+  }, []);
+
+  // --- FAQ ---
+  const getFAQByDomain = useCallback((domainId: string) => {
+    if (domainId === 'all') return FAQ_ENTRIES;
+    return FAQ_ENTRIES.filter(f => f.domainId === domainId);
+  }, []);
+
+  const searchFAQ = useCallback((q: string) => {
+    const lower = q.toLowerCase();
+    return FAQ_ENTRIES.filter(f =>
+      f.question.toLowerCase().includes(lower) ||
+      f.answer.toLowerCase().includes(lower) ||
+      f.tags.some(t => t.toLowerCase().includes(lower))
+    );
+  }, []);
+
+  const getFAQByDifficulty = useCallback((difficulty: string) => {
+    if (difficulty === 'all') return FAQ_ENTRIES;
+    return FAQ_ENTRIES.filter(f => f.difficulty === difficulty);
+  }, []);
+
+  // --- Case Studies ---
+  const getCaseStudiesByDomain = useCallback((domainId: string) => {
+    if (domainId === 'all') return CASE_STUDIES;
+    return CASE_STUDIES.filter(c => c.domainId === domainId);
+  }, []);
+
+  const searchCaseStudies = useCallback((q: string) => {
+    const lower = q.toLowerCase();
+    return CASE_STUDIES.filter(c =>
+      c.title.toLowerCase().includes(lower) ||
+      c.context.toLowerCase().includes(lower) ||
+      c.problem.toLowerCase().includes(lower) ||
+      c.solution.toLowerCase().includes(lower) ||
+      c.tags.some(t => t.toLowerCase().includes(lower))
+    );
+  }, []);
+
+  // --- Templates ---
+  const getTemplatesByDomain = useCallback((domainId: string) => {
+    if (domainId === 'all') return TEMPLATES;
+    return TEMPLATES.filter(t => t.domainId === domainId);
+  }, []);
+
+  const getTemplatesByType = useCallback((type: string) => {
+    if (type === 'all') return TEMPLATES;
+    return TEMPLATES.filter(t => t.type === type);
+  }, []);
+
+  const searchTemplates = useCallback((q: string) => {
+    const lower = q.toLowerCase();
+    return TEMPLATES.filter(t =>
+      t.title.toLowerCase().includes(lower) ||
+      t.description.toLowerCase().includes(lower) ||
+      t.sections.some(s => s.toLowerCase().includes(lower))
+    );
+  }, []);
+
+  // --- Training Scripts ---
+  const getTrainingsByDomain = useCallback((domainId: string) => {
+    if (domainId === 'all') return TRAINING_SCRIPTS;
+    return TRAINING_SCRIPTS.filter(t => t.domainId === domainId);
+  }, []);
+
+  const searchTrainings = useCallback((q: string) => {
+    const lower = q.toLowerCase();
+    return TRAINING_SCRIPTS.filter(t =>
+      t.title.toLowerCase().includes(lower) ||
+      t.audience.toLowerCase().includes(lower) ||
+      t.learningObjectives.some(l => l.toLowerCase().includes(lower))
+    );
+  }, []);
+
+  // --- KPIs ---
+  const getKPIs = useCallback(() => KNOWLEDGE_FACTORY_KPIS, []);
+  const getStats = useCallback(() => KNOWLEDGE_FACTORY_STATS, []);
+
+  const domainSummary = useMemo(() => {
+    return domains.map(d => ({
+      ...d,
+      glossaryCount: GLOSSARY.filter(g => g.domainId === d.id).length,
+      faqCount: FAQ_ENTRIES.filter(f => f.domainId === d.id).length,
+      caseCount: CASE_STUDIES.filter(c => c.domainId === d.id).length,
+      templateCount: TEMPLATES.filter(t => t.domainId === d.id).length,
+      trainingCount: TRAINING_SCRIPTS.filter(t => t.domainId === d.id).length,
+    }));
+  }, [domains]);
+
+  return {
+    isLive,
+    domains,
+    domainFilter,
+    setDomainFilter,
+    searchQuery,
+    setSearchQuery,
+    getDomainById,
+    getDomainsBySearch,
+    // Glossary
+    glossary: GLOSSARY,
+    getGlossaryByDomain,
+    searchGlossary,
+    // FAQ
+    faq: FAQ_ENTRIES,
+    getFAQByDomain,
+    searchFAQ,
+    getFAQByDifficulty,
+    // Case Studies
+    caseStudies: CASE_STUDIES,
+    getCaseStudiesByDomain,
+    searchCaseStudies,
+    // Templates
+    templates: TEMPLATES,
+    getTemplatesByDomain,
+    getTemplatesByType,
+    searchTemplates,
+    // Training
+    trainingScripts: TRAINING_SCRIPTS,
+    getTrainingsByDomain,
+    searchTrainings,
+    // KPIs
+    kpis: KNOWLEDGE_FACTORY_KPIS,
+    getKPIs,
+    stats: KNOWLEDGE_FACTORY_STATS,
+    getStats,
+    domainSummary,
+  };
+}
+
+
+
