@@ -1,9 +1,0 @@
-FROM node:20-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci --only=production
-COPY kos-memory-engine.js ./
-RUN mkdir -p /var/log/kos-memory /app/data
-HEALTHCHECK --interval=30s --timeout=5s --retries=5 CMD wget --spider -q http://localhost:3300/health || exit 1
-EXPOSE 3300
-CMD ["node", "kos-memory-engine.js"]

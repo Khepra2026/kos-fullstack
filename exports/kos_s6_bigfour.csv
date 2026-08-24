@@ -1,5 +1,0 @@
-Stream,Phase,Quarter,Lot,Statut,ResteKEuro,ResteJH,DateCible,Priorite,Owner
-S6,RegTech,Q4-2026,AML Engine v2,Todo,15,20,2026-11-15,P0,Head AI
-S6,RegTech,Q4-2026,KYC OCR Pipeline,Todo,10,12,2026-12-01,P0,Head AI
-S6,RegTech,Q4-2026,MiCA Compliance Pack,Todo,8,10,2026-12-15,P0,Legal
-S6,Monetize,Q3-2027,API Publique v1,Todo,8,10,2027-08-30,P0,CTO

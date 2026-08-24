@@ -1,6 +1,0 @@
-[
-  "tests/rag/test_grounding.py::test_rag_fail_closed_without_key",
-  "tests/rag/test_grounding.py::test_rag_threshold",
-  "tests/tenant_isolation/test_isolation.py::test_service_role_never_exposed_to_client",
-  "tests/tenant_isolation/test_isolation.py::test_tenant_a_cannot_read_b"
-]

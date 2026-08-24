@@ -1,6 +1,0 @@
-{"status":"FAIL","agent":"strategic-insight","error":"Response status code does not indicate success: 500 (Internal Server Error).","ts":"2026-07-20T14:33:45.5703311+00:00"}
-{"status":"FAIL","agent":"data-protection","error":"Response status code does not indicate success: 500 (Internal Server Error).","ts":"2026-07-20T14:33:46.9264668+00:00"}
-{"status":"PASS","agent":"compliance","ts":"2026-07-20T14:33:49.0452511+00:00"}
-{"status":"FAIL","agent":"cybersec","error":"Response status code does not indicate success: 500 (Internal Server Error).","ts":"2026-07-20T14:33:50.2911037+00:00"}
-{"status":"FAIL","agent":"aml","error":"Response status code does not indicate success: 500 (Internal Server Error).","ts":"2026-07-20T14:33:51.5375507+00:00"}
-{"status":"FAIL","agent":"risk","error":"Response status code does not indicate success: 400 (Bad Request).","ts":"2026-07-20T14:33:52.8705238+00:00"}

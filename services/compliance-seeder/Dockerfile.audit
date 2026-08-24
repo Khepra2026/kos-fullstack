@@ -1,9 +1,0 @@
-FROM node:20-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci --only=production
-COPY audit-universal.js ./
-RUN mkdir -p /var/log/kos-audit
-HEALTHCHECK --interval=30s --timeout=5s --retries=5 CMD wget --spider -q http://localhost:3100/health || exit 1
-EXPOSE 3100
-CMD ["node", "audit-universal.js"]
