@@ -1,0 +1,27 @@
+
+# KOS BIG FOUR - Dockerfile production-ready
+# Multi-stage, non-root, pinned versions, no secrets, healthcheck
+FROM node:20.18.0-alpine3.20 AS frontend-build
+WORKDIR /app/kos-frontend
+COPY kos-frontend/package.json kos-frontend/pnpm-lock.yaml ./
+RUN corepack enable && pnpm install --frozen-lockfile
+COPY kos-frontend/ ./
+RUN pnpm run build
+
+FROM python:3.11.10-slim-bookworm AS backend
+WORKDIR /app
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1
+RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
+
+FROM backend AS final
+RUN useradd -m -u 1001 kos && mkdir -p /app/data && chown -R kos:kos /app
+USER kos
+COPY --from=frontend-build --chown=kos:kos /app/kos-frontend/dist ./public
+COPY --chown=kos:kos ./services ./services
+COPY --chown=kos:kos ./supabase ./supabase
+COPY --chown=kos:kos ./workers ./workers
+EXPOSE 8080
+HEALTHCHECK --interval=15s --timeout=3s --start-period=20s --retries=3 CMD curl -f http://localhost:8080/healthz || exit 1
+CMD ["python", "-m", "services.api.main"]

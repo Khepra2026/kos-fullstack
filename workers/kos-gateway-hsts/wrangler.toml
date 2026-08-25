@@ -1,11 +1,6 @@
 name = "kos-gateway-hsts"
 main = "index.js"
 compatibility_date = "2024-01-01"
-compatibility_flags = ["nodejs_compat"]
-workers_dev = true
-preview_urls = true
-
-# Big Four HSTS Gateway
 
 [[routes]]
 pattern = "khepraexperts.com/*"
@@ -18,9 +13,3 @@ zone_name = "khepraexperts.com"
 [[routes]]
 pattern = "app.khepraexperts.com/*"
 zone_name = "khepraexperts.com"
-
-[env.production]
-name = "kos-gateway-hsts"
-
-[env.staging]
-name = "kos-gateway-hsts-staging"

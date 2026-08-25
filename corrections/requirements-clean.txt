@@ -1,0 +1,11 @@
+# requirements-clean.txt - Big Four Fix - remplace dump Anaconda
+fastapi==0.110.2
+uvicorn[standard]==0.29.0
+supabase==2.7.1
+openai==1.30.5
+PyMuPDF==1.23.26
+python-dotenv==1.0.1
+pydantic==2.7.1
+httpx==0.27.0
+numpy==1.26.4
+pgvector==0.3.5
