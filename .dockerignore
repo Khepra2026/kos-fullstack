@@ -4,10 +4,11 @@ backups
 *.zip
 *.log
 node_modules
+.next/cache
 .env
 evidence
 reports
 logs
 exports
 KOS-BIGFOUR-*
-kos-bigfour-*
+MASTER-PACK-*
