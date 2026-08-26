@@ -1,32 +1,25 @@
-node_modules/
-.next/
-dist-release/
-exports/
-logs/
-*.zip
-KOS-*.zip
-*.bak
+# ENV - NEVER COMMIT
 .env
-.env.local
-supabase/.temp/
-*.tsbuildinfo
-__pycache__/
-null
-test-results/
-.vercel
-.env
-.env.local
-.env.prod
-.env.production
-node_modules
-dist
-
-backend/.env.local
-
-frontend/.env.local
-
+.env.*
+!.env.example
+backend/.env*
+frontend/.env*
 gateway/.dev.vars
-
+*.dev.vars
 docs/archive/
+release/dist_*
 
-*.log
+# --- SECRETS BIGFOUR ---
+.env*
+!.env.example
+gateway/.dev.vars
+release/
+node_modules/
+
+# Big Four - Secrets & Drift - NE JAMAIS COMMITER
+agents_seeding.json
+governance_schema.sql
+.env.prod
+backup_*
+_archive_drift/
+KOS-MasterTestSuite-All.txt
