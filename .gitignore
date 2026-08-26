@@ -1,12 +1,15 @@
 node_modules/
+.next/
+dist-release/
+exports/
+logs/
+*.zip
+KOS-*.zip
+*.bak
 .env
-.env.*
-dist/
-.vscode/
-.DS_Store
-
-# KOS Secrets
 .env.local
-.env.production
-*.pem
-*.key
+supabase/.temp/
+*.tsbuildinfo
+__pycache__/
+null
+test-results/
