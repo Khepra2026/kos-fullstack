@@ -1,0 +1,19 @@
+# BigFour - Ignore archived backups (already moved, but gitleaks still scans)
+docs/archive/
+# Allow example keys in docs
+**/page.tsx:generic-api-key
+**/KOSAuthGuard.tsx:generic-api-key
+**/kosAutoDev10X.ts:curl-auth-header
+**/kosSocialQualityEngine.ts:linkedin-client-secret
+# Mock and example curl
+src/mocks/
+src/pages_readdy_backup/
+# Edge function examples - apikey is local 127.0.0.1 example
+supabase/functions/
+# Env files - should be ignored but gitleaks still scans filesystem
+.env
+.env.prod
+.env.local
+backend/.env.local
+frontend/.env.local
+gateway/.dev.vars

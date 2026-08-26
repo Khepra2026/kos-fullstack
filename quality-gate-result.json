@@ -1,0 +1,68 @@
+[
+  {
+    "Domain": "Architecture",
+    "Weight": 10,
+    "Score": 10,
+    "Status": "PASS"
+  },
+  {
+    "Domain": "Code",
+    "Weight": 10,
+    "Score": 10,
+    "Status": "PASS"
+  },
+  {
+    "Domain": "API",
+    "Weight": 10,
+    "Score": 10,
+    "Status": "PASS"
+  },
+  {
+    "Domain": "Database",
+    "Weight": 10,
+    "Score": 10,
+    "Status": "PASS"
+  },
+  {
+    "Domain": "Tests",
+    "Weight": 10,
+    "Score": 10,
+    "Status": "PASS"
+  },
+  {
+    "Domain": "Security",
+    "Weight": 15,
+    "Score": 15,
+    "Status": "PASS"
+  },
+  {
+    "Domain": "AI/RAG",
+    "Weight": 10,
+    "Score": 10,
+    "Status": "PASS"
+  },
+  {
+    "Domain": "Performance",
+    "Weight": 8,
+    "Score": 8,
+    "Status": "PASS"
+  },
+  {
+    "Domain": "DevSecOps",
+    "Weight": 7,
+    "Score": 7,
+    "Status": "PASS"
+  },
+  {
+    "Domain": "Observability",
+    "Weight": 5,
+    "Score": 5,
+    "Status": "PASS"
+  },
+  {
+    "Domain": "Documentation",
+    "Weight": 5,
+    "Score": 5,
+    "Status": "PASS"
+  }
+]

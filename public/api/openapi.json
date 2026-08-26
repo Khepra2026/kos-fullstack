@@ -17,7 +17,7 @@
     }
   ],
   "paths": {
-    "/services/": {
+    "/services": {
       "get": {
         "summary": "Liste des services premium",
         "description": "Retourne les 4 Business Units et 15+ services spécialisés de KHEPRA EXPERTS.",
@@ -32,16 +32,24 @@
                   "properties": {
                     "business_units": {
                       "type": "array",
-                      "items": { "type": "string" }
+                      "items": {
+                        "type": "string"
+                      }
                     },
                     "services": {
                       "type": "array",
                       "items": {
                         "type": "object",
                         "properties": {
-                          "name": { "type": "string" },
-                          "url": { "type": "string" },
-                          "category": { "type": "string" }
+                          "name": {
+                            "type": "string"
+                          },
+                          "url": {
+                            "type": "string"
+                          },
+                          "category": {
+                            "type": "string"
+                          }
                         }
                       }
                     }
@@ -53,7 +61,7 @@
         }
       }
     },
-    "/tools/": {
+    "/tools": {
       "get": {
         "summary": "Diagnostics gratuits en ligne",
         "description": "12 outils de diagnostic stratégique et réglementaire — scoring automatisé, restitution Partner 30 min offerte.",
@@ -71,10 +79,18 @@
                       "items": {
                         "type": "object",
                         "properties": {
-                          "name": { "type": "string" },
-                          "url": { "type": "string" },
-                          "duration": { "type": "string" },
-                          "category": { "type": "string" }
+                          "name": {
+                            "type": "string"
+                          },
+                          "url": {
+                            "type": "string"
+                          },
+                          "duration": {
+                            "type": "string"
+                          },
+                          "category": {
+                            "type": "string"
+                          }
                         }
                       }
                     }
@@ -86,7 +102,7 @@
         }
       }
     },
-    "/contact/": {
+    "/contact": {
       "get": {
         "summary": "Coordonnées KHEPRA EXPERTS",
         "description": "Adresse, téléphone, email et réseaux sociaux du cabinet.",
@@ -99,15 +115,33 @@
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "name": { "type": "string" },
-                    "address": { "type": "string" },
-                    "city": { "type": "string" },
-                    "country": { "type": "string" },
-                    "phone": { "type": "string" },
-                    "email": { "type": "string" },
-                    "website": { "type": "string" },
-                    "linkedIn": { "type": "string" },
-                    "calendly": { "type": "string" }
+                    "name": {
+                      "type": "string"
+                    },
+                    "address": {
+                      "type": "string"
+                    },
+                    "city": {
+                      "type": "string"
+                    },
+                    "country": {
+                      "type": "string"
+                    },
+                    "phone": {
+                      "type": "string"
+                    },
+                    "email": {
+                      "type": "string"
+                    },
+                    "website": {
+                      "type": "string"
+                    },
+                    "linkedIn": {
+                      "type": "string"
+                    },
+                    "calendly": {
+                      "type": "string"
+                    }
                   }
                 }
               }
