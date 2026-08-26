@@ -13,3 +13,10 @@ supabase/.temp/
 __pycache__/
 null
 test-results/
+.vercel
+.env
+.env.local
+.env.prod
+.env.production
+node_modules
+dist
