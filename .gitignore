@@ -6,20 +6,45 @@ backend/.env*
 frontend/.env*
 gateway/.dev.vars
 *.dev.vars
-docs/archive/
-release/dist_*
+.env.prod
+.env.local
+.env.production
 
-# --- SECRETS BIGFOUR ---
-.env*
-!.env.example
-gateway/.dev.vars
-release/
-node_modules/
-
-# Big Four - Secrets & Drift - NE JAMAIS COMMITER
+# SECRETS BIGFOUR - NE JAMAIS COMMITER
 agents_seeding.json
 governance_schema.sql
-.env.prod
 backup_*
 _archive_drift/
 KOS-MasterTestSuite-All.txt
+KOS-BigFour-PAC-Seeder.kpf
+
+# DEPENDENCIES & BUILD
+node_modules/
+release/
+release/dist_*
+docs/archive/
+dist/
+build/
+.next/
+out/
+
+# FLY.IO / PUBLIC LEAK - NE JAMAIS DEPLOYER CES FICHIERS VERS /app/public
+public/.htaccess
+public/_redirects
+public/_headers
+public/*.kpf
+public/jira-automation/
+public/internal/
+public/api/
+public/e8f9*
+public/e8f9c2d3a4b5f6e7d8c9b0a1f2e3d4c5.txt
+public/google*.html
+public/410.html
+public/429.html
+public/KOS-*.kpf
+
+# OS
+.DS_Store
+Thumbs.db
+*.log
+npm-debug.log*
