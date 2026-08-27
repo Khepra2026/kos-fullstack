@@ -4,14 +4,23 @@
     "target": "https://kos.khepraexperts.com",
     "result": "PASS",
     "headers": {
-      "X-Powered-By": [
-        "Express"
+      "Strict-Transport-Security": [
+        "max-age=63072000; includeSubDomains; preload"
+      ],
+      "X-Content-Type-Options": [
+        "nosniff"
+      ],
+      "X-Frame-Options": [
+        "DENY"
+      ],
+      "Referrer-Policy": [
+        "strict-origin-when-cross-origin"
+      ],
+      "Content-Security-Policy": [
+        "default-src 'self'; script-src 'self' 'unsafe-inline' https://*.supabase.co; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; connect-src 'self' https://*.supabase.co https://api.khepraexperts.com wss://*.supabase.co https://kos.khepraexperts.com; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com data:"
       ],
       "Vary": [
         "Origin"
-      ],
-      "Access-Control-Allow-Credentials": [
-        "true"
       ],
       "Accept-Ranges": [
         "bytes"
@@ -23,7 +32,7 @@
         "W/\"1992-1a03e90b0e8\""
       ],
       "Date": [
-        "Thu, 27 Aug 2026 11:29:52 GMT"
+        "Thu, 27 Aug 2026 12:16:06 GMT"
       ],
       "Connection": [
         "keep-alive"
@@ -40,7 +49,7 @@
         "1.1 fly.io"
       ],
       "fly-request-id": [
-        "01M11FQJKZCTVVS5HV1N7S7P1E-jnb"
+        "01M11JC77K8AYQ48EXHW5WCXQ4-jnb"
       ],
       "Last-Modified": [
         "Wed, 26 Aug 2026 14:54:25 GMT"
@@ -55,45 +64,54 @@
     "checks": [
       {
         "header": "Strict-Transport-Security",
-        "present": false,
-        "severity": "WARN"
+        "present": true,
+        "severity": "PASS"
       },
       {
         "header": "X-Content-Type-Options",
-        "present": false,
-        "severity": "WARN"
+        "present": true,
+        "severity": "PASS"
       },
       {
         "header": "Content-Security-Policy",
-        "present": false,
-        "severity": "WARN"
+        "present": true,
+        "severity": "PASS"
       },
       {
         "header": "Referrer-Policy",
-        "present": false,
-        "severity": "WARN"
+        "present": true,
+        "severity": "PASS"
       },
       {
         "header": "X-Frame-Options",
-        "present": false,
-        "severity": "WARN"
+        "present": true,
+        "severity": "PASS"
       }
     ],
-    "timestamp": "2026-08-27T11:29:52.8970326+00:00"
+    "timestamp": "2026-08-27T12:16:06.6554004+00:00"
   },
   {
     "id": "HEADERS-API",
     "target": "https://api.khepraexperts.com",
     "result": "PASS",
     "headers": {
-      "X-Powered-By": [
-        "Express"
+      "Strict-Transport-Security": [
+        "max-age=63072000; includeSubDomains; preload"
+      ],
+      "X-Content-Type-Options": [
+        "nosniff"
+      ],
+      "X-Frame-Options": [
+        "DENY"
+      ],
+      "Referrer-Policy": [
+        "strict-origin-when-cross-origin"
+      ],
+      "Content-Security-Policy": [
+        "default-src 'self'; script-src 'self' 'unsafe-inline' https://*.supabase.co; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; connect-src 'self' https://*.supabase.co https://api.khepraexperts.com wss://*.supabase.co https://kos.khepraexperts.com; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com data:"
       ],
       "Vary": [
         "Origin"
-      ],
-      "Access-Control-Allow-Credentials": [
-        "true"
       ],
       "Accept-Ranges": [
         "bytes"
@@ -105,7 +123,7 @@
         "W/\"1992-1a03e90b0e8\""
       ],
       "Date": [
-        "Thu, 27 Aug 2026 11:29:53 GMT"
+        "Thu, 27 Aug 2026 12:16:07 GMT"
       ],
       "Connection": [
         "keep-alive"
@@ -122,7 +140,7 @@
         "1.1 fly.io"
       ],
       "fly-request-id": [
-        "01M11FQKDE275HA6BAVZ55FP03-jnb"
+        "01M11JC88ZPF0PYWESP6HP69HW-jnb"
       ],
       "Last-Modified": [
         "Wed, 26 Aug 2026 14:54:25 GMT"
@@ -137,51 +155,60 @@
     "checks": [
       {
         "header": "Strict-Transport-Security",
-        "present": false,
-        "severity": "WARN"
+        "present": true,
+        "severity": "PASS"
       },
       {
         "header": "X-Content-Type-Options",
-        "present": false,
-        "severity": "WARN"
+        "present": true,
+        "severity": "PASS"
       },
       {
         "header": "Content-Security-Policy",
-        "present": false,
-        "severity": "WARN"
+        "present": true,
+        "severity": "PASS"
       },
       {
         "header": "Referrer-Policy",
-        "present": false,
-        "severity": "WARN"
+        "present": true,
+        "severity": "PASS"
       },
       {
         "header": "X-Frame-Options",
-        "present": false,
-        "severity": "WARN"
+        "present": true,
+        "severity": "PASS"
       }
     ],
-    "timestamp": "2026-08-27T11:29:53.8892762+00:00"
+    "timestamp": "2026-08-27T12:16:07.7399600+00:00"
   },
   {
     "id": "HEADERS-API-HEALTH",
     "target": "https://api.khepraexperts.com/health",
     "result": "PASS",
     "headers": {
-      "X-Powered-By": [
-        "Express"
+      "Strict-Transport-Security": [
+        "max-age=63072000; includeSubDomains; preload"
+      ],
+      "X-Content-Type-Options": [
+        "nosniff"
+      ],
+      "X-Frame-Options": [
+        "DENY"
+      ],
+      "Referrer-Policy": [
+        "strict-origin-when-cross-origin"
+      ],
+      "Content-Security-Policy": [
+        "default-src 'self'; script-src 'self' 'unsafe-inline' https://*.supabase.co; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; connect-src 'self' https://*.supabase.co https://api.khepraexperts.com wss://*.supabase.co https://kos.khepraexperts.com; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com data:"
       ],
       "Vary": [
         "Origin"
       ],
-      "Access-Control-Allow-Credentials": [
-        "true"
-      ],
       "ETag": [
-        "W/\"b1-3frHdu3zG98fvhwEJRk/tB8dCrM\""
+        "W/\"b1-OqNdHDgC6MNLXEhAIMLTi8tfufQ\""
       ],
       "Date": [
-        "Thu, 27 Aug 2026 11:29:54 GMT"
+        "Thu, 27 Aug 2026 12:16:08 GMT"
       ],
       "Connection": [
         "keep-alive"
@@ -198,7 +225,7 @@
         "1.1 fly.io"
       ],
       "fly-request-id": [
-        "01M11FQMECS62CTWRNXEX8JVEX-jnb"
+        "01M11JC9BA7X6J72K8T9V218XC-jnb"
       ],
       "Content-Type": [
         "application/json; charset=utf-8"
@@ -210,30 +237,30 @@
     "checks": [
       {
         "header": "Strict-Transport-Security",
-        "present": false,
-        "severity": "WARN"
+        "present": true,
+        "severity": "PASS"
       },
       {
         "header": "X-Content-Type-Options",
-        "present": false,
-        "severity": "WARN"
+        "present": true,
+        "severity": "PASS"
       },
       {
         "header": "Content-Security-Policy",
-        "present": false,
-        "severity": "WARN"
+        "present": true,
+        "severity": "PASS"
       },
       {
         "header": "Referrer-Policy",
-        "present": false,
-        "severity": "WARN"
+        "present": true,
+        "severity": "PASS"
       },
       {
         "header": "X-Frame-Options",
-        "present": false,
-        "severity": "WARN"
+        "present": true,
+        "severity": "PASS"
       }
     ],
-    "timestamp": "2026-08-27T11:29:54.9532426+00:00"
+    "timestamp": "2026-08-27T12:16:08.8032055+00:00"
   }
 ]

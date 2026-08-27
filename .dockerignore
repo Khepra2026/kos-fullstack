@@ -7,3 +7,11 @@ release
 .env
 .env.local
 *.log
+docs/
+supabase/
+schema.sql
+evidence/
+reports/
+*.zip
+KOS-*.zip
+redocly.yaml

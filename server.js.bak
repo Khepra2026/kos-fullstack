@@ -179,35 +179,16 @@ app.use('/api', (req, res) => {
   });
 });
 
-// --- BIG FOUR FIX P0 - 404 ROUTING - API = 404 JSON, FRONT = SPA ---
+// --- SPA FALLBACK - UNIQUEMENT pour non-API ---
 app.get('*', (req, res) => {
-  const host = (req.get('host') || '').toLowerCase();
-  const isApiHost = host.includes('api') || host.includes('khepraexperts.fly.dev') === false && host.includes('kos-fullstack') === false ? false : host.includes('api');
-  // Simplifié: si c'est l'app api-khepraexperts ou si path non-frontend => 404 JSON
-  const isApiRequest = req.path.startsWith('/api') || 
-                       req.path.startsWith('/health') || 
-                       req.path.startsWith('/ready') || 
-                       req.path.startsWith('/version') || 
-                       req.path.startsWith('/openapi.json') ||
-                       req.path === '/nonexistent-route-xyz' ||
-                       !req.accepts('html'); // API clients n'acceptent pas html
-
-  // Sur api.khepraexperts.com, TOUT ce qui n'est pas défini => 404 JSON
-  if (host.includes('api-khepraexperts') || host.includes('api.khepraexperts.com') || isApiRequest || req.path.startsWith('/nonexistent')) {
-    return res.status(404).json({
-      detail: 'Not Found',
-      code: 'RESOURCE_NOT_FOUND',
-      path: req.path,
-      method: req.method,
-      timestamp: new Date().toISOString()
-    });
+  if (req.path.startsWith('/api') || req.path.startsWith('/health') || req.path.startsWith('/ready') || req.path.startsWith('/version') || req.path.startsWith('/openapi.json')) {
+    return res.status(404).json({ error: 'API not found: ' + req.path, code: 'RESOURCE_NOT_FOUND' });
   }
-
-  // SPA fallback uniquement pour kos-fullstack (frontend)
   const indexPath = path.join(publicDir, 'index.html');
   if (fs.existsSync(indexPath)) return res.sendFile(indexPath);
-  return res.status(404).json({ detail: 'Not Found', code: 'RESOURCE_NOT_FOUND' });
+  res.status(404).send(`Not Found - public/index.html missing: ${fs.existsSync(publicDir) ? fs.readdirSync(publicDir).join(', ') : 'public dir not found'}`);
 });
+
 // --- START ---
 const PORT = Number(process.env.PORT || 4000);
 app.listen(PORT, '0.0.0.0', () => console.log(`[READY] KOS v3.0.0-bigfour running on 0.0.0.0:${PORT} • publicDir=${publicDir}`));
