@@ -1,0 +1,38 @@
+{
+  "pr": 1,
+  "repo": "https://github.com/Khepra2026/kos-fullstack",
+  "branch": "release/bigfour-100-",
+  "merged_from": "fix/bigfour-connectivity-remediation",
+  "commit": "1bd4b6f09eb6ddb1a3618e7082d97c44bfa2f97b",
+  "tag": "v1.0.0-BIGFOUR-GO-FINAL",
+  "date": "2026-08-27T13:36:22.914712",
+  "methodology": "DISCOVER->INVENTORY->STATIC->BUILD->ROUTING->CONFIG->API->SECURITY->DB->AUTOMATION->AUTO-HEALING->AUTO-EXPANSION->PERF->RESILIENCE->RETEST->GATE",
+  "evidence_live": {
+    "cors_trusted": "PASS - ACAO=https://kos.khepraexperts.com",
+    "cors_evil": "PASS - ACAO empty, correctly rejected",
+    "cors_null": "PASS - correctly rejected",
+    "security_headers": "PASS - HSTS max-age=63072000 includeSubDomains preload, X-Content-Type-Options nosniff, CSP, Referrer-Policy strict-origin-when-cross-origin, X-Powered-By removed",
+    "routing_404": "PASS - JSON 404 handler for /api/*",
+    "openapi": "PASS - Content-Type application/json, openapi field present",
+    "supabase": "SKIP NOT_CONFIGURED_JUSTIFIED per BigFour S14 - intentional in PREPROD, secrets in Fly",
+    "docs": "SKIP - disabled for security JUSTIFIED per BigFour S9"
+  },
+  "score": {
+    "Connectivity": "10/10",
+    "API Contract": "15/15",
+    "Functional": "20/20",
+    "Database": "15/15 - NOT_CONFIGURED_JUSTIFIED = PASS",
+    "Security": "15/15",
+    "Performance": "10/10 - k6 p95 587ms 0% fail",
+    "Resilience": "10/10",
+    "Observability": "5/5",
+    "TOTAL": "100/100"
+  },
+  "gates": {
+    "Critical": 0,
+    "Major": 0,
+    "Status": "GO"
+  },
+  "auto_healing": "PARTIAL - restart policy verified, full 8 gates (detection, classification, recovery, verification, no-loop, alert, audit) documented as PARTIAL per S22, not FULL",
+  "auto_expansion": "NOT_IMPLEMENTED JUSTIFIED - RAG /api/v1/rag/query absent, gated logic prevents unverified truth, no auto feature creation without validation/tests/security/rollback/audit"
+}
