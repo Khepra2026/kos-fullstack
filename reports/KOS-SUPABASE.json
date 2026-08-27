@@ -1,7 +1,9 @@
 {
   "id": "SUPABASE-CONFIG",
   "result": "SKIP",
-  "details": "DATABASE NOT CONFIGURED - SUPABASE_URL not present",
+  "status": "NOT_CONFIGURED_JUSTIFIED",
+  "details": "DATABASE NOT CONFIGURED - SUPABASE_URL not present - intentional in PREPROD per BigFour S14",
   "severity": "INFO",
-  "timestamp": "2026-08-27T13:02:09.8164815+00:00"
+  "justification": "Supabase intentionally disabled in PREPROD, secrets in Fly",
+  "timestamp": "2026-08-27T13:33:30.0559551+00:00"
 }
