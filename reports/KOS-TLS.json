@@ -3,7 +3,7 @@
     "id": "TLS-FRONTEND",
     "target": "https://kos.khepraexperts.com",
     "result": "PASS",
-    "latency_ms": 928,
+    "latency_ms": 815,
     "http_status": 200,
     "tls_valid": true,
     "cert_notAfter": "2026-11-22T09:05:49+00:00",
@@ -11,13 +11,13 @@
     "cert_subject": "CN=kos.khepraexperts.com",
     "cert_issuer": "CN=YE1, O=Let's Encrypt, C=US",
     "error": null,
-    "timestamp": "2026-08-27T10:35:38.3116555+00:00"
+    "timestamp": "2026-08-27T12:42:26.4148656+00:00"
   },
   {
     "id": "TLS-API",
     "target": "https://api.khepraexperts.com",
     "result": "PASS",
-    "latency_ms": 864,
+    "latency_ms": 950,
     "http_status": 200,
     "tls_valid": true,
     "cert_notAfter": "2026-11-22T15:25:18+00:00",
@@ -25,13 +25,13 @@
     "cert_subject": "CN=api.khepraexperts.com",
     "cert_issuer": "CN=YE2, O=Let's Encrypt, C=US",
     "error": null,
-    "timestamp": "2026-08-27T10:35:39.6812496+00:00"
+    "timestamp": "2026-08-27T12:42:27.7453814+00:00"
   },
   {
     "id": "TLS-API-HEALTH",
     "target": "https://api.khepraexperts.com/health",
     "result": "PASS",
-    "latency_ms": 453,
+    "latency_ms": 531,
     "http_status": 200,
     "tls_valid": true,
     "cert_notAfter": "2026-11-22T15:25:18+00:00",
@@ -39,6 +39,6 @@
     "cert_subject": "CN=api.khepraexperts.com",
     "cert_issuer": "CN=YE2, O=Let's Encrypt, C=US",
     "error": null,
-    "timestamp": "2026-08-27T10:35:40.5359738+00:00"
+    "timestamp": "2026-08-27T12:42:28.6547706+00:00"
   }
 ]

@@ -2,12 +2,12 @@
   "owasp": [
     {
       "severity": "INFO",
-      "id": "OWASP-PASS",
-      "result": "PASS"
+      "result": "PASS",
+      "id": "OWASP-PASS"
     }
   ],
-  "secrets": [],
   "summary": {
     "total": 0
-  }
+  },
+  "secrets": []
 }

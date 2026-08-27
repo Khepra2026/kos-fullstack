@@ -4,69 +4,69 @@
     "target": "kos.khepraexperts.com",
     "type": "A",
     "result": "PASS",
-    "latency_ms": 393,
-    "records": "\r\nName                           Type   TTL   Section    NameHost\r\n----                           ----   ---   -------    --------\r\nkos.khepraexperts.com          CNAME  4989  Answer     kos-fullstack.fly.dev\r\n\r\nName       : kos-fullstack.fly.dev\r\nQueryType  : A\r\nTTL        : 274\r\nSection    : Answer\r\nIP4Address : 66.241.125.166\r\n\r\n\r\n",
+    "latency_ms": 799,
+    "records": "\r\nName                           Type   TTL   Section    NameHost\r\n----                           ----   ---   -------    --------\r\nkos.khepraexperts.com          CNAME  6434  Answer     kos-fullstack.fly.dev\r\n\r\nName       : kos-fullstack.fly.dev\r\nQueryType  : A\r\nTTL        : 231\r\nSection    : Answer\r\nIP4Address : 66.241.125.166\r\n\r\n\r\n",
     "error": null,
-    "timestamp": "2026-08-27T11:00:11.5068277+00:00"
+    "timestamp": "2026-08-27T12:42:18.4028970+00:00"
   },
   {
     "id": "DNS-AAAA-kos.khepraexperts.com",
     "target": "kos.khepraexperts.com",
     "type": "AAAA",
     "result": "PASS",
-    "latency_ms": 99,
-    "records": "\r\nName                           Type   TTL   Section    NameHost\r\n----                           ----   ---   -------    --------\r\nkos.khepraexperts.com          CNAME  4989  Answer     kos-fullstack.fly.dev\r\n\r\nName       : kos-fullstack.fly.dev\r\nQueryType  : AAAA\r\nTTL        : 500\r\nSection    : Answer\r\nIP6Address : 2a09:8280:1::17a:8b19:0\r\n\r\n\r\n",
+    "latency_ms": 98,
+    "records": "\r\nName                           Type   TTL   Section    NameHost\r\n----                           ----   ---   -------    --------\r\nkos.khepraexperts.com          CNAME  6434  Answer     kos-fullstack.fly.dev\r\n\r\nName       : kos-fullstack.fly.dev\r\nQueryType  : AAAA\r\nTTL        : 500\r\nSection    : Answer\r\nIP6Address : 2a09:8280:1::17a:8b19:0\r\n\r\n\r\n",
     "error": null,
-    "timestamp": "2026-08-27T11:00:11.6226278+00:00"
+    "timestamp": "2026-08-27T12:42:18.5254118+00:00"
   },
   {
     "id": "DNS-CNAME-kos.khepraexperts.com",
     "target": "kos.khepraexperts.com",
     "type": "CNAME",
     "result": "PASS",
-    "latency_ms": 68,
-    "records": "\r\nName                           Type   TTL   Section    NameHost\r\n----                           ----   ---   -------    --------\r\nkos.khepraexperts.com          CNAME  3401  Answer     kos-fullstack.fly.dev\r\n\r\n",
+    "latency_ms": 15,
+    "records": "\r\nName                           Type   TTL   Section    NameHost\r\n----                           ----   ---   -------    --------\r\nkos.khepraexperts.com          CNAME  6434  Answer     kos-fullstack.fly.dev\r\n\r\n",
     "error": null,
-    "timestamp": "2026-08-27T11:00:11.6932884+00:00"
+    "timestamp": "2026-08-27T12:42:18.5420270+00:00"
   },
   {
     "id": "DNS-A-api.khepraexperts.com",
     "target": "api.khepraexperts.com",
     "type": "A",
     "result": "PASS",
-    "latency_ms": 14,
-    "records": "\r\nName                           Type   TTL   Section    NameHost\r\n----                           ----   ---   -------    --------\r\napi.khepraexperts.com          CNAME  4989  Answer     kos-fullstack.fly.dev\r\n\r\nName       : kos-fullstack.fly.dev\r\nQueryType  : A\r\nTTL        : 274\r\nSection    : Answer\r\nIP4Address : 66.241.125.166\r\n\r\n\r\n",
+    "latency_ms": 13,
+    "records": "\r\nName                           Type   TTL   Section    NameHost\r\n----                           ----   ---   -------    --------\r\napi.khepraexperts.com          CNAME  6374  Answer     kos-fullstack.fly.dev\r\n\r\nName       : kos-fullstack.fly.dev\r\nQueryType  : A\r\nTTL        : 231\r\nSection    : Answer\r\nIP4Address : 66.241.125.166\r\n\r\n\r\n",
     "error": null,
-    "timestamp": "2026-08-27T11:00:11.7144565+00:00"
+    "timestamp": "2026-08-27T12:42:18.5577056+00:00"
   },
   {
     "id": "DNS-AAAA-api.khepraexperts.com",
     "target": "api.khepraexperts.com",
     "type": "AAAA",
     "result": "PASS",
-    "latency_ms": 57,
-    "records": "\r\nName                           Type   TTL   Section    NameHost\r\n----                           ----   ---   -------    --------\r\napi.khepraexperts.com          CNAME  6975  Answer     kos-fullstack.fly.dev\r\n\r\nName       : kos-fullstack.fly.dev\r\nQueryType  : AAAA\r\nTTL        : 500\r\nSection    : Answer\r\nIP6Address : 2a09:8280:1::17a:8b19:0\r\n\r\n\r\n",
+    "latency_ms": 20,
+    "records": "\r\nName                           Type   TTL   Section    NameHost\r\n----                           ----   ---   -------    --------\r\napi.khepraexperts.com          CNAME  6374  Answer     kos-fullstack.fly.dev\r\n\r\nName       : kos-fullstack.fly.dev\r\nQueryType  : AAAA\r\nTTL        : 500\r\nSection    : Answer\r\nIP6Address : 2a09:8280:1::17a:8b19:0\r\n\r\n\r\n",
     "error": null,
-    "timestamp": "2026-08-27T11:00:11.7745784+00:00"
+    "timestamp": "2026-08-27T12:42:18.5804500+00:00"
   },
   {
     "id": "DNS-CNAME-api.khepraexperts.com",
     "target": "api.khepraexperts.com",
     "type": "CNAME",
     "result": "PASS",
-    "latency_ms": 22,
-    "records": "\r\nName                           Type   TTL   Section    NameHost\r\n----                           ----   ---   -------    --------\r\napi.khepraexperts.com          CNAME  3406  Answer     kos-fullstack.fly.dev\r\n\r\n",
+    "latency_ms": 85,
+    "records": "\r\nName                           Type   TTL   Section    NameHost\r\n----                           ----   ---   -------    --------\r\napi.khepraexperts.com          CNAME  6374  Answer     kos-fullstack.fly.dev\r\n\r\n",
     "error": null,
-    "timestamp": "2026-08-27T11:00:11.7988388+00:00"
+    "timestamp": "2026-08-27T12:42:18.6667568+00:00"
   },
   {
     "id": "DNS-NS-kos.khepraexperts.com",
     "target": "kos.khepraexperts.com",
     "type": "NS",
     "result": "PASS",
-    "latency_ms": 174,
-    "records": "\r\nName                           Type   TTL   Section    NameHost\r\n----                           ----   ---   -------    --------\r\nkos.khepraexperts.com          CNAME  4989  Answer     kos-fullstack.fly.dev\r\n\r\nName                   : fly.dev\r\nQueryType              : SOA\r\nTTL                    : 60\r\nSection                : Authority\r\nNameAdministrator      : ops.fly.io\r\nSerialNumber           : 1787828410\r\nTimeToZoneRefresh      : 86400\r\nTimeToZoneFailureRetry : 7200\r\nTimeToExpiration       : 604800\r\nDefaultTTL             : 300\r\n\r\n\r\n",
+    "latency_ms": 141,
+    "records": "\r\nName                           Type   TTL   Section    NameHost\r\n----                           ----   ---   -------    --------\r\nkos.khepraexperts.com          CNAME  6434  Answer     kos-fullstack.fly.dev\r\n\r\nName                   : fly.dev\r\nQueryType              : SOA\r\nTTL                    : 60\r\nSection                : Authority\r\nNameAdministrator      : ops.fly.io\r\nSerialNumber           : 1787834532\r\nTimeToZoneRefresh      : 86400\r\nTimeToZoneFailureRetry : 7200\r\nTimeToExpiration       : 604800\r\nDefaultTTL             : 300\r\n\r\n\r\n",
     "error": null,
-    "timestamp": "2026-08-27T11:00:11.9987531+00:00"
+    "timestamp": "2026-08-27T12:42:18.8193362+00:00"
   }
 ]

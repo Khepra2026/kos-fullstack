@@ -4,83 +4,83 @@
     "target": "https://kos.khepraexperts.com/",
     "method": "GET",
     "result": "PASS",
-    "latency_ms": 921,
+    "latency_ms": 748,
     "http_status": 200,
     "expected": 200,
     "body_snippet": "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n<meta charset=\"utf-8\"/>\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/>\n<title>KOS • Khepra Experts - RegTech Enterprise Hub</title>\n<link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap\" rel=\"stylesheet\">\n<script src=\"https://cdn.tailwindcss.com\"></script>\n<style>*{font-family:Inter,sans-serif}.mono{font-family:'JetBrains Mono',monospace}.bg-kos{background:#0A0E",
     "error": null,
-    "timestamp": "2026-08-27T10:35:41.5128952+00:00"
+    "timestamp": "2026-08-27T12:42:29.4942906+00:00"
   },
   {
     "id": "API-HEALTH",
     "target": "https://api.khepraexperts.com/health",
     "method": "GET",
     "result": "PASS",
-    "latency_ms": 820,
+    "latency_ms": 1094,
     "http_status": 200,
     "expected": 200,
-    "body_snippet": "{\"status\":\"ONLINE\",\"system\":\"KOS RegTech Enterprise Hub\",\"version\":\"3.0.0-bigfour\",\"region\":\"cdg\",\"uptime\":50490.867714392,\"supabase\":\"mock\",\"timestamp\":\"2026-08-27T10:35:42.273Z\"}",
+    "body_snippet": "{\"status\":\"ONLINE\",\"system\":\"KOS RegTech Enterprise Hub\",\"version\":\"3.0.0-bigfour\",\"region\":\"cdg\",\"uptime\":1670.413714716,\"supabase\":\"mock\",\"timestamp\":\"2026-08-27T12:42:30.649Z\"}",
     "error": null,
-    "timestamp": "2026-08-27T10:35:42.3334532+00:00"
+    "timestamp": "2026-08-27T12:42:30.5891292+00:00"
   },
   {
     "id": "API-READY",
     "target": "https://api.khepraexperts.com/ready",
     "method": "GET",
     "result": "PASS",
-    "latency_ms": 875,
+    "latency_ms": 1071,
     "http_status": 200,
     "expected": 200,
-    "body_snippet": "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n<meta charset=\"utf-8\"/>\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/>\n<title>KOS • Khepra Experts - RegTech Enterprise Hub</title>\n<link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap\" rel=\"stylesheet\">\n<script src=\"https://cdn.tailwindcss.com\"></script>\n<style>*{font-family:Inter,sans-serif}.mono{font-family:'JetBrains Mono',monospace}.bg-kos{background:#0A0E",
+    "body_snippet": "{\"ready\":true,\"timestamp\":\"2026-08-27T12:42:31.724Z\"}",
     "error": null,
-    "timestamp": "2026-08-27T10:35:43.2098098+00:00"
+    "timestamp": "2026-08-27T12:42:31.6612894+00:00"
   },
   {
     "id": "API-VERSION",
     "target": "https://api.khepraexperts.com/version",
     "method": "GET",
     "result": "PASS",
-    "latency_ms": 825,
+    "latency_ms": 925,
     "http_status": 200,
     "expected": 200,
-    "body_snippet": "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n<meta charset=\"utf-8\"/>\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/>\n<title>KOS • Khepra Experts - RegTech Enterprise Hub</title>\n<link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap\" rel=\"stylesheet\">\n<script src=\"https://cdn.tailwindcss.com\"></script>\n<style>*{font-family:Inter,sans-serif}.mono{font-family:'JetBrains Mono',monospace}.bg-kos{background:#0A0E",
+    "body_snippet": "{\"version\":\"3.0.0-bigfour\",\"commit\":\"7fdc8b5333af26618158d154e6560835eae7c57d\",\"branch\":\"release/bigfour-100-\",\"build\":\"2026-08-27T12:42:32.637Z\"}",
     "error": null,
-    "timestamp": "2026-08-27T10:35:44.0356232+00:00"
+    "timestamp": "2026-08-27T12:42:32.5876569+00:00"
   },
   {
     "id": "API-OPENAPI",
     "target": "https://api.khepraexperts.com/openapi.json",
     "method": "GET",
     "result": "PASS",
-    "latency_ms": 908,
+    "latency_ms": 786,
     "http_status": 200,
     "expected": 200,
-    "body_snippet": "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n<meta charset=\"utf-8\"/>\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/>\n<title>KOS • Khepra Experts - RegTech Enterprise Hub</title>\n<link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap\" rel=\"stylesheet\">\n<script src=\"https://cdn.tailwindcss.com\"></script>\n<style>*{font-family:Inter,sans-serif}.mono{font-family:'JetBrains Mono',monospace}.bg-kos{background:#0A0E",
+    "body_snippet": "{\r\n  \"openapi\": \"3.0.1\",\r\n  \"info\": {\r\n    \"title\": \"KHEPRA EXPERTS API\",\r\n    \"description\": \"Cabinet de conseil stratégique, réglementaire et financier pour l'Afrique francophone. Accès aux services, diagnostics et ressources.\",\r\n    \"version\": \"v1.0.0\",\r\n    \"contact\": {\r\n      \"name\": \"KHEPRA EXPERTS\",\r\n      \"email\": \"contact@khepraexperts.com\",\r\n      \"url\": \"https://khepraexperts.com/contact/\"\r\n    }\r\n  },\r\n  \"servers\": [\r\n    {\r\n      \"url\": \"https://khepraexperts.com\",\r\n      \"descripti",
     "error": null,
-    "timestamp": "2026-08-27T10:35:44.9449720+00:00"
+    "timestamp": "2026-08-27T12:42:33.3746484+00:00"
   },
   {
     "id": "API-DOCS",
     "target": "https://api.khepraexperts.com/docs",
     "method": "GET",
-    "result": "PASS",
+    "result": "FAIL",
     "latency_ms": 905,
-    "http_status": 200,
+    "http_status": 404,
     "expected": null,
-    "body_snippet": "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n<meta charset=\"utf-8\"/>\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/>\n<title>KOS • Khepra Experts - RegTech Enterprise Hub</title>\n<link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap\" rel=\"stylesheet\">\n<script src=\"https://cdn.tailwindcss.com\"></script>\n<style>*{font-family:Inter,sans-serif}.mono{font-family:'JetBrains Mono',monospace}.bg-kos{background:#0A0E",
+    "body_snippet": "{\"detail\":\"Not Found\",\"code\":\"RESOURCE_NOT_FOUND\",\"path\":\"/docs\",\"method\":\"GET\",\"timestamp\":\"2026-08-27T12:42:34.329Z\"}",
     "error": null,
-    "timestamp": "2026-08-27T10:35:45.8530258+00:00"
+    "timestamp": "2026-08-27T12:42:34.2822638+00:00"
   },
   {
     "id": "API-ROOT",
     "target": "https://api.khepraexperts.com/",
     "method": "GET",
     "result": "PASS",
-    "latency_ms": 816,
+    "latency_ms": 840,
     "http_status": 200,
     "expected": null,
     "body_snippet": "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n<meta charset=\"utf-8\"/>\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/>\n<title>KOS • Khepra Experts - RegTech Enterprise Hub</title>\n<link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap\" rel=\"stylesheet\">\n<script src=\"https://cdn.tailwindcss.com\"></script>\n<style>*{font-family:Inter,sans-serif}.mono{font-family:'JetBrains Mono',monospace}.bg-kos{background:#0A0E",
     "error": null,
-    "timestamp": "2026-08-27T10:35:46.6701539+00:00"
+    "timestamp": "2026-08-27T12:42:35.1235412+00:00"
   }
 ]
