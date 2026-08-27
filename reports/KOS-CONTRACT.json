@@ -1,0 +1,43 @@
+[
+  {
+    "id": "CONTRACT-OPENAPI-FETCH",
+    "result": "FAIL",
+    "details": "Conversion from JSON failed with error: Unexpected character encountered while parsing value: <. Path '', line 0, position 0.",
+    "timestamp": "2026-08-27T11:16:39.8615280+00:00"
+  },
+  {
+    "id": "CONTRACT-KNOWN-/api/v1/rag/query",
+    "route": "/api/v1/rag/query",
+    "http_status": 404,
+    "result": "SKIP",
+    "timestamp": "2026-08-27T11:16:40.6480121+00:00"
+  },
+  {
+    "id": "CONTRACT-KNOWN-/api/v1/crawlers",
+    "route": "/api/v1/crawlers",
+    "http_status": 404,
+    "result": "SKIP",
+    "timestamp": "2026-08-27T11:16:41.4726053+00:00"
+  },
+  {
+    "id": "CONTRACT-KNOWN-/api/v1/watchtower/alerts",
+    "route": "/api/v1/watchtower/alerts",
+    "http_status": 404,
+    "result": "SKIP",
+    "timestamp": "2026-08-27T11:16:42.4617164+00:00"
+  },
+  {
+    "id": "CONTRACT-KNOWN-/api/v1/payments/paydunya/checkout",
+    "route": "/api/v1/payments/paydunya/checkout",
+    "http_status": 404,
+    "result": "SKIP",
+    "timestamp": "2026-08-27T11:16:43.3168753+00:00"
+  },
+  {
+    "id": "CONTRACT-KNOWN-/admin/certification",
+    "route": "/admin/certification",
+    "http_status": 200,
+    "result": "PASS",
+    "timestamp": "2026-08-27T11:16:44.2810149+00:00"
+  }
+]

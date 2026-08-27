@@ -1,0 +1,72 @@
+[
+  {
+    "id": "NEG-RAG-EMPTY",
+    "target": "https://api.khepraexperts.com/api/v1/rag/query",
+    "method": "POST",
+    "result": "PASS",
+    "http_status": 404,
+    "latency_ms": 823,
+    "body_snippet": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Cannot POST /api/v1/rag/query</pre>\n</body>\n</html>\n",
+    "timestamp": "2026-08-27T10:35:59.0472479+00:00"
+  },
+  {
+    "id": "NEG-RAG-INVALID-JSON",
+    "target": "https://api.khepraexperts.com/api/v1/rag/query",
+    "method": "POST",
+    "result": "PASS",
+    "http_status": 400,
+    "latency_ms": 795,
+    "body_snippet": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Bad Request</pre>\n</body>\n</html>\n",
+    "timestamp": "2026-08-27T10:35:59.8434291+00:00"
+  },
+  {
+    "id": "NEG-RAG-HUGE",
+    "target": "https://api.khepraexperts.com/api/v1/rag/query",
+    "method": "POST",
+    "result": "PASS",
+    "http_status": 404,
+    "latency_ms": 864,
+    "body_snippet": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Cannot POST /api/v1/rag/query</pre>\n</body>\n</html>\n",
+    "timestamp": "2026-08-27T10:36:00.7087649+00:00"
+  },
+  {
+    "id": "NEG-RAG-WRONG-TYPE",
+    "target": "https://api.khepraexperts.com/api/v1/rag/query",
+    "method": "POST",
+    "result": "PASS",
+    "http_status": 404,
+    "latency_ms": 858,
+    "body_snippet": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Cannot POST /api/v1/rag/query</pre>\n</body>\n</html>\n",
+    "timestamp": "2026-08-27T10:36:01.5675126+00:00"
+  },
+  {
+    "id": "NEG-RAG-UNKNOWN-PARAM",
+    "target": "https://api.khepraexperts.com/api/v1/rag/query",
+    "method": "POST",
+    "result": "PASS",
+    "http_status": 404,
+    "latency_ms": 739,
+    "body_snippet": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Cannot POST /api/v1/rag/query</pre>\n</body>\n</html>\n",
+    "timestamp": "2026-08-27T10:36:02.3075943+00:00"
+  },
+  {
+    "id": "NEG-404",
+    "target": "https://api.khepraexperts.com/nonexistent-route-xyz",
+    "method": "GET",
+    "result": "WARN",
+    "http_status": 200,
+    "latency_ms": 804,
+    "body_snippet": "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n<meta charset=\"utf-8\"/>\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/>\n<title>KOS • Khepra Experts - RegTech Enterprise Hub</title>\n<link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap\" rel=\"stylesheet\">\n<script src=\"https://cdn.tailwindcss.com\"></script>\n<style>*{font-family:Inter,sans-serif}.mono{font-family:'JetBrains Mono',monospace}.bg-kos{background:#0A0E",
+    "timestamp": "2026-08-27T10:36:03.1128543+00:00"
+  },
+  {
+    "id": "NEG-CRAWLERS-INJECTION",
+    "target": "https://api.khepraexperts.com/api/v1/crawlers",
+    "method": "GET",
+    "result": "PASS",
+    "http_status": 404,
+    "latency_ms": 791,
+    "body_snippet": "{\"error\":\"API not found: /api/v1/crawlers\"}",
+    "timestamp": "2026-08-27T10:36:03.9045450+00:00"
+  }
+]

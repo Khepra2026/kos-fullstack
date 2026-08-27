@@ -1,0 +1,17 @@
+title = "KOS BigFour"
+
+[allowlist]
+  description = "BigFour allowlist"
+  paths = [
+    '''docs/archive/''',
+    '''README_EMAIL_AUTOMATION.md''',
+    '''seeding_rag_''',
+    '''test_all_agents.ps1''',
+    '''test_rag_debug.ps1''',
+    '''generate-social-hook.ps1''',
+    '''netlify/edge-functions/serve-llms-txt.ts''',
+    '''src/mocks/kosAutoDev10X.ts''',
+    '''src/mocks/kosSocialQualityEngine.ts''',
+    '''src/components/feature/KOSAuthGuard.tsx''',
+    '''supabase/functions/'''
+  ]

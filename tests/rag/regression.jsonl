@@ -1,0 +1,10 @@
+{"question":"Qu'est-ce que la circulaire BCEAO 002-2024?","reponse_attendue":"Circulaire relative à LCB-FT","source":"bceao.gov.bj","statut":"valide","grounding_score":0.985,"date":"2024-01-15"}
+{"question":"Définition Gouvernance OHADA Acte Uniforme?","reponse_attendue":"Ensemble règles gestion sociétés commerciales","source":"ohada.org","statut":"valide","grounding_score":0.97,"date":"2023-06-01"}
+{"question":"Ratio solvabilité UEMOA minimum?","reponse_attendue":"11.5% avec coussin conservation","source":"bceao.int","statut":"valide","grounding_score":0.99,"date":"2024-02-01"}
+{"question":"Seuil déclaration soupçon CENTIF?","reponse_attendue":"Opération suspecte sans seuil","source":"centif.tg","statut":"valide","grounding_score":0.96,"date":"2024-03-10"}
+{"question":"COBAC Règlement 02-2016 LCB?","reponse_attendue":"Dispositif LCB-FT CEMAC","source":"sgcobac.org","statut":"valide","grounding_score":0.98,"date":"2016-08-15"}
+{"question":"Question piège hors périmètre?","reponse_attendue":"Je ne sais pas - hors périmètre KOS","source":"none","statut":"rejete","grounding_score":0.0,"date":"2026-08-26"}
+{"question":"Procédure OHADA injonction payer?","reponse_attendue":"Acte uniforme recouvrement créances","source":"ohada.com","statut":"valide","grounding_score":0.97,"date":"2023-04-10"}
+{"question":"Définition bénéficiaire effectif GAFI?","reponse_attendue":"Personne physique contrôle ultime","source":"fatf-gafi.org","statut":"valide","grounding_score":0.99,"date":"2022-03-15"}
+{"question":"Instruction BCEAO 008 KYC?","reponse_attendue":"Identification client et vigilance","source":"bceao.int","statut":"valide","grounding_score":0.98,"date":"2023-09-20"}
+{"question":"Sanction non-conformité BCEAO?","reponse_attendue":"Sanction pécuniaire et disciplinaire Commission Bancaire","source":"bceao.int","statut":"valide","grounding_score":0.95,"date":"2024-01-01"}

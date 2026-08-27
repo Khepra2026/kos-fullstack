@@ -1,0 +1,98 @@
+[
+  {
+    "id": "SMOKE-HEALTH",
+    "target": "https://api.khepraexperts.com/health",
+    "method": "GET",
+    "result": "PASS",
+    "http_status": 200,
+    "latency_ms": 944,
+    "is_json": true,
+    "body_snippet": "{\"status\":\"ONLINE\",\"system\":\"KOS RegTech Enterprise Hub\",\"version\":\"3.0.0-bigfour\",\"region\":\"cdg\",\"uptime\":50496.136997209,\"supabase\":\"mock\",\"timestamp\":\"2026-08-27T10:35:47.542Z\"}",
+    "error": null,
+    "timestamp": "2026-08-27T10:35:47.6610635+00:00"
+  },
+  {
+    "id": "SMOKE-READY",
+    "target": "https://api.khepraexperts.com/ready",
+    "method": "GET",
+    "result": "PASS",
+    "http_status": 200,
+    "latency_ms": 818,
+    "is_json": false,
+    "body_snippet": "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n<meta charset=\"utf-8\"/>\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/>\n<title>KOS • Khepra Experts - RegTech Enterprise Hub</title>\n<link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap\" rel=\"stylesheet\">\n<script src=\"https://cdn.tailwindcss.com\"></script>\n<style>*{font-family:Inter,sans-serif}.mono{font-family:'JetBrains Mono',monospace}.bg-kos{background:#0A0E14}.card{background:linear-gradient(180deg,#121821 0%,#0F1622 100%);border:1px solid #242F40}.gold{color:#C9A86A}.gold-bg{background:#C9A86A}.border-gold{border-color:#C9A86A}</style>\n</head>\n<body class=\"bg-kos text-[#F5F5F0] min-h-screen\">\n<header class=\"sticky top-0 z-50 backdrop-blur-xl bg-[#0A0",
+    "error": null,
+    "timestamp": "2026-08-27T10:35:48.5033512+00:00"
+  },
+  {
+    "id": "SMOKE-VERSION",
+    "target": "https://api.khepraexperts.com/version",
+    "method": "GET",
+    "result": "PASS",
+    "http_status": 200,
+    "latency_ms": 845,
+    "is_json": false,
+    "body_snippet": "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n<meta charset=\"utf-8\"/>\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/>\n<title>KOS • Khepra Experts - RegTech Enterprise Hub</title>\n<link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap\" rel=\"stylesheet\">\n<script src=\"https://cdn.tailwindcss.com\"></script>\n<style>*{font-family:Inter,sans-serif}.mono{font-family:'JetBrains Mono',monospace}.bg-kos{background:#0A0E14}.card{background:linear-gradient(180deg,#121821 0%,#0F1622 100%);border:1px solid #242F40}.gold{color:#C9A86A}.gold-bg{background:#C9A86A}.border-gold{border-color:#C9A86A}</style>\n</head>\n<body class=\"bg-kos text-[#F5F5F0] min-h-screen\">\n<header class=\"sticky top-0 z-50 backdrop-blur-xl bg-[#0A0",
+    "error": null,
+    "timestamp": "2026-08-27T10:35:49.3511621+00:00"
+  },
+  {
+    "id": "SMOKE-OPENAPI",
+    "target": "https://api.khepraexperts.com/openapi.json",
+    "method": "GET",
+    "result": "PASS",
+    "http_status": 200,
+    "latency_ms": 735,
+    "is_json": false,
+    "body_snippet": "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n<meta charset=\"utf-8\"/>\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/>\n<title>KOS • Khepra Experts - RegTech Enterprise Hub</title>\n<link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap\" rel=\"stylesheet\">\n<script src=\"https://cdn.tailwindcss.com\"></script>\n<style>*{font-family:Inter,sans-serif}.mono{font-family:'JetBrains Mono',monospace}.bg-kos{background:#0A0E14}.card{background:linear-gradient(180deg,#121821 0%,#0F1622 100%);border:1px solid #242F40}.gold{color:#C9A86A}.gold-bg{background:#C9A86A}.border-gold{border-color:#C9A86A}</style>\n</head>\n<body class=\"bg-kos text-[#F5F5F0] min-h-screen\">\n<header class=\"sticky top-0 z-50 backdrop-blur-xl bg-[#0A0",
+    "error": null,
+    "timestamp": "2026-08-27T10:35:50.0876196+00:00"
+  },
+  {
+    "id": "SMOKE-RAG-GET-EXPECT-405",
+    "target": "https://api.khepraexperts.com/api/v1/rag/query",
+    "method": "GET",
+    "result": "PASS",
+    "http_status": 404,
+    "latency_ms": 894,
+    "is_json": true,
+    "body_snippet": "{\"error\":\"API not found: /api/v1/rag/query\"}",
+    "error": null,
+    "timestamp": "2026-08-27T10:35:50.9825661+00:00"
+  },
+  {
+    "id": "SMOKE-CRAWLERS",
+    "target": "https://api.khepraexperts.com/api/v1/crawlers",
+    "method": "GET",
+    "result": "PASS",
+    "http_status": 404,
+    "latency_ms": 796,
+    "is_json": true,
+    "body_snippet": "{\"error\":\"API not found: /api/v1/crawlers\"}",
+    "error": null,
+    "timestamp": "2026-08-27T10:35:51.7800093+00:00"
+  },
+  {
+    "id": "SMOKE-WATCHTOWER",
+    "target": "https://api.khepraexperts.com/api/v1/watchtower/alerts",
+    "method": "GET",
+    "result": "PASS",
+    "http_status": 404,
+    "latency_ms": 850,
+    "is_json": true,
+    "body_snippet": "{\"error\":\"API not found: /api/v1/watchtower/alerts\"}",
+    "error": null,
+    "timestamp": "2026-08-27T10:35:52.6310673+00:00"
+  },
+  {
+    "id": "SMOKE-ADMIN-CERT",
+    "target": "https://api.khepraexperts.com/admin/certification",
+    "method": "GET",
+    "result": "PASS",
+    "http_status": 200,
+    "latency_ms": 751,
+    "is_json": false,
+    "body_snippet": "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n<meta charset=\"utf-8\"/>\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/>\n<title>KOS • Khepra Experts - RegTech Enterprise Hub</title>\n<link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap\" rel=\"stylesheet\">\n<script src=\"https://cdn.tailwindcss.com\"></script>\n<style>*{font-family:Inter,sans-serif}.mono{font-family:'JetBrains Mono',monospace}.bg-kos{background:#0A0E14}.card{background:linear-gradient(180deg,#121821 0%,#0F1622 100%);border:1px solid #242F40}.gold{color:#C9A86A}.gold-bg{background:#C9A86A}.border-gold{border-color:#C9A86A}</style>\n</head>\n<body class=\"bg-kos text-[#F5F5F0] min-h-screen\">\n<header class=\"sticky top-0 z-50 backdrop-blur-xl bg-[#0A0",
+    "error": null,
+    "timestamp": "2026-08-27T10:35:53.3845136+00:00"
+  }
+]

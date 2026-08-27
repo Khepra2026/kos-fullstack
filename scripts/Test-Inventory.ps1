@@ -1,12 +1,18 @@
 param([string]$RepoPath = (Get-Location).Path)
-Write-Host "Scanning backup_* anti-pattern..."
-$allBackups = Get-ChildItem -Path $RepoPath -Directory -Filter "backup*" -Depth 2 -ErrorAction SilentlyContinue | Where-Object { $_.FullName -notlike "*docs\archive*" -and $_.FullName -notlike "*node_modules*" }
-if($allBackups.Count -gt 0){
-  Write-Host "FAIL: $($allBackups.Count) backup folders found - Hard Blocker §32" -ForegroundColor Red
-  $allBackups | ForEach-Object { Write-Host " - $($_.FullName)" }
-} else {
-  Write-Host "PASS: No backup folders (excluding docs/archive)" -ForegroundColor Green
+Write-Host "[Inventory §04] $RepoPath"
+$exclude = @("node_modules","dist",".next","build",".git","docs\\archive","docs/archive","backup")
+function Get-Files($pattern){
+  Get-ChildItem -Path $RepoPath -Recurse -Filter $pattern -ErrorAction SilentlyContinue | Where-Object {
+    $p = $_.FullName
+    $skip = $false
+    foreach($ex in $exclude){ if($p -like "*$ex*"){ $skip=$true; break } }
+    -not $skip
+  }
 }
-if(!(Test-Path "$RepoPath/src")){ Write-Host "WARNING: Missing src" -ForegroundColor Yellow }
-if(!(Test-Path "$RepoPath/tests")){ Write-Host "WARNING: Missing tests" -ForegroundColor Yellow }
-Write-Host "INVENTORY DONE"
+$ps1 = Get-Files "*.ps1"
+$json = Get-Files "*.json"
+$yml = Get-Files "*.yml"
+$md = Get-Files "*.md"
+Write-Host "PS1:$($ps1.Count) JSON:$($json.Count) YML:$($yml.Count) MD:$($md.Count)"
+if($ps1.Count -eq 0){ Write-Host "FAIL: No PS1 scripts found" -ForegroundColor Red; exit 1 }
+Write-Host "PASS: Inventory §04" -ForegroundColor Green

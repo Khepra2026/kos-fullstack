@@ -1,0 +1,28 @@
+param(
+  [string]$Api="https://api.khepraexperts.com",
+  [string]$OutJson="reports/KOS-CORS.json"
+)
+function Test-Cors {
+  param($Url,$Origin,$Id)
+  try {
+    $r=Invoke-WebRequest -Uri $Url -Method OPTIONS -Headers @{Origin=$Origin;"Access-Control-Request-Method"="GET"} -TimeoutSec 15 -SkipHttpErrorCheck -ErrorAction Stop
+    $acao=$r.Headers["Access-Control-Allow-Origin"]
+    $acac=$r.Headers["Access-Control-Allow-Credentials"]
+    $danger = ($acao -eq "*" -and $acac -eq "true")
+    [PSCustomObject]@{
+      id=$Id;target=$Url;origin=$Origin;result=($(if($danger){"FAIL"}else{"PASS"}));
+      acao=$acao;acac=$acac;http_status=[int]$r.StatusCode;
+      is_wildcard_danger=$danger;timestamp=(Get-Date -Format o)
+    }
+  } catch {
+    [PSCustomObject]@{id=$Id;target=$Url;origin=$Origin;result="WARN";error=$_.Exception.Message;timestamp=(Get-Date -Format o)}
+  }
+}
+$tests=@()
+$tests+=Test-Cors -Url "$Api/health" -Origin "https://kos.khepraexperts.com" -Id "CORS-ALLOWED-ORIGIN"
+$tests+=Test-Cors -Url "$Api/health" -Origin "https://evil.com" -Id "CORS-EVIL-ORIGIN"
+$tests+=Test-Cors -Url "$Api/api/v1/rag/query" -Origin "https://evil.com" -Id "CORS-EVIL-RAG"
+
+$dir=Split-Path $OutJson -Parent; if($dir -and !(Test-Path $dir)){New-Item -ItemType Directory -Path $dir -Force|Out-Null}
+$tests|ConvertTo-Json -Depth 6 | Set-Content $OutJson -Encoding utf8
+$tests|Format-Table

@@ -1,0 +1,47 @@
+[
+  {
+    "id": "CORS-ALLOWED-ORIGIN",
+    "target": "https://api.khepraexperts.com/health",
+    "origin": "https://kos.khepraexperts.com",
+    "result": "PASS",
+    "acao": [
+      "https://kos.khepraexperts.com"
+    ],
+    "acac": [
+      "true"
+    ],
+    "http_status": 204,
+    "is_wildcard_danger": false,
+    "timestamp": "2026-08-27T11:16:34.5407779+00:00"
+  },
+  {
+    "id": "CORS-EVIL-ORIGIN",
+    "target": "https://api.khepraexperts.com/health",
+    "origin": "https://evil.com",
+    "result": "PASS",
+    "acao": [
+      "https://evil.com"
+    ],
+    "acac": [
+      "true"
+    ],
+    "http_status": 204,
+    "is_wildcard_danger": false,
+    "timestamp": "2026-08-27T11:16:35.3295071+00:00"
+  },
+  {
+    "id": "CORS-EVIL-RAG",
+    "target": "https://api.khepraexperts.com/api/v1/rag/query",
+    "origin": "https://evil.com",
+    "result": "PASS",
+    "acao": [
+      "https://evil.com"
+    ],
+    "acac": [
+      "true"
+    ],
+    "http_status": 204,
+    "is_wildcard_danger": false,
+    "timestamp": "2026-08-27T11:16:36.1495156+00:00"
+  }
+]

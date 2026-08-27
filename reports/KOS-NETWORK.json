@@ -1,0 +1,50 @@
+[
+  {
+    "id": "NET-PING-kos.khepraexperts.com",
+    "target": "kos.khepraexperts.com",
+    "result": "PASS",
+    "latency_ms": 183,
+    "error": null,
+    "timestamp": "2026-08-27T10:35:32.3645748+00:00"
+  },
+  {
+    "id": "NET-PING-api.khepraexperts.com",
+    "target": "api.khepraexperts.com",
+    "result": "PASS",
+    "latency_ms": 198,
+    "error": null,
+    "timestamp": "2026-08-27T10:35:33.7737438+00:00"
+  },
+  {
+    "id": "NET-PING-8.8.8.8",
+    "target": "8.8.8.8",
+    "result": "PASS",
+    "latency_ms": 130,
+    "error": null,
+    "timestamp": "2026-08-27T10:35:35.0546976+00:00"
+  },
+  {
+    "id": "NET-PING-1.1.1.1",
+    "target": "1.1.1.1",
+    "result": "PASS",
+    "latency_ms": 196,
+    "error": null,
+    "timestamp": "2026-08-27T10:35:36.4575596+00:00"
+  },
+  {
+    "id": "NET-TCP-443-kos.khepraexperts.com",
+    "target": "kos.khepraexperts.com",
+    "result": "PASS",
+    "latency_ms": 246,
+    "error": null,
+    "timestamp": "2026-08-27T10:35:36.7099097+00:00"
+  },
+  {
+    "id": "NET-TCP-443-api.khepraexperts.com",
+    "target": "api.khepraexperts.com",
+    "result": "PASS",
+    "latency_ms": 180,
+    "error": null,
+    "timestamp": "2026-08-27T10:35:36.8909134+00:00"
+  }
+]

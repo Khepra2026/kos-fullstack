@@ -1,0 +1,239 @@
+[
+  {
+    "id": "HEADERS-FRONTEND",
+    "target": "https://kos.khepraexperts.com",
+    "result": "PASS",
+    "headers": {
+      "X-Powered-By": [
+        "Express"
+      ],
+      "Vary": [
+        "Origin"
+      ],
+      "Access-Control-Allow-Credentials": [
+        "true"
+      ],
+      "Accept-Ranges": [
+        "bytes"
+      ],
+      "Cache-Control": [
+        "public, max-age=3600"
+      ],
+      "ETag": [
+        "W/\"1992-1a03e90b0e8\""
+      ],
+      "Date": [
+        "Thu, 27 Aug 2026 11:29:52 GMT"
+      ],
+      "Connection": [
+        "keep-alive"
+      ],
+      "Keep-Alive": [
+        "timeout=5"
+      ],
+      "Server": [
+        "Fly/bae4c81b48",
+        "(2026-08-26)"
+      ],
+      "Via": [
+        "1.1 fly.io",
+        "1.1 fly.io"
+      ],
+      "fly-request-id": [
+        "01M11FQJKZCTVVS5HV1N7S7P1E-jnb"
+      ],
+      "Last-Modified": [
+        "Wed, 26 Aug 2026 14:54:25 GMT"
+      ],
+      "Content-Type": [
+        "text/html; charset=UTF-8"
+      ],
+      "Content-Length": [
+        "6546"
+      ]
+    },
+    "checks": [
+      {
+        "header": "Strict-Transport-Security",
+        "present": false,
+        "severity": "WARN"
+      },
+      {
+        "header": "X-Content-Type-Options",
+        "present": false,
+        "severity": "WARN"
+      },
+      {
+        "header": "Content-Security-Policy",
+        "present": false,
+        "severity": "WARN"
+      },
+      {
+        "header": "Referrer-Policy",
+        "present": false,
+        "severity": "WARN"
+      },
+      {
+        "header": "X-Frame-Options",
+        "present": false,
+        "severity": "WARN"
+      }
+    ],
+    "timestamp": "2026-08-27T11:29:52.8970326+00:00"
+  },
+  {
+    "id": "HEADERS-API",
+    "target": "https://api.khepraexperts.com",
+    "result": "PASS",
+    "headers": {
+      "X-Powered-By": [
+        "Express"
+      ],
+      "Vary": [
+        "Origin"
+      ],
+      "Access-Control-Allow-Credentials": [
+        "true"
+      ],
+      "Accept-Ranges": [
+        "bytes"
+      ],
+      "Cache-Control": [
+        "public, max-age=3600"
+      ],
+      "ETag": [
+        "W/\"1992-1a03e90b0e8\""
+      ],
+      "Date": [
+        "Thu, 27 Aug 2026 11:29:53 GMT"
+      ],
+      "Connection": [
+        "keep-alive"
+      ],
+      "Keep-Alive": [
+        "timeout=5"
+      ],
+      "Server": [
+        "Fly/bae4c81b48",
+        "(2026-08-26)"
+      ],
+      "Via": [
+        "1.1 fly.io",
+        "1.1 fly.io"
+      ],
+      "fly-request-id": [
+        "01M11FQKDE275HA6BAVZ55FP03-jnb"
+      ],
+      "Last-Modified": [
+        "Wed, 26 Aug 2026 14:54:25 GMT"
+      ],
+      "Content-Type": [
+        "text/html; charset=UTF-8"
+      ],
+      "Content-Length": [
+        "6546"
+      ]
+    },
+    "checks": [
+      {
+        "header": "Strict-Transport-Security",
+        "present": false,
+        "severity": "WARN"
+      },
+      {
+        "header": "X-Content-Type-Options",
+        "present": false,
+        "severity": "WARN"
+      },
+      {
+        "header": "Content-Security-Policy",
+        "present": false,
+        "severity": "WARN"
+      },
+      {
+        "header": "Referrer-Policy",
+        "present": false,
+        "severity": "WARN"
+      },
+      {
+        "header": "X-Frame-Options",
+        "present": false,
+        "severity": "WARN"
+      }
+    ],
+    "timestamp": "2026-08-27T11:29:53.8892762+00:00"
+  },
+  {
+    "id": "HEADERS-API-HEALTH",
+    "target": "https://api.khepraexperts.com/health",
+    "result": "PASS",
+    "headers": {
+      "X-Powered-By": [
+        "Express"
+      ],
+      "Vary": [
+        "Origin"
+      ],
+      "Access-Control-Allow-Credentials": [
+        "true"
+      ],
+      "ETag": [
+        "W/\"b1-3frHdu3zG98fvhwEJRk/tB8dCrM\""
+      ],
+      "Date": [
+        "Thu, 27 Aug 2026 11:29:54 GMT"
+      ],
+      "Connection": [
+        "keep-alive"
+      ],
+      "Keep-Alive": [
+        "timeout=5"
+      ],
+      "Server": [
+        "Fly/bae4c81b48",
+        "(2026-08-26)"
+      ],
+      "Via": [
+        "1.1 fly.io",
+        "1.1 fly.io"
+      ],
+      "fly-request-id": [
+        "01M11FQMECS62CTWRNXEX8JVEX-jnb"
+      ],
+      "Content-Type": [
+        "application/json; charset=utf-8"
+      ],
+      "Content-Length": [
+        "177"
+      ]
+    },
+    "checks": [
+      {
+        "header": "Strict-Transport-Security",
+        "present": false,
+        "severity": "WARN"
+      },
+      {
+        "header": "X-Content-Type-Options",
+        "present": false,
+        "severity": "WARN"
+      },
+      {
+        "header": "Content-Security-Policy",
+        "present": false,
+        "severity": "WARN"
+      },
+      {
+        "header": "Referrer-Policy",
+        "present": false,
+        "severity": "WARN"
+      },
+      {
+        "header": "X-Frame-Options",
+        "present": false,
+        "severity": "WARN"
+      }
+    ],
+    "timestamp": "2026-08-27T11:29:54.9532426+00:00"
+  }
+]

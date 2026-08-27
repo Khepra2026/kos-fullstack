@@ -1,0 +1,2330 @@
+{
+  "generated_utc": "2026-08-27T10:35:15.2126892+00:00",
+  "critical_blockers": 0,
+  "tests_fail": 1,
+  "api": "https://api.khepraexperts.com",
+  "release_status": "NO-GO",
+  "git_commit": "7fdc8b5333af26618158d154e6560835eae7c57d",
+  "environment": "preproduction",
+  "tests": [
+    {
+      "secrets": [],
+      "summary": {
+        "total": 0
+      },
+      "owasp": [
+        {
+          "severity": "INFO",
+          "id": "OWASP-PASS",
+          "result": "PASS"
+        }
+      ]
+    },
+    {
+      "id": "SMOKE-HEALTH",
+      "target": "https://api.khepraexperts.com/health",
+      "method": "GET",
+      "result": "PASS",
+      "http_status": 200,
+      "latency_ms": 863,
+      "is_json": true,
+      "body_snippet": "{\"status\":\"ONLINE\",\"system\":\"KOS RegTech Enterprise Hub\",\"version\":\"3.0.0-bigfour\",\"region\":\"cdg\",\"uptime\":50401.586070786,\"supabase\":\"mock\",\"timestamp\":\"2026-08-27T10:34:12.993Z\"}",
+      "error": null,
+      "timestamp": "2026-08-27T10:34:13.1110494+00:00"
+    },
+    {
+      "id": "SMOKE-READY",
+      "target": "https://api.khepraexperts.com/ready",
+      "method": "GET",
+      "result": "PASS",
+      "http_status": 200,
+      "latency_ms": 912,
+      "is_json": false,
+      "body_snippet": "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n<meta charset=\"utf-8\"/>\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/>\n<title>KOS • Khepra Experts - RegTech Enterprise Hub</title>\n<link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap\" rel=\"stylesheet\">\n<script src=\"https://cdn.tailwindcss.com\"></script>\n<style>*{font-family:Inter,sans-serif}.mono{font-family:'JetBrains Mono',monospace}.bg-kos{background:#0A0E14}.card{background:linear-gradient(180deg,#121821 0%,#0F1622 100%);border:1px solid #242F40}.gold{color:#C9A86A}.gold-bg{background:#C9A86A}.border-gold{border-color:#C9A86A}</style>\n</head>\n<body class=\"bg-kos text-[#F5F5F0] min-h-screen\">\n<header class=\"sticky top-0 z-50 backdrop-blur-xl bg-[#0A0",
+      "error": null,
+      "timestamp": "2026-08-27T10:34:14.0552193+00:00"
+    },
+    {
+      "id": "SMOKE-VERSION",
+      "target": "https://api.khepraexperts.com/version",
+      "method": "GET",
+      "result": "PASS",
+      "http_status": 200,
+      "latency_ms": 870,
+      "is_json": false,
+      "body_snippet": "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n<meta charset=\"utf-8\"/>\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/>\n<title>KOS • Khepra Experts - RegTech Enterprise Hub</title>\n<link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap\" rel=\"stylesheet\">\n<script src=\"https://cdn.tailwindcss.com\"></script>\n<style>*{font-family:Inter,sans-serif}.mono{font-family:'JetBrains Mono',monospace}.bg-kos{background:#0A0E14}.card{background:linear-gradient(180deg,#121821 0%,#0F1622 100%);border:1px solid #242F40}.gold{color:#C9A86A}.gold-bg{background:#C9A86A}.border-gold{border-color:#C9A86A}</style>\n</head>\n<body class=\"bg-kos text-[#F5F5F0] min-h-screen\">\n<header class=\"sticky top-0 z-50 backdrop-blur-xl bg-[#0A0",
+      "error": null,
+      "timestamp": "2026-08-27T10:34:14.9284212+00:00"
+    },
+    {
+      "id": "SMOKE-OPENAPI",
+      "target": "https://api.khepraexperts.com/openapi.json",
+      "method": "GET",
+      "result": "PASS",
+      "http_status": 200,
+      "latency_ms": 814,
+      "is_json": false,
+      "body_snippet": "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n<meta charset=\"utf-8\"/>\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/>\n<title>KOS • Khepra Experts - RegTech Enterprise Hub</title>\n<link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap\" rel=\"stylesheet\">\n<script src=\"https://cdn.tailwindcss.com\"></script>\n<style>*{font-family:Inter,sans-serif}.mono{font-family:'JetBrains Mono',monospace}.bg-kos{background:#0A0E14}.card{background:linear-gradient(180deg,#121821 0%,#0F1622 100%);border:1px solid #242F40}.gold{color:#C9A86A}.gold-bg{background:#C9A86A}.border-gold{border-color:#C9A86A}</style>\n</head>\n<body class=\"bg-kos text-[#F5F5F0] min-h-screen\">\n<header class=\"sticky top-0 z-50 backdrop-blur-xl bg-[#0A0",
+      "error": null,
+      "timestamp": "2026-08-27T10:34:15.7439941+00:00"
+    },
+    {
+      "id": "SMOKE-RAG-GET-EXPECT-405",
+      "target": "https://api.khepraexperts.com/api/v1/rag/query",
+      "method": "GET",
+      "result": "PASS",
+      "http_status": 404,
+      "latency_ms": 818,
+      "is_json": true,
+      "body_snippet": "{\"error\":\"API not found: /api/v1/rag/query\"}",
+      "error": null,
+      "timestamp": "2026-08-27T10:34:16.5633646+00:00"
+    },
+    {
+      "id": "SMOKE-CRAWLERS",
+      "target": "https://api.khepraexperts.com/api/v1/crawlers",
+      "method": "GET",
+      "result": "PASS",
+      "http_status": 404,
+      "latency_ms": 907,
+      "is_json": true,
+      "body_snippet": "{\"error\":\"API not found: /api/v1/crawlers\"}",
+      "error": null,
+      "timestamp": "2026-08-27T10:34:17.4713245+00:00"
+    },
+    {
+      "id": "SMOKE-WATCHTOWER",
+      "target": "https://api.khepraexperts.com/api/v1/watchtower/alerts",
+      "method": "GET",
+      "result": "PASS",
+      "http_status": 404,
+      "latency_ms": 765,
+      "is_json": true,
+      "body_snippet": "{\"error\":\"API not found: /api/v1/watchtower/alerts\"}",
+      "error": null,
+      "timestamp": "2026-08-27T10:34:18.2370462+00:00"
+    },
+    {
+      "id": "SMOKE-ADMIN-CERT",
+      "target": "https://api.khepraexperts.com/admin/certification",
+      "method": "GET",
+      "result": "PASS",
+      "http_status": 200,
+      "latency_ms": 875,
+      "is_json": false,
+      "body_snippet": "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n<meta charset=\"utf-8\"/>\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/>\n<title>KOS • Khepra Experts - RegTech Enterprise Hub</title>\n<link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap\" rel=\"stylesheet\">\n<script src=\"https://cdn.tailwindcss.com\"></script>\n<style>*{font-family:Inter,sans-serif}.mono{font-family:'JetBrains Mono',monospace}.bg-kos{background:#0A0E14}.card{background:linear-gradient(180deg,#121821 0%,#0F1622 100%);border:1px solid #242F40}.gold{color:#C9A86A}.gold-bg{background:#C9A86A}.border-gold{border-color:#C9A86A}</style>\n</head>\n<body class=\"bg-kos text-[#F5F5F0] min-h-screen\">\n<header class=\"sticky top-0 z-50 backdrop-blur-xl bg-[#0A0",
+      "error": null,
+      "timestamp": "2026-08-27T10:34:19.1140559+00:00"
+    },
+    {
+      "tests_warn": 1,
+      "tests_fail": 1,
+      "tests_skip": 5,
+      "api": "https://api.khepraexperts.com",
+      "frontend": "https://kos.khepraexperts.com",
+      "critical_blockers": 0,
+      "tests_total": 53,
+      "generated_utc": "2026-08-27T10:33:47.9386168+00:00",
+      "major_blockers": 1,
+      "tests_pass": 44,
+      "environment": "preproduction",
+      "tests": [
+        {
+          "owasp": [
+            {
+              "id": "OWASP-PASS",
+              "result": "PASS",
+              "severity": "INFO"
+            }
+          ],
+          "summary": {
+            "total": 0
+          },
+          "secrets": []
+        },
+        {
+          "id": "SMOKE-HEALTH",
+          "target": "https://api.khepraexperts.com/health",
+          "method": "GET",
+          "result": "PASS",
+          "http_status": 200,
+          "latency_ms": 765,
+          "is_json": true,
+          "body_snippet": "{\"status\":\"ONLINE\",\"system\":\"KOS RegTech Enterprise Hub\",\"version\":\"3.0.0-bigfour\",\"region\":\"cdg\",\"uptime\":50185.358902037,\"supabase\":\"mock\",\"timestamp\":\"2026-08-27T10:30:36.768Z\"}",
+          "error": null,
+          "timestamp": "2026-08-27T10:30:36.8638431+00:00"
+        },
+        {
+          "id": "SMOKE-READY",
+          "target": "https://api.khepraexperts.com/ready",
+          "method": "GET",
+          "result": "PASS",
+          "http_status": 200,
+          "latency_ms": 809,
+          "is_json": false,
+          "body_snippet": "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n<meta charset=\"utf-8\"/>\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/>\n<title>KOS • Khepra Experts - RegTech Enterprise Hub</title>\n<link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap\" rel=\"stylesheet\">\n<script src=\"https://cdn.tailwindcss.com\"></script>\n<style>*{font-family:Inter,sans-serif}.mono{font-family:'JetBrains Mono',monospace}.bg-kos{background:#0A0E14}.card{background:linear-gradient(180deg,#121821 0%,#0F1622 100%);border:1px solid #242F40}.gold{color:#C9A86A}.gold-bg{background:#C9A86A}.border-gold{border-color:#C9A86A}</style>\n</head>\n<body class=\"bg-kos text-[#F5F5F0] min-h-screen\">\n<header class=\"sticky top-0 z-50 backdrop-blur-xl bg-[#0A0",
+          "error": null,
+          "timestamp": "2026-08-27T10:30:37.685117+00:00"
+        },
+        {
+          "id": "SMOKE-VERSION",
+          "target": "https://api.khepraexperts.com/version",
+          "method": "GET",
+          "result": "PASS",
+          "http_status": 200,
+          "latency_ms": 780,
+          "is_json": false,
+          "body_snippet": "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n<meta charset=\"utf-8\"/>\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/>\n<title>KOS • Khepra Experts - RegTech Enterprise Hub</title>\n<link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap\" rel=\"stylesheet\">\n<script src=\"https://cdn.tailwindcss.com\"></script>\n<style>*{font-family:Inter,sans-serif}.mono{font-family:'JetBrains Mono',monospace}.bg-kos{background:#0A0E14}.card{background:linear-gradient(180deg,#121821 0%,#0F1622 100%);border:1px solid #242F40}.gold{color:#C9A86A}.gold-bg{background:#C9A86A}.border-gold{border-color:#C9A86A}</style>\n</head>\n<body class=\"bg-kos text-[#F5F5F0] min-h-screen\">\n<header class=\"sticky top-0 z-50 backdrop-blur-xl bg-[#0A0",
+          "error": null,
+          "timestamp": "2026-08-27T10:30:38.4682826+00:00"
+        },
+        {
+          "id": "SMOKE-OPENAPI",
+          "target": "https://api.khepraexperts.com/openapi.json",
+          "method": "GET",
+          "result": "PASS",
+          "http_status": 200,
+          "latency_ms": 781,
+          "is_json": false,
+          "body_snippet": "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n<meta charset=\"utf-8\"/>\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/>\n<title>KOS • Khepra Experts - RegTech Enterprise Hub</title>\n<link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap\" rel=\"stylesheet\">\n<script src=\"https://cdn.tailwindcss.com\"></script>\n<style>*{font-family:Inter,sans-serif}.mono{font-family:'JetBrains Mono',monospace}.bg-kos{background:#0A0E14}.card{background:linear-gradient(180deg,#121821 0%,#0F1622 100%);border:1px solid #242F40}.gold{color:#C9A86A}.gold-bg{background:#C9A86A}.border-gold{border-color:#C9A86A}</style>\n</head>\n<body class=\"bg-kos text-[#F5F5F0] min-h-screen\">\n<header class=\"sticky top-0 z-50 backdrop-blur-xl bg-[#0A0",
+          "error": null,
+          "timestamp": "2026-08-27T10:30:39.2514594+00:00"
+        },
+        {
+          "id": "SMOKE-RAG-GET-EXPECT-405",
+          "target": "https://api.khepraexperts.com/api/v1/rag/query",
+          "method": "GET",
+          "result": "PASS",
+          "http_status": 404,
+          "latency_ms": 895,
+          "is_json": true,
+          "body_snippet": "{\"error\":\"API not found: /api/v1/rag/query\"}",
+          "error": null,
+          "timestamp": "2026-08-27T10:30:40.1482267+00:00"
+        },
+        {
+          "id": "SMOKE-CRAWLERS",
+          "target": "https://api.khepraexperts.com/api/v1/crawlers",
+          "method": "GET",
+          "result": "PASS",
+          "http_status": 404,
+          "latency_ms": 833,
+          "is_json": true,
+          "body_snippet": "{\"error\":\"API not found: /api/v1/crawlers\"}",
+          "error": null,
+          "timestamp": "2026-08-27T10:30:40.9823375+00:00"
+        },
+        {
+          "id": "SMOKE-WATCHTOWER",
+          "target": "https://api.khepraexperts.com/api/v1/watchtower/alerts",
+          "method": "GET",
+          "result": "PASS",
+          "http_status": 404,
+          "latency_ms": 1053,
+          "is_json": true,
+          "body_snippet": "{\"error\":\"API not found: /api/v1/watchtower/alerts\"}",
+          "error": null,
+          "timestamp": "2026-08-27T10:30:42.0367129+00:00"
+        },
+        {
+          "id": "SMOKE-ADMIN-CERT",
+          "target": "https://api.khepraexperts.com/admin/certification",
+          "method": "GET",
+          "result": "PASS",
+          "http_status": 200,
+          "latency_ms": 824,
+          "is_json": false,
+          "body_snippet": "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n<meta charset=\"utf-8\"/>\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/>\n<title>KOS • Khepra Experts - RegTech Enterprise Hub</title>\n<link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap\" rel=\"stylesheet\">\n<script src=\"https://cdn.tailwindcss.com\"></script>\n<style>*{font-family:Inter,sans-serif}.mono{font-family:'JetBrains Mono',monospace}.bg-kos{background:#0A0E14}.card{background:linear-gradient(180deg,#121821 0%,#0F1622 100%);border:1px solid #242F40}.gold{color:#C9A86A}.gold-bg{background:#C9A86A}.border-gold{border-color:#C9A86A}</style>\n</head>\n<body class=\"bg-kos text-[#F5F5F0] min-h-screen\">\n<header class=\"sticky top-0 z-50 backdrop-blur-xl bg-[#0A0",
+          "error": null,
+          "timestamp": "2026-08-27T10:30:42.8625926+00:00"
+        },
+        {
+          "tests_total": 53,
+          "git_commit": "7fdc8b5333af26618158d154e6560835eae7c57d",
+          "tests_skip": 5,
+          "major_blockers": 1,
+          "tests_pass": 44,
+          "generated_utc": "2026-08-27T10:26:34.1279203+00:00",
+          "environment": "preproduction",
+          "tests": [
+            {
+              "secrets": [],
+              "summary": {
+                "total": 0
+              },
+              "owasp": [
+                {
+                  "result": "PASS",
+                  "id": "OWASP-PASS",
+                  "severity": "INFO"
+                }
+              ]
+            },
+            {
+              "id": "SMOKE-HEALTH",
+              "target": "https://api.khepraexperts.com/health",
+              "method": "GET",
+              "result": "PASS",
+              "http_status": 200,
+              "latency_ms": 819,
+              "is_json": true,
+              "body_snippet": "{\"status\":\"ONLINE\",\"system\":\"KOS RegTech Enterprise Hub\",\"version\":\"3.0.0-bigfour\",\"region\":\"cdg\",\"uptime\":49766.503221772,\"supabase\":\"mock\",\"timestamp\":\"2026-08-27T10:23:37.918Z\"}",
+              "error": null,
+              "timestamp": "2026-08-27T10:23:38.0064917+00:00"
+            },
+            {
+              "id": "SMOKE-READY",
+              "target": "https://api.khepraexperts.com/ready",
+              "method": "GET",
+              "result": "PASS",
+              "http_status": 200,
+              "latency_ms": 859,
+              "is_json": false,
+              "body_snippet": "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n<meta charset=\"utf-8\"/>\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/>\n<title>KOS • Khepra Experts - RegTech Enterprise Hub</title>\n<link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap\" rel=\"stylesheet\">\n<script src=\"https://cdn.tailwindcss.com\"></script>\n<style>*{font-family:Inter,sans-serif}.mono{font-family:'JetBrains Mono',monospace}.bg-kos{background:#0A0E14}.card{background:linear-gradient(180deg,#121821 0%,#0F1622 100%);border:1px solid #242F40}.gold{color:#C9A86A}.gold-bg{background:#C9A86A}.border-gold{border-color:#C9A86A}</style>\n</head>\n<body class=\"bg-kos text-[#F5F5F0] min-h-screen\">\n<header class=\"sticky top-0 z-50 backdrop-blur-xl bg-[#0A0",
+              "error": null,
+              "timestamp": "2026-08-27T10:23:38.8838015+00:00"
+            },
+            {
+              "id": "SMOKE-VERSION",
+              "target": "https://api.khepraexperts.com/version",
+              "method": "GET",
+              "result": "PASS",
+              "http_status": 200,
+              "latency_ms": 809,
+              "is_json": false,
+              "body_snippet": "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n<meta charset=\"utf-8\"/>\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/>\n<title>KOS • Khepra Experts - RegTech Enterprise Hub</title>\n<link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap\" rel=\"stylesheet\">\n<script src=\"https://cdn.tailwindcss.com\"></script>\n<style>*{font-family:Inter,sans-serif}.mono{font-family:'JetBrains Mono',monospace}.bg-kos{background:#0A0E14}.card{background:linear-gradient(180deg,#121821 0%,#0F1622 100%);border:1px solid #242F40}.gold{color:#C9A86A}.gold-bg{background:#C9A86A}.border-gold{border-color:#C9A86A}</style>\n</head>\n<body class=\"bg-kos text-[#F5F5F0] min-h-screen\">\n<header class=\"sticky top-0 z-50 backdrop-blur-xl bg-[#0A0",
+              "error": null,
+              "timestamp": "2026-08-27T10:23:39.6963519+00:00"
+            },
+            {
+              "id": "SMOKE-OPENAPI",
+              "target": "https://api.khepraexperts.com/openapi.json",
+              "method": "GET",
+              "result": "PASS",
+              "http_status": 200,
+              "latency_ms": 992,
+              "is_json": false,
+              "body_snippet": "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n<meta charset=\"utf-8\"/>\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/>\n<title>KOS • Khepra Experts - RegTech Enterprise Hub</title>\n<link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap\" rel=\"stylesheet\">\n<script src=\"https://cdn.tailwindcss.com\"></script>\n<style>*{font-family:Inter,sans-serif}.mono{font-family:'JetBrains Mono',monospace}.bg-kos{background:#0A0E14}.card{background:linear-gradient(180deg,#121821 0%,#0F1622 100%);border:1px solid #242F40}.gold{color:#C9A86A}.gold-bg{background:#C9A86A}.border-gold{border-color:#C9A86A}</style>\n</head>\n<body class=\"bg-kos text-[#F5F5F0] min-h-screen\">\n<header class=\"sticky top-0 z-50 backdrop-blur-xl bg-[#0A0",
+              "error": null,
+              "timestamp": "2026-08-27T10:23:40.6899973+00:00"
+            },
+            {
+              "id": "SMOKE-RAG-GET-EXPECT-405",
+              "target": "https://api.khepraexperts.com/api/v1/rag/query",
+              "method": "GET",
+              "result": "PASS",
+              "http_status": 404,
+              "latency_ms": 906,
+              "is_json": true,
+              "body_snippet": "{\"error\":\"API not found: /api/v1/rag/query\"}",
+              "error": null,
+              "timestamp": "2026-08-27T10:23:41.5972098+00:00"
+            },
+            {
+              "id": "SMOKE-CRAWLERS",
+              "target": "https://api.khepraexperts.com/api/v1/crawlers",
+              "method": "GET",
+              "result": "PASS",
+              "http_status": 404,
+              "latency_ms": 1019,
+              "is_json": true,
+              "body_snippet": "{\"error\":\"API not found: /api/v1/crawlers\"}",
+              "error": null,
+              "timestamp": "2026-08-27T10:23:42.6176746+00:00"
+            },
+            {
+              "id": "SMOKE-WATCHTOWER",
+              "target": "https://api.khepraexperts.com/api/v1/watchtower/alerts",
+              "method": "GET",
+              "result": "PASS",
+              "http_status": 404,
+              "latency_ms": 800,
+              "is_json": true,
+              "body_snippet": "{\"error\":\"API not found: /api/v1/watchtower/alerts\"}",
+              "error": null,
+              "timestamp": "2026-08-27T10:23:43.4184885+00:00"
+            },
+            {
+              "id": "SMOKE-ADMIN-CERT",
+              "target": "https://api.khepraexperts.com/admin/certification",
+              "method": "GET",
+              "result": "PASS",
+              "http_status": 200,
+              "latency_ms": 835,
+              "is_json": false,
+              "body_snippet": "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n<meta charset=\"utf-8\"/>\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/>\n<title>KOS • Khepra Experts - RegTech Enterprise Hub</title>\n<link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap\" rel=\"stylesheet\">\n<script src=\"https://cdn.tailwindcss.com\"></script>\n<style>*{font-family:Inter,sans-serif}.mono{font-family:'JetBrains Mono',monospace}.bg-kos{background:#0A0E14}.card{background:linear-gradient(180deg,#121821 0%,#0F1622 100%);border:1px solid #242F40}.gold{color:#C9A86A}.gold-bg{background:#C9A86A}.border-gold{border-color:#C9A86A}</style>\n</head>\n<body class=\"bg-kos text-[#F5F5F0] min-h-screen\">\n<header class=\"sticky top-0 z-50 backdrop-blur-xl bg-[#0A0",
+              "error": null,
+              "timestamp": "2026-08-27T10:23:44.2550455+00:00"
+            },
+            {
+              "tests": [],
+              "generated_utc": "2026-08-27T10:21:35.5490337+00:00",
+              "git_commit": "7fdc8b5333af26618158d154e6560835eae7c57d",
+              "frontend": "https://kos.khepraexperts.com",
+              "release_status": "NO-GO",
+              "tests_fail": 0,
+              "tests_warn": 0,
+              "api": "https://api.khepraexperts.com",
+              "tests_skip": 0,
+              "tests_total": 0,
+              "total_score": 0,
+              "critical_blockers": 0,
+              "major_blockers": 0,
+              "tests_pass": 0,
+              "environment": "preproduction"
+            },
+            {
+              "id": "CONTRACT-OPENAPI-FETCH",
+              "result": "FAIL",
+              "details": "Conversion from JSON failed with error: Unexpected character encountered while parsing value: <. Path '', line 0, position 0.",
+              "timestamp": "2026-08-27T10:23:45.0771724+00:00"
+            },
+            {
+              "id": "CONTRACT-KNOWN-/api/v1/rag/query",
+              "route": "/api/v1/rag/query",
+              "http_status": 404,
+              "result": "SKIP",
+              "timestamp": "2026-08-27T10:23:46.0277593+00:00"
+            },
+            {
+              "id": "CONTRACT-KNOWN-/api/v1/crawlers",
+              "route": "/api/v1/crawlers",
+              "http_status": 404,
+              "result": "SKIP",
+              "timestamp": "2026-08-27T10:23:46.9293887+00:00"
+            },
+            {
+              "id": "CONTRACT-KNOWN-/api/v1/watchtower/alerts",
+              "route": "/api/v1/watchtower/alerts",
+              "http_status": 404,
+              "result": "SKIP",
+              "timestamp": "2026-08-27T10:23:47.7703492+00:00"
+            },
+            {
+              "id": "CONTRACT-KNOWN-/api/v1/payments/paydunya/checkout",
+              "route": "/api/v1/payments/paydunya/checkout",
+              "http_status": 404,
+              "result": "SKIP",
+              "timestamp": "2026-08-27T10:23:48.592215+00:00"
+            },
+            {
+              "id": "CONTRACT-KNOWN-/admin/certification",
+              "route": "/admin/certification",
+              "http_status": 200,
+              "result": "PASS",
+              "timestamp": "2026-08-27T10:23:49.4240977+00:00"
+            },
+            {
+              "id": "CORS-ALLOWED-ORIGIN",
+              "target": "https://api.khepraexperts.com/health",
+              "origin": "https://kos.khepraexperts.com",
+              "result": "PASS",
+              "acao": [
+                "https://kos.khepraexperts.com"
+              ],
+              "acac": [
+                "true"
+              ],
+              "http_status": 204,
+              "is_wildcard_danger": false,
+              "timestamp": "2026-08-27T10:23:59.1960172+00:00"
+            },
+            {
+              "id": "CORS-EVIL-ORIGIN",
+              "target": "https://api.khepraexperts.com/health",
+              "origin": "https://evil.com",
+              "result": "PASS",
+              "acao": [
+                "https://evil.com"
+              ],
+              "acac": [
+                "true"
+              ],
+              "http_status": 204,
+              "is_wildcard_danger": false,
+              "timestamp": "2026-08-27T10:24:00.0485378+00:00"
+            },
+            {
+              "id": "CORS-EVIL-RAG",
+              "target": "https://api.khepraexperts.com/api/v1/rag/query",
+              "origin": "https://evil.com",
+              "result": "PASS",
+              "acao": [
+                "https://evil.com"
+              ],
+              "acac": [
+                "true"
+              ],
+              "http_status": 204,
+              "is_wildcard_danger": false,
+              "timestamp": "2026-08-27T10:24:00.8604241+00:00"
+            },
+            {
+              "id": "DNS-A-kos.khepraexperts.com",
+              "target": "kos.khepraexperts.com",
+              "type": "A",
+              "result": "PASS",
+              "latency_ms": 455,
+              "records": "\r\nName                           Type   TTL   Section    NameHost\r\n----                           ----   ---   -------    --------\r\nkos.khepraexperts.com          CNAME  5612  Answer     kos-fullstack.fly.dev\r\n\r\nName       : kos-fullstack.fly.dev\r\nQueryType  : A\r\nTTL        : 79\r\nSection    : Answer\r\nIP4Address : 66.241.125.166\r\n\r\n\r\n",
+              "error": null,
+              "timestamp": "2026-08-27T10:23:20.4658692+00:00"
+            },
+            {
+              "id": "DNS-AAAA-kos.khepraexperts.com",
+              "target": "kos.khepraexperts.com",
+              "type": "AAAA",
+              "result": "PASS",
+              "latency_ms": 13,
+              "records": "\r\nName                           Type   TTL   Section    NameHost\r\n----                           ----   ---   -------    --------\r\nkos.khepraexperts.com          CNAME  5612  Answer     kos-fullstack.fly.dev\r\n\r\nName       : kos-fullstack.fly.dev\r\nQueryType  : AAAA\r\nTTL        : 79\r\nSection    : Answer\r\nIP6Address : 2a09:8280:1::17a:8b19:0\r\n\r\n\r\n",
+              "error": null,
+              "timestamp": "2026-08-27T10:23:20.4901741+00:00"
+            },
+            {
+              "id": "DNS-CNAME-kos.khepraexperts.com",
+              "target": "kos.khepraexperts.com",
+              "type": "CNAME",
+              "result": "PASS",
+              "latency_ms": 10,
+              "records": "\r\nName                           Type   TTL   Section    NameHost\r\n----                           ----   ---   -------    --------\r\nkos.khepraexperts.com          CNAME  5612  Answer     kos-fullstack.fly.dev\r\n\r\n",
+              "error": null,
+              "timestamp": "2026-08-27T10:23:20.5016197+00:00"
+            },
+            {
+              "id": "DNS-A-api.khepraexperts.com",
+              "target": "api.khepraexperts.com",
+              "type": "A",
+              "result": "PASS",
+              "latency_ms": 10,
+              "records": "\r\nName                           Type   TTL   Section    NameHost\r\n----                           ----   ---   -------    --------\r\napi.khepraexperts.com          CNAME  5617  Answer     kos-fullstack.fly.dev\r\n\r\nName       : kos-fullstack.fly.dev\r\nQueryType  : A\r\nTTL        : 500\r\nSection    : Answer\r\nIP4Address : 66.241.125.166\r\n\r\n\r\n",
+              "error": null,
+              "timestamp": "2026-08-27T10:23:20.5153059+00:00"
+            },
+            {
+              "id": "DNS-AAAA-api.khepraexperts.com",
+              "target": "api.khepraexperts.com",
+              "type": "AAAA",
+              "result": "PASS",
+              "latency_ms": 13,
+              "records": "\r\nName                           Type   TTL   Section    NameHost\r\n----                           ----   ---   -------    --------\r\napi.khepraexperts.com          CNAME  5617  Answer     kos-fullstack.fly.dev\r\n\r\nName       : kos-fullstack.fly.dev\r\nQueryType  : AAAA\r\nTTL        : 79\r\nSection    : Answer\r\nIP6Address : 2a09:8280:1::17a:8b19:0\r\n\r\n\r\n",
+              "error": null,
+              "timestamp": "2026-08-27T10:23:20.53123+00:00"
+            },
+            {
+              "id": "DNS-CNAME-api.khepraexperts.com",
+              "target": "api.khepraexperts.com",
+              "type": "CNAME",
+              "result": "PASS",
+              "latency_ms": 9,
+              "records": "\r\nName                           Type   TTL   Section    NameHost\r\n----                           ----   ---   -------    --------\r\napi.khepraexperts.com          CNAME  5617  Answer     kos-fullstack.fly.dev\r\n\r\n",
+              "error": null,
+              "timestamp": "2026-08-27T10:23:20.5428078+00:00"
+            },
+            {
+              "id": "DNS-NS-kos.khepraexperts.com",
+              "target": "kos.khepraexperts.com",
+              "type": "NS",
+              "result": "PASS",
+              "latency_ms": 90,
+              "records": "\r\nName                           Type   TTL   Section    NameHost\r\n----                           ----   ---   -------    --------\r\nkos.khepraexperts.com          CNAME  5612  Answer     kos-fullstack.fly.dev\r\n\r\nName                   : fly.dev\r\nQueryType              : SOA\r\nTTL                    : 60\r\nSection                : Authority\r\nNameAdministrator      : ops.fly.io\r\nSerialNumber           : 1787826192\r\nTimeToZoneRefresh      : 86400\r\nTimeToZoneFailureRetry : 7200\r\nTimeToExpiration       : 604800\r\nDefaultTTL             : 300\r\n\r\n\r\n",
+              "error": null,
+              "timestamp": "2026-08-27T10:23:20.6532221+00:00"
+            },
+            {
+              "id": "FRONTEND-ROOT",
+              "target": "https://kos.khepraexperts.com/",
+              "method": "GET",
+              "result": "PASS",
+              "latency_ms": 910,
+              "http_status": 200,
+              "expected": 200,
+              "body_snippet": "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n<meta charset=\"utf-8\"/>\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/>\n<title>KOS • Khepra Experts - RegTech Enterprise Hub</title>\n<link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap\" rel=\"stylesheet\">\n<script src=\"https://cdn.tailwindcss.com\"></script>\n<style>*{font-family:Inter,sans-serif}.mono{font-family:'JetBrains Mono',monospace}.bg-kos{background:#0A0E",
+              "error": null,
+              "timestamp": "2026-08-27T10:23:31.7919312+00:00"
+            },
+            {
+              "id": "API-HEALTH",
+              "target": "https://api.khepraexperts.com/health",
+              "method": "GET",
+              "result": "PASS",
+              "latency_ms": 822,
+              "http_status": 200,
+              "expected": 200,
+              "body_snippet": "{\"status\":\"ONLINE\",\"system\":\"KOS RegTech Enterprise Hub\",\"version\":\"3.0.0-bigfour\",\"region\":\"cdg\",\"uptime\":49761.052278424,\"supabase\":\"mock\",\"timestamp\":\"2026-08-27T10:23:32.467Z\"}",
+              "error": null,
+              "timestamp": "2026-08-27T10:23:32.6150989+00:00"
+            },
+            {
+              "id": "API-READY",
+              "target": "https://api.khepraexperts.com/ready",
+              "method": "GET",
+              "result": "PASS",
+              "latency_ms": 906,
+              "http_status": 200,
+              "expected": 200,
+              "body_snippet": "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n<meta charset=\"utf-8\"/>\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/>\n<title>KOS • Khepra Experts - RegTech Enterprise Hub</title>\n<link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap\" rel=\"stylesheet\">\n<script src=\"https://cdn.tailwindcss.com\"></script>\n<style>*{font-family:Inter,sans-serif}.mono{font-family:'JetBrains Mono',monospace}.bg-kos{background:#0A0E",
+              "error": null,
+              "timestamp": "2026-08-27T10:23:33.5228286+00:00"
+            },
+            {
+              "id": "API-VERSION",
+              "target": "https://api.khepraexperts.com/version",
+              "method": "GET",
+              "result": "PASS",
+              "latency_ms": 891,
+              "http_status": 200,
+              "expected": 200,
+              "body_snippet": "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n<meta charset=\"utf-8\"/>\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/>\n<title>KOS • Khepra Experts - RegTech Enterprise Hub</title>\n<link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap\" rel=\"stylesheet\">\n<script src=\"https://cdn.tailwindcss.com\"></script>\n<style>*{font-family:Inter,sans-serif}.mono{font-family:'JetBrains Mono',monospace}.bg-kos{background:#0A0E",
+              "error": null,
+              "timestamp": "2026-08-27T10:23:34.415098+00:00"
+            },
+            {
+              "id": "API-OPENAPI",
+              "target": "https://api.khepraexperts.com/openapi.json",
+              "method": "GET",
+              "result": "PASS",
+              "latency_ms": 924,
+              "http_status": 200,
+              "expected": 200,
+              "body_snippet": "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n<meta charset=\"utf-8\"/>\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/>\n<title>KOS • Khepra Experts - RegTech Enterprise Hub</title>\n<link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap\" rel=\"stylesheet\">\n<script src=\"https://cdn.tailwindcss.com\"></script>\n<style>*{font-family:Inter,sans-serif}.mono{font-family:'JetBrains Mono',monospace}.bg-kos{background:#0A0E",
+              "error": null,
+              "timestamp": "2026-08-27T10:23:35.3403694+00:00"
+            },
+            {
+              "id": "API-DOCS",
+              "target": "https://api.khepraexperts.com/docs",
+              "method": "GET",
+              "result": "PASS",
+              "latency_ms": 893,
+              "http_status": 200,
+              "expected": null,
+              "body_snippet": "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n<meta charset=\"utf-8\"/>\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/>\n<title>KOS • Khepra Experts - RegTech Enterprise Hub</title>\n<link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap\" rel=\"stylesheet\">\n<script src=\"https://cdn.tailwindcss.com\"></script>\n<style>*{font-family:Inter,sans-serif}.mono{font-family:'JetBrains Mono',monospace}.bg-kos{background:#0A0E",
+              "error": null,
+              "timestamp": "2026-08-27T10:23:36.2370233+00:00"
+            },
+            {
+              "id": "API-ROOT",
+              "target": "https://api.khepraexperts.com/",
+              "method": "GET",
+              "result": "PASS",
+              "latency_ms": 912,
+              "http_status": 200,
+              "expected": null,
+              "body_snippet": "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n<meta charset=\"utf-8\"/>\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/>\n<title>KOS • Khepra Experts - RegTech Enterprise Hub</title>\n<link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap\" rel=\"stylesheet\">\n<script src=\"https://cdn.tailwindcss.com\"></script>\n<style>*{font-family:Inter,sans-serif}.mono{font-family:'JetBrains Mono',monospace}.bg-kos{background:#0A0E",
+              "error": null,
+              "timestamp": "2026-08-27T10:23:37.1499142+00:00"
+            },
+            {
+              "id": "HEADERS-FRONTEND",
+              "target": "https://kos.khepraexperts.com",
+              "result": "PASS",
+              "headers": {
+                "X-Powered-By": [
+                  "Express"
+                ],
+                "Vary": [
+                  "Origin"
+                ],
+                "Access-Control-Allow-Credentials": [
+                  "true"
+                ],
+                "Accept-Ranges": [
+                  "bytes"
+                ],
+                "Cache-Control": [
+                  "public, max-age=3600"
+                ],
+                "ETag": [
+                  "W/\"1992-1a03e90b0e8\""
+                ],
+                "Date": [
+                  "Thu, 27 Aug 2026 10:23:56 GMT"
+                ],
+                "Connection": [
+                  "keep-alive"
+                ],
+                "Keep-Alive": [
+                  "timeout=5"
+                ],
+                "Server": [
+                  "Fly/bae4c81b48",
+                  "(2026-08-26)"
+                ],
+                "Via": [
+                  "1.1 fly.io",
+                  "1.1 fly.io"
+                ],
+                "fly-request-id": [
+                  "01M11BYV05CRGGDK6S7A1Q5FJK-jnb"
+                ],
+                "Last-Modified": [
+                  "Wed, 26 Aug 2026 14:54:25 GMT"
+                ],
+                "Content-Type": [
+                  "text/html; charset=UTF-8"
+                ],
+                "Content-Length": [
+                  "6546"
+                ]
+              },
+              "checks": [
+                {
+                  "header": "Strict-Transport-Security",
+                  "present": false,
+                  "severity": "WARN"
+                },
+                {
+                  "header": "X-Content-Type-Options",
+                  "present": false,
+                  "severity": "WARN"
+                },
+                {
+                  "header": "Content-Security-Policy",
+                  "present": false,
+                  "severity": "WARN"
+                },
+                {
+                  "header": "Referrer-Policy",
+                  "present": false,
+                  "severity": "WARN"
+                },
+                {
+                  "header": "X-Frame-Options",
+                  "present": false,
+                  "severity": "WARN"
+                }
+              ],
+              "timestamp": "2026-08-27T10:23:56.5929929+00:00"
+            },
+            {
+              "id": "HEADERS-API",
+              "target": "https://api.khepraexperts.com",
+              "result": "PASS",
+              "headers": {
+                "X-Powered-By": [
+                  "Express"
+                ],
+                "Vary": [
+                  "Origin"
+                ],
+                "Access-Control-Allow-Credentials": [
+                  "true"
+                ],
+                "Accept-Ranges": [
+                  "bytes"
+                ],
+                "Cache-Control": [
+                  "public, max-age=3600"
+                ],
+                "ETag": [
+                  "W/\"1992-1a03e90b0e8\""
+                ],
+                "Date": [
+                  "Thu, 27 Aug 2026 10:23:57 GMT"
+                ],
+                "Connection": [
+                  "keep-alive"
+                ],
+                "Keep-Alive": [
+                  "timeout=5"
+                ],
+                "Server": [
+                  "Fly/bae4c81b48",
+                  "(2026-08-26)"
+                ],
+                "Via": [
+                  "1.1 fly.io",
+                  "1.1 fly.io"
+                ],
+                "fly-request-id": [
+                  "01M11BYVQDYP0SQC0D6M1G5Z88-jnb"
+                ],
+                "Last-Modified": [
+                  "Wed, 26 Aug 2026 14:54:25 GMT"
+                ],
+                "Content-Type": [
+                  "text/html; charset=UTF-8"
+                ],
+                "Content-Length": [
+                  "6546"
+                ]
+              },
+              "checks": [
+                {
+                  "header": "Strict-Transport-Security",
+                  "present": false,
+                  "severity": "WARN"
+                },
+                {
+                  "header": "X-Content-Type-Options",
+                  "present": false,
+                  "severity": "WARN"
+                },
+                {
+                  "header": "Content-Security-Policy",
+                  "present": false,
+                  "severity": "WARN"
+                },
+                {
+                  "header": "Referrer-Policy",
+                  "present": false,
+                  "severity": "WARN"
+                },
+                {
+                  "header": "X-Frame-Options",
+                  "present": false,
+                  "severity": "WARN"
+                }
+              ],
+              "timestamp": "2026-08-27T10:23:57.3774864+00:00"
+            },
+            {
+              "id": "HEADERS-API-HEALTH",
+              "target": "https://api.khepraexperts.com/health",
+              "result": "PASS",
+              "headers": {
+                "X-Powered-By": [
+                  "Express"
+                ],
+                "Vary": [
+                  "Origin"
+                ],
+                "Access-Control-Allow-Credentials": [
+                  "true"
+                ],
+                "ETag": [
+                  "W/\"b4-ciHSPEbcqajXOmGKzFzE3vFPONQ\""
+                ],
+                "Date": [
+                  "Thu, 27 Aug 2026 10:23:58 GMT"
+                ],
+                "Connection": [
+                  "keep-alive"
+                ],
+                "Keep-Alive": [
+                  "timeout=5"
+                ],
+                "Server": [
+                  "Fly/bae4c81b48",
+                  "(2026-08-26)"
+                ],
+                "Via": [
+                  "1.1 fly.io",
+                  "1.1 fly.io"
+                ],
+                "fly-request-id": [
+                  "01M11BYWKV529BJ99PQ8TN5YYZ-jnb"
+                ],
+                "Content-Type": [
+                  "application/json; charset=utf-8"
+                ],
+                "Content-Length": [
+                  "180"
+                ]
+              },
+              "checks": [
+                {
+                  "header": "Strict-Transport-Security",
+                  "present": false,
+                  "severity": "WARN"
+                },
+                {
+                  "header": "X-Content-Type-Options",
+                  "present": false,
+                  "severity": "WARN"
+                },
+                {
+                  "header": "Content-Security-Policy",
+                  "present": false,
+                  "severity": "WARN"
+                },
+                {
+                  "header": "Referrer-Policy",
+                  "present": false,
+                  "severity": "WARN"
+                },
+                {
+                  "header": "X-Frame-Options",
+                  "present": false,
+                  "severity": "WARN"
+                }
+              ],
+              "timestamp": "2026-08-27T10:23:58.2813117+00:00"
+            },
+            {
+              "id": "NEG-RAG-EMPTY",
+              "target": "https://api.khepraexperts.com/api/v1/rag/query",
+              "method": "POST",
+              "result": "PASS",
+              "http_status": 404,
+              "latency_ms": 896,
+              "body_snippet": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Cannot POST /api/v1/rag/query</pre>\n</body>\n</html>\n",
+              "timestamp": "2026-08-27T10:23:50.3571196+00:00"
+            },
+            {
+              "id": "NEG-RAG-INVALID-JSON",
+              "target": "https://api.khepraexperts.com/api/v1/rag/query",
+              "method": "POST",
+              "result": "PASS",
+              "http_status": 400,
+              "latency_ms": 929,
+              "body_snippet": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Bad Request</pre>\n</body>\n</html>\n",
+              "timestamp": "2026-08-27T10:23:51.2879073+00:00"
+            },
+            {
+              "id": "NEG-RAG-HUGE",
+              "target": "https://api.khepraexperts.com/api/v1/rag/query",
+              "method": "POST",
+              "result": "PASS",
+              "http_status": 404,
+              "latency_ms": 904,
+              "body_snippet": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Cannot POST /api/v1/rag/query</pre>\n</body>\n</html>\n",
+              "timestamp": "2026-08-27T10:23:52.1926478+00:00"
+            },
+            {
+              "id": "NEG-RAG-WRONG-TYPE",
+              "target": "https://api.khepraexperts.com/api/v1/rag/query",
+              "method": "POST",
+              "result": "PASS",
+              "http_status": 404,
+              "latency_ms": 985,
+              "body_snippet": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Cannot POST /api/v1/rag/query</pre>\n</body>\n</html>\n",
+              "timestamp": "2026-08-27T10:23:53.1784845+00:00"
+            },
+            {
+              "id": "NEG-RAG-UNKNOWN-PARAM",
+              "target": "https://api.khepraexperts.com/api/v1/rag/query",
+              "method": "POST",
+              "result": "PASS",
+              "http_status": 404,
+              "latency_ms": 852,
+              "body_snippet": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Cannot POST /api/v1/rag/query</pre>\n</body>\n</html>\n",
+              "timestamp": "2026-08-27T10:23:54.0315847+00:00"
+            },
+            {
+              "id": "NEG-404",
+              "target": "https://api.khepraexperts.com/nonexistent-route-xyz",
+              "method": "GET",
+              "result": "WARN",
+              "http_status": 200,
+              "latency_ms": 903,
+              "body_snippet": "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n<meta charset=\"utf-8\"/>\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/>\n<title>KOS • Khepra Experts - RegTech Enterprise Hub</title>\n<link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap\" rel=\"stylesheet\">\n<script src=\"https://cdn.tailwindcss.com\"></script>\n<style>*{font-family:Inter,sans-serif}.mono{font-family:'JetBrains Mono',monospace}.bg-kos{background:#0A0E",
+              "timestamp": "2026-08-27T10:23:54.9353261+00:00"
+            },
+            {
+              "id": "NEG-CRAWLERS-INJECTION",
+              "target": "https://api.khepraexperts.com/api/v1/crawlers",
+              "method": "GET",
+              "result": "PASS",
+              "http_status": 404,
+              "latency_ms": 794,
+              "body_snippet": "{\"error\":\"API not found: /api/v1/crawlers\"}",
+              "timestamp": "2026-08-27T10:23:55.7299349+00:00"
+            },
+            {
+              "id": "NET-PING-kos.khepraexperts.com",
+              "target": "kos.khepraexperts.com",
+              "result": "PASS",
+              "latency_ms": 204,
+              "error": null,
+              "timestamp": "2026-08-27T10:23:22.1955596+00:00"
+            },
+            {
+              "id": "NET-PING-api.khepraexperts.com",
+              "target": "api.khepraexperts.com",
+              "result": "PASS",
+              "latency_ms": 236,
+              "error": null,
+              "timestamp": "2026-08-27T10:23:23.6856127+00:00"
+            },
+            {
+              "id": "NET-PING-8.8.8.8",
+              "target": "8.8.8.8",
+              "result": "PASS",
+              "latency_ms": 102,
+              "error": null,
+              "timestamp": "2026-08-27T10:23:24.9108769+00:00"
+            },
+            {
+              "id": "NET-PING-1.1.1.1",
+              "target": "1.1.1.1",
+              "result": "PASS",
+              "latency_ms": 218,
+              "error": null,
+              "timestamp": "2026-08-27T10:23:26.3590621+00:00"
+            },
+            {
+              "id": "NET-TCP-443-kos.khepraexperts.com",
+              "target": "kos.khepraexperts.com",
+              "result": "PASS",
+              "latency_ms": 246,
+              "error": null,
+              "timestamp": "2026-08-27T10:23:26.6099516+00:00"
+            },
+            {
+              "id": "NET-TCP-443-api.khepraexperts.com",
+              "target": "api.khepraexperts.com",
+              "result": "PASS",
+              "latency_ms": 256,
+              "error": null,
+              "timestamp": "2026-08-27T10:23:26.8669258+00:00"
+            },
+            {
+              "id": "SUPABASE-CONFIG",
+              "result": "SKIP",
+              "details": "DATABASE NOT CONFIGURED - SUPABASE_URL not present",
+              "severity": "INFO",
+              "timestamp": "2026-08-27T10:24:00.9261811+00:00"
+            },
+            {
+              "id": "TLS-FRONTEND",
+              "target": "https://kos.khepraexperts.com",
+              "result": "PASS",
+              "latency_ms": 1030,
+              "http_status": 200,
+              "tls_valid": true,
+              "cert_notAfter": "2026-11-22T09:05:49+00:00",
+              "cert_days_left": 86,
+              "cert_subject": "CN=kos.khepraexperts.com",
+              "cert_issuer": "CN=YE1, O=Let's Encrypt, C=US",
+              "error": null,
+              "timestamp": "2026-08-27T10:23:28.5210562+00:00"
+            },
+            {
+              "id": "TLS-API",
+              "target": "https://api.khepraexperts.com",
+              "result": "PASS",
+              "latency_ms": 1020,
+              "http_status": 200,
+              "tls_valid": true,
+              "cert_notAfter": "2026-11-22T15:25:18+00:00",
+              "cert_days_left": 87,
+              "cert_subject": "CN=api.khepraexperts.com",
+              "cert_issuer": "CN=YE2, O=Let's Encrypt, C=US",
+              "error": null,
+              "timestamp": "2026-08-27T10:23:29.9891248+00:00"
+            },
+            {
+              "id": "TLS-API-HEALTH",
+              "target": "https://api.khepraexperts.com/health",
+              "result": "PASS",
+              "latency_ms": 403,
+              "http_status": 200,
+              "tls_valid": true,
+              "cert_notAfter": "2026-11-22T15:25:18+00:00",
+              "cert_days_left": 87,
+              "cert_subject": "CN=api.khepraexperts.com",
+              "cert_issuer": "CN=YE2, O=Let's Encrypt, C=US",
+              "error": null,
+              "timestamp": "2026-08-27T10:23:30.8300848+00:00"
+            }
+          ],
+          "frontend": "https://kos.khepraexperts.com",
+          "api": "https://api.khepraexperts.com",
+          "tests_warn": 1,
+          "tests_fail": 1,
+          "release_status": "NO-GO",
+          "critical_blockers": 0,
+          "total_score": 97.78
+        },
+        {
+          "id": "CONTRACT-OPENAPI-FETCH",
+          "result": "FAIL",
+          "details": "Conversion from JSON failed with error: Unexpected character encountered while parsing value: <. Path '', line 0, position 0.",
+          "timestamp": "2026-08-27T10:30:43.6640014+00:00"
+        },
+        {
+          "id": "CONTRACT-KNOWN-/api/v1/rag/query",
+          "route": "/api/v1/rag/query",
+          "http_status": 404,
+          "result": "SKIP",
+          "timestamp": "2026-08-27T10:30:44.4251274+00:00"
+        },
+        {
+          "id": "CONTRACT-KNOWN-/api/v1/crawlers",
+          "route": "/api/v1/crawlers",
+          "http_status": 404,
+          "result": "SKIP",
+          "timestamp": "2026-08-27T10:30:45.2790566+00:00"
+        },
+        {
+          "id": "CONTRACT-KNOWN-/api/v1/watchtower/alerts",
+          "route": "/api/v1/watchtower/alerts",
+          "http_status": 404,
+          "result": "SKIP",
+          "timestamp": "2026-08-27T10:30:46.1209352+00:00"
+        },
+        {
+          "id": "CONTRACT-KNOWN-/api/v1/payments/paydunya/checkout",
+          "route": "/api/v1/payments/paydunya/checkout",
+          "http_status": 404,
+          "result": "SKIP",
+          "timestamp": "2026-08-27T10:30:46.985795+00:00"
+        },
+        {
+          "id": "CONTRACT-KNOWN-/admin/certification",
+          "route": "/admin/certification",
+          "http_status": 200,
+          "result": "PASS",
+          "timestamp": "2026-08-27T10:30:47.8923687+00:00"
+        },
+        {
+          "id": "CORS-ALLOWED-ORIGIN",
+          "target": "https://api.khepraexperts.com/health",
+          "origin": "https://kos.khepraexperts.com",
+          "result": "PASS",
+          "acao": [
+            "https://kos.khepraexperts.com"
+          ],
+          "acac": [
+            "true"
+          ],
+          "http_status": 204,
+          "is_wildcard_danger": false,
+          "timestamp": "2026-08-27T10:30:57.4039055+00:00"
+        },
+        {
+          "id": "CORS-EVIL-ORIGIN",
+          "target": "https://api.khepraexperts.com/health",
+          "origin": "https://evil.com",
+          "result": "PASS",
+          "acao": [
+            "https://evil.com"
+          ],
+          "acac": [
+            "true"
+          ],
+          "http_status": 204,
+          "is_wildcard_danger": false,
+          "timestamp": "2026-08-27T10:30:58.2668641+00:00"
+        },
+        {
+          "id": "CORS-EVIL-RAG",
+          "target": "https://api.khepraexperts.com/api/v1/rag/query",
+          "origin": "https://evil.com",
+          "result": "PASS",
+          "acao": [
+            "https://evil.com"
+          ],
+          "acac": [
+            "true"
+          ],
+          "http_status": 204,
+          "is_wildcard_danger": false,
+          "timestamp": "2026-08-27T10:30:59.0257794+00:00"
+        },
+        {
+          "id": "DNS-A-kos.khepraexperts.com",
+          "target": "kos.khepraexperts.com",
+          "type": "A",
+          "result": "PASS",
+          "latency_ms": 79,
+          "records": "\r\nName                           Type   TTL   Section    NameHost\r\n----                           ----   ---   -------    --------\r\nkos.khepraexperts.com          CNAME  6781  Answer     kos-fullstack.fly.dev\r\n\r\nName       : kos-fullstack.fly.dev\r\nQueryType  : A\r\nTTL        : 81\r\nSection    : Answer\r\nIP4Address : 66.241.125.166\r\n\r\n\r\n",
+          "error": null,
+          "timestamp": "2026-08-27T10:30:19.3298738+00:00"
+        },
+        {
+          "id": "DNS-AAAA-kos.khepraexperts.com",
+          "target": "kos.khepraexperts.com",
+          "type": "AAAA",
+          "result": "PASS",
+          "latency_ms": 90,
+          "records": "\r\nName                           Type   TTL   Section    NameHost\r\n----                           ----   ---   -------    --------\r\nkos.khepraexperts.com          CNAME  6781  Answer     kos-fullstack.fly.dev\r\n\r\nName       : kos-fullstack.fly.dev\r\nQueryType  : AAAA\r\nTTL        : 81\r\nSection    : Answer\r\nIP6Address : 2a09:8280:1::17a:8b19:0\r\n\r\n\r\n",
+          "error": null,
+          "timestamp": "2026-08-27T10:30:19.444022+00:00"
+        },
+        {
+          "id": "DNS-CNAME-kos.khepraexperts.com",
+          "target": "kos.khepraexperts.com",
+          "type": "CNAME",
+          "result": "PASS",
+          "latency_ms": 57,
+          "records": "\r\nName                           Type   TTL   Section    NameHost\r\n----                           ----   ---   -------    --------\r\nkos.khepraexperts.com          CNAME  5193  Answer     kos-fullstack.fly.dev\r\n\r\n",
+          "error": null,
+          "timestamp": "2026-08-27T10:30:19.5036477+00:00"
+        },
+        {
+          "id": "DNS-A-api.khepraexperts.com",
+          "target": "api.khepraexperts.com",
+          "type": "A",
+          "result": "PASS",
+          "latency_ms": 12,
+          "records": "\r\nName                           Type   TTL   Section    NameHost\r\n----                           ----   ---   -------    --------\r\napi.khepraexperts.com          CNAME  5198  Answer     kos-fullstack.fly.dev\r\n\r\nName       : kos-fullstack.fly.dev\r\nQueryType  : A\r\nTTL        : 81\r\nSection    : Answer\r\nIP4Address : 66.241.125.166\r\n\r\n\r\n",
+          "error": null,
+          "timestamp": "2026-08-27T10:30:19.522899+00:00"
+        },
+        {
+          "id": "DNS-AAAA-api.khepraexperts.com",
+          "target": "api.khepraexperts.com",
+          "type": "AAAA",
+          "result": "PASS",
+          "latency_ms": 12,
+          "records": "\r\nName                           Type   TTL   Section    NameHost\r\n----                           ----   ---   -------    --------\r\napi.khepraexperts.com          CNAME  6781  Answer     kos-fullstack.fly.dev\r\n\r\nName       : kos-fullstack.fly.dev\r\nQueryType  : AAAA\r\nTTL        : 500\r\nSection    : Answer\r\nIP6Address : 2a09:8280:1::17a:8b19:0\r\n\r\n\r\n",
+          "error": null,
+          "timestamp": "2026-08-27T10:30:19.5399014+00:00"
+        },
+        {
+          "id": "DNS-CNAME-api.khepraexperts.com",
+          "target": "api.khepraexperts.com",
+          "type": "CNAME",
+          "result": "PASS",
+          "latency_ms": 41,
+          "records": "\r\nName                           Type   TTL   Section    NameHost\r\n----                           ----   ---   -------    --------\r\napi.khepraexperts.com          CNAME  5198  Answer     kos-fullstack.fly.dev\r\n\r\n",
+          "error": null,
+          "timestamp": "2026-08-27T10:30:19.5837601+00:00"
+        },
+        {
+          "id": "DNS-NS-kos.khepraexperts.com",
+          "target": "kos.khepraexperts.com",
+          "type": "NS",
+          "result": "PASS",
+          "latency_ms": 99,
+          "records": "\r\nName                           Type   TTL   Section    NameHost\r\n----                           ----   ---   -------    --------\r\nkos.khepraexperts.com          CNAME  6781  Answer     kos-fullstack.fly.dev\r\n\r\nName                   : fly.dev\r\nQueryType              : SOA\r\nTTL                    : 60\r\nSection                : Authority\r\nNameAdministrator      : ops.fly.io\r\nSerialNumber           : 1787826616\r\nTimeToZoneRefresh      : 86400\r\nTimeToZoneFailureRetry : 7200\r\nTimeToExpiration       : 604800\r\nDefaultTTL             : 300\r\n\r\n\r\n",
+          "error": null,
+          "timestamp": "2026-08-27T10:30:19.6933415+00:00"
+        },
+        {
+          "id": "FRONTEND-ROOT",
+          "target": "https://kos.khepraexperts.com/",
+          "method": "GET",
+          "result": "PASS",
+          "latency_ms": 949,
+          "http_status": 200,
+          "expected": 200,
+          "body_snippet": "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n<meta charset=\"utf-8\"/>\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/>\n<title>KOS • Khepra Experts - RegTech Enterprise Hub</title>\n<link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap\" rel=\"stylesheet\">\n<script src=\"https://cdn.tailwindcss.com\"></script>\n<style>*{font-family:Inter,sans-serif}.mono{font-family:'JetBrains Mono',monospace}.bg-kos{background:#0A0E",
+          "error": null,
+          "timestamp": "2026-08-27T10:30:30.6201667+00:00"
+        },
+        {
+          "id": "API-HEALTH",
+          "target": "https://api.khepraexperts.com/health",
+          "method": "GET",
+          "result": "PASS",
+          "latency_ms": 974,
+          "http_status": 200,
+          "expected": 200,
+          "body_snippet": "{\"status\":\"ONLINE\",\"system\":\"KOS RegTech Enterprise Hub\",\"version\":\"3.0.0-bigfour\",\"region\":\"cdg\",\"uptime\":50180.103282901,\"supabase\":\"mock\",\"timestamp\":\"2026-08-27T10:30:31.513Z\"}",
+          "error": null,
+          "timestamp": "2026-08-27T10:30:31.5946729+00:00"
+        },
+        {
+          "id": "API-READY",
+          "target": "https://api.khepraexperts.com/ready",
+          "method": "GET",
+          "result": "PASS",
+          "latency_ms": 985,
+          "http_status": 200,
+          "expected": 200,
+          "body_snippet": "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n<meta charset=\"utf-8\"/>\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/>\n<title>KOS • Khepra Experts - RegTech Enterprise Hub</title>\n<link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap\" rel=\"stylesheet\">\n<script src=\"https://cdn.tailwindcss.com\"></script>\n<style>*{font-family:Inter,sans-serif}.mono{font-family:'JetBrains Mono',monospace}.bg-kos{background:#0A0E",
+          "error": null,
+          "timestamp": "2026-08-27T10:30:32.5811512+00:00"
+        },
+        {
+          "id": "API-VERSION",
+          "target": "https://api.khepraexperts.com/version",
+          "method": "GET",
+          "result": "PASS",
+          "latency_ms": 822,
+          "http_status": 200,
+          "expected": 200,
+          "body_snippet": "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n<meta charset=\"utf-8\"/>\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/>\n<title>KOS • Khepra Experts - RegTech Enterprise Hub</title>\n<link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap\" rel=\"stylesheet\">\n<script src=\"https://cdn.tailwindcss.com\"></script>\n<style>*{font-family:Inter,sans-serif}.mono{font-family:'JetBrains Mono',monospace}.bg-kos{background:#0A0E",
+          "error": null,
+          "timestamp": "2026-08-27T10:30:33.4036932+00:00"
+        },
+        {
+          "id": "API-OPENAPI",
+          "target": "https://api.khepraexperts.com/openapi.json",
+          "method": "GET",
+          "result": "PASS",
+          "latency_ms": 966,
+          "http_status": 200,
+          "expected": 200,
+          "body_snippet": "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n<meta charset=\"utf-8\"/>\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/>\n<title>KOS • Khepra Experts - RegTech Enterprise Hub</title>\n<link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap\" rel=\"stylesheet\">\n<script src=\"https://cdn.tailwindcss.com\"></script>\n<style>*{font-family:Inter,sans-serif}.mono{font-family:'JetBrains Mono',monospace}.bg-kos{background:#0A0E",
+          "error": null,
+          "timestamp": "2026-08-27T10:30:34.3709565+00:00"
+        },
+        {
+          "id": "API-DOCS",
+          "target": "https://api.khepraexperts.com/docs",
+          "method": "GET",
+          "result": "PASS",
+          "latency_ms": 842,
+          "http_status": 200,
+          "expected": null,
+          "body_snippet": "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n<meta charset=\"utf-8\"/>\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/>\n<title>KOS • Khepra Experts - RegTech Enterprise Hub</title>\n<link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap\" rel=\"stylesheet\">\n<script src=\"https://cdn.tailwindcss.com\"></script>\n<style>*{font-family:Inter,sans-serif}.mono{font-family:'JetBrains Mono',monospace}.bg-kos{background:#0A0E",
+          "error": null,
+          "timestamp": "2026-08-27T10:30:35.2160663+00:00"
+        },
+        {
+          "id": "API-ROOT",
+          "target": "https://api.khepraexperts.com/",
+          "method": "GET",
+          "result": "PASS",
+          "latency_ms": 843,
+          "http_status": 200,
+          "expected": null,
+          "body_snippet": "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n<meta charset=\"utf-8\"/>\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/>\n<title>KOS • Khepra Experts - RegTech Enterprise Hub</title>\n<link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap\" rel=\"stylesheet\">\n<script src=\"https://cdn.tailwindcss.com\"></script>\n<style>*{font-family:Inter,sans-serif}.mono{font-family:'JetBrains Mono',monospace}.bg-kos{background:#0A0E",
+          "error": null,
+          "timestamp": "2026-08-27T10:30:36.0597977+00:00"
+        },
+        {
+          "id": "HEADERS-FRONTEND",
+          "target": "https://kos.khepraexperts.com",
+          "result": "PASS",
+          "headers": {
+            "X-Powered-By": [
+              "Express"
+            ],
+            "Vary": [
+              "Origin"
+            ],
+            "Access-Control-Allow-Credentials": [
+              "true"
+            ],
+            "Accept-Ranges": [
+              "bytes"
+            ],
+            "Cache-Control": [
+              "public, max-age=3600"
+            ],
+            "ETag": [
+              "W/\"1992-1a03e90b0e8\""
+            ],
+            "Date": [
+              "Thu, 27 Aug 2026 10:30:54 GMT"
+            ],
+            "Connection": [
+              "keep-alive"
+            ],
+            "Keep-Alive": [
+              "timeout=5"
+            ],
+            "Server": [
+              "Fly/bae4c81b48",
+              "(2026-08-26)"
+            ],
+            "Via": [
+              "1.1 fly.io",
+              "1.1 fly.io"
+            ],
+            "fly-request-id": [
+              "01M11CBK772106HVG2CYZM8TSG-jnb"
+            ],
+            "Last-Modified": [
+              "Wed, 26 Aug 2026 14:54:25 GMT"
+            ],
+            "Content-Type": [
+              "text/html; charset=UTF-8"
+            ],
+            "Content-Length": [
+              "6546"
+            ]
+          },
+          "checks": [
+            {
+              "header": "Strict-Transport-Security",
+              "present": false,
+              "severity": "WARN"
+            },
+            {
+              "header": "X-Content-Type-Options",
+              "present": false,
+              "severity": "WARN"
+            },
+            {
+              "header": "Content-Security-Policy",
+              "present": false,
+              "severity": "WARN"
+            },
+            {
+              "header": "Referrer-Policy",
+              "present": false,
+              "severity": "WARN"
+            },
+            {
+              "header": "X-Frame-Options",
+              "present": false,
+              "severity": "WARN"
+            }
+          ],
+          "timestamp": "2026-08-27T10:30:54.8216133+00:00"
+        },
+        {
+          "id": "HEADERS-API",
+          "target": "https://api.khepraexperts.com",
+          "result": "PASS",
+          "headers": {
+            "X-Powered-By": [
+              "Express"
+            ],
+            "Vary": [
+              "Origin"
+            ],
+            "Access-Control-Allow-Credentials": [
+              "true"
+            ],
+            "Accept-Ranges": [
+              "bytes"
+            ],
+            "Cache-Control": [
+              "public, max-age=3600"
+            ],
+            "ETag": [
+              "W/\"1992-1a03e90b0e8\""
+            ],
+            "Date": [
+              "Thu, 27 Aug 2026 10:30:55 GMT"
+            ],
+            "Connection": [
+              "keep-alive"
+            ],
+            "Keep-Alive": [
+              "timeout=5"
+            ],
+            "Server": [
+              "Fly/bae4c81b48",
+              "(2026-08-26)"
+            ],
+            "Via": [
+              "1.1 fly.io",
+              "1.1 fly.io"
+            ],
+            "fly-request-id": [
+              "01M11CBMA87WW1Q20766VFZ7P0-jnb"
+            ],
+            "Last-Modified": [
+              "Wed, 26 Aug 2026 14:54:25 GMT"
+            ],
+            "Content-Type": [
+              "text/html; charset=UTF-8"
+            ],
+            "Content-Length": [
+              "6546"
+            ]
+          },
+          "checks": [
+            {
+              "header": "Strict-Transport-Security",
+              "present": false,
+              "severity": "WARN"
+            },
+            {
+              "header": "X-Content-Type-Options",
+              "present": false,
+              "severity": "WARN"
+            },
+            {
+              "header": "Content-Security-Policy",
+              "present": false,
+              "severity": "WARN"
+            },
+            {
+              "header": "Referrer-Policy",
+              "present": false,
+              "severity": "WARN"
+            },
+            {
+              "header": "X-Frame-Options",
+              "present": false,
+              "severity": "WARN"
+            }
+          ],
+          "timestamp": "2026-08-27T10:30:55.715197+00:00"
+        },
+        {
+          "id": "HEADERS-API-HEALTH",
+          "target": "https://api.khepraexperts.com/health",
+          "result": "PASS",
+          "headers": {
+            "X-Powered-By": [
+              "Express"
+            ],
+            "Vary": [
+              "Origin"
+            ],
+            "Access-Control-Allow-Credentials": [
+              "true"
+            ],
+            "ETag": [
+              "W/\"b4-hB6WBYQvLeiqMuitE3c1kwRuEWs\""
+            ],
+            "Date": [
+              "Thu, 27 Aug 2026 10:30:56 GMT"
+            ],
+            "Connection": [
+              "keep-alive"
+            ],
+            "Keep-Alive": [
+              "timeout=5"
+            ],
+            "Server": [
+              "Fly/bae4c81b48",
+              "(2026-08-26)"
+            ],
+            "Via": [
+              "1.1 fly.io",
+              "1.1 fly.io"
+            ],
+            "fly-request-id": [
+              "01M11CBN4R5NKKQ33R2J88YR4J-jnb"
+            ],
+            "Content-Type": [
+              "application/json; charset=utf-8"
+            ],
+            "Content-Length": [
+              "180"
+            ]
+          },
+          "checks": [
+            {
+              "header": "Strict-Transport-Security",
+              "present": false,
+              "severity": "WARN"
+            },
+            {
+              "header": "X-Content-Type-Options",
+              "present": false,
+              "severity": "WARN"
+            },
+            {
+              "header": "Content-Security-Policy",
+              "present": false,
+              "severity": "WARN"
+            },
+            {
+              "header": "Referrer-Policy",
+              "present": false,
+              "severity": "WARN"
+            },
+            {
+              "header": "X-Frame-Options",
+              "present": false,
+              "severity": "WARN"
+            }
+          ],
+          "timestamp": "2026-08-27T10:30:56.6123365+00:00"
+        },
+        {
+          "id": "NEG-RAG-EMPTY",
+          "target": "https://api.khepraexperts.com/api/v1/rag/query",
+          "method": "POST",
+          "result": "PASS",
+          "http_status": 404,
+          "latency_ms": 814,
+          "body_snippet": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Cannot POST /api/v1/rag/query</pre>\n</body>\n</html>\n",
+          "timestamp": "2026-08-27T10:30:48.7442751+00:00"
+        },
+        {
+          "id": "NEG-RAG-INVALID-JSON",
+          "target": "https://api.khepraexperts.com/api/v1/rag/query",
+          "method": "POST",
+          "result": "PASS",
+          "http_status": 400,
+          "latency_ms": 794,
+          "body_snippet": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Bad Request</pre>\n</body>\n</html>\n",
+          "timestamp": "2026-08-27T10:30:49.5393498+00:00"
+        },
+        {
+          "id": "NEG-RAG-HUGE",
+          "target": "https://api.khepraexperts.com/api/v1/rag/query",
+          "method": "POST",
+          "result": "PASS",
+          "http_status": 404,
+          "latency_ms": 798,
+          "body_snippet": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Cannot POST /api/v1/rag/query</pre>\n</body>\n</html>\n",
+          "timestamp": "2026-08-27T10:30:50.3381449+00:00"
+        },
+        {
+          "id": "NEG-RAG-WRONG-TYPE",
+          "target": "https://api.khepraexperts.com/api/v1/rag/query",
+          "method": "POST",
+          "result": "PASS",
+          "http_status": 404,
+          "latency_ms": 843,
+          "body_snippet": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Cannot POST /api/v1/rag/query</pre>\n</body>\n</html>\n",
+          "timestamp": "2026-08-27T10:30:51.1818359+00:00"
+        },
+        {
+          "id": "NEG-RAG-UNKNOWN-PARAM",
+          "target": "https://api.khepraexperts.com/api/v1/rag/query",
+          "method": "POST",
+          "result": "PASS",
+          "http_status": 404,
+          "latency_ms": 837,
+          "body_snippet": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Cannot POST /api/v1/rag/query</pre>\n</body>\n</html>\n",
+          "timestamp": "2026-08-27T10:30:52.0200072+00:00"
+        },
+        {
+          "id": "NEG-404",
+          "target": "https://api.khepraexperts.com/nonexistent-route-xyz",
+          "method": "GET",
+          "result": "WARN",
+          "http_status": 200,
+          "latency_ms": 847,
+          "body_snippet": "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n<meta charset=\"utf-8\"/>\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/>\n<title>KOS • Khepra Experts - RegTech Enterprise Hub</title>\n<link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap\" rel=\"stylesheet\">\n<script src=\"https://cdn.tailwindcss.com\"></script>\n<style>*{font-family:Inter,sans-serif}.mono{font-family:'JetBrains Mono',monospace}.bg-kos{background:#0A0E",
+          "timestamp": "2026-08-27T10:30:52.8683031+00:00"
+        },
+        {
+          "id": "NEG-CRAWLERS-INJECTION",
+          "target": "https://api.khepraexperts.com/api/v1/crawlers",
+          "method": "GET",
+          "result": "PASS",
+          "http_status": 404,
+          "latency_ms": 795,
+          "body_snippet": "{\"error\":\"API not found: /api/v1/crawlers\"}",
+          "timestamp": "2026-08-27T10:30:53.6645456+00:00"
+        },
+        {
+          "id": "NET-PING-kos.khepraexperts.com",
+          "target": "kos.khepraexperts.com",
+          "result": "PASS",
+          "latency_ms": 224,
+          "error": null,
+          "timestamp": "2026-08-27T10:30:21.3142014+00:00"
+        },
+        {
+          "id": "NET-PING-api.khepraexperts.com",
+          "target": "api.khepraexperts.com",
+          "result": "PASS",
+          "latency_ms": 189,
+          "error": null,
+          "timestamp": "2026-08-27T10:30:22.70585+00:00"
+        },
+        {
+          "id": "NET-PING-8.8.8.8",
+          "target": "8.8.8.8",
+          "result": "PASS",
+          "latency_ms": 97,
+          "error": null,
+          "timestamp": "2026-08-27T10:30:23.9099236+00:00"
+        },
+        {
+          "id": "NET-PING-1.1.1.1",
+          "target": "1.1.1.1",
+          "result": "PASS",
+          "latency_ms": 206,
+          "error": null,
+          "timestamp": "2026-08-27T10:30:25.3381099+00:00"
+        },
+        {
+          "id": "NET-TCP-443-kos.khepraexperts.com",
+          "target": "kos.khepraexperts.com",
+          "result": "PASS",
+          "latency_ms": 217,
+          "error": null,
+          "timestamp": "2026-08-27T10:30:25.5604069+00:00"
+        },
+        {
+          "id": "NET-TCP-443-api.khepraexperts.com",
+          "target": "api.khepraexperts.com",
+          "result": "PASS",
+          "latency_ms": 199,
+          "error": null,
+          "timestamp": "2026-08-27T10:30:25.760966+00:00"
+        },
+        {
+          "id": "SUPABASE-CONFIG",
+          "result": "SKIP",
+          "details": "DATABASE NOT CONFIGURED - SUPABASE_URL not present",
+          "severity": "INFO",
+          "timestamp": "2026-08-27T10:30:59.1124245+00:00"
+        },
+        {
+          "id": "TLS-FRONTEND",
+          "target": "https://kos.khepraexperts.com",
+          "result": "PASS",
+          "latency_ms": 1112,
+          "http_status": 200,
+          "tls_valid": true,
+          "cert_notAfter": "2026-11-22T09:05:49+00:00",
+          "cert_days_left": 86,
+          "cert_subject": "CN=kos.khepraexperts.com",
+          "cert_issuer": "CN=YE1, O=Let's Encrypt, C=US",
+          "error": null,
+          "timestamp": "2026-08-27T10:30:27.4262984+00:00"
+        },
+        {
+          "id": "TLS-API",
+          "target": "https://api.khepraexperts.com",
+          "result": "PASS",
+          "latency_ms": 788,
+          "http_status": 200,
+          "tls_valid": true,
+          "cert_notAfter": "2026-11-22T15:25:18+00:00",
+          "cert_days_left": 87,
+          "cert_subject": "CN=api.khepraexperts.com",
+          "cert_issuer": "CN=YE2, O=Let's Encrypt, C=US",
+          "error": null,
+          "timestamp": "2026-08-27T10:30:28.6083201+00:00"
+        },
+        {
+          "id": "TLS-API-HEALTH",
+          "target": "https://api.khepraexperts.com/health",
+          "result": "PASS",
+          "latency_ms": 528,
+          "http_status": 200,
+          "tls_valid": true,
+          "cert_notAfter": "2026-11-22T15:25:18+00:00",
+          "cert_days_left": 87,
+          "cert_subject": "CN=api.khepraexperts.com",
+          "cert_issuer": "CN=YE2, O=Let's Encrypt, C=US",
+          "error": null,
+          "timestamp": "2026-08-27T10:30:29.6239913+00:00"
+        }
+      ],
+      "git_commit": "7fdc8b5333af26618158d154e6560835eae7c57d",
+      "total_score": 97.78,
+      "release_status": "NO-GO"
+    },
+    {
+      "id": "CONTRACT-OPENAPI-FETCH",
+      "result": "FAIL",
+      "details": "Conversion from JSON failed with error: Unexpected character encountered while parsing value: <. Path '', line 0, position 0.",
+      "timestamp": "2026-08-27T10:34:20.0292106+00:00"
+    },
+    {
+      "id": "CONTRACT-KNOWN-/api/v1/rag/query",
+      "route": "/api/v1/rag/query",
+      "http_status": 404,
+      "result": "SKIP",
+      "timestamp": "2026-08-27T10:34:20.795178+00:00"
+    },
+    {
+      "id": "CONTRACT-KNOWN-/api/v1/crawlers",
+      "route": "/api/v1/crawlers",
+      "http_status": 404,
+      "result": "SKIP",
+      "timestamp": "2026-08-27T10:34:21.744869+00:00"
+    },
+    {
+      "id": "CONTRACT-KNOWN-/api/v1/watchtower/alerts",
+      "route": "/api/v1/watchtower/alerts",
+      "http_status": 404,
+      "result": "SKIP",
+      "timestamp": "2026-08-27T10:34:22.6052158+00:00"
+    },
+    {
+      "id": "CONTRACT-KNOWN-/api/v1/payments/paydunya/checkout",
+      "route": "/api/v1/payments/paydunya/checkout",
+      "http_status": 404,
+      "result": "SKIP",
+      "timestamp": "2026-08-27T10:34:23.4715874+00:00"
+    },
+    {
+      "id": "CONTRACT-KNOWN-/admin/certification",
+      "route": "/admin/certification",
+      "http_status": 200,
+      "result": "PASS",
+      "timestamp": "2026-08-27T10:34:24.3358002+00:00"
+    },
+    {
+      "id": "CORS-ALLOWED-ORIGIN",
+      "target": "https://api.khepraexperts.com/health",
+      "origin": "https://kos.khepraexperts.com",
+      "result": "PASS",
+      "acao": [
+        "https://kos.khepraexperts.com"
+      ],
+      "acac": [
+        "true"
+      ],
+      "http_status": 204,
+      "is_wildcard_danger": false,
+      "timestamp": "2026-08-27T10:34:33.5136476+00:00"
+    },
+    {
+      "id": "CORS-EVIL-ORIGIN",
+      "target": "https://api.khepraexperts.com/health",
+      "origin": "https://evil.com",
+      "result": "PASS",
+      "acao": [
+        "https://evil.com"
+      ],
+      "acac": [
+        "true"
+      ],
+      "http_status": 204,
+      "is_wildcard_danger": false,
+      "timestamp": "2026-08-27T10:34:34.3406098+00:00"
+    },
+    {
+      "id": "CORS-EVIL-RAG",
+      "target": "https://api.khepraexperts.com/api/v1/rag/query",
+      "origin": "https://evil.com",
+      "result": "PASS",
+      "acao": [
+        "https://evil.com"
+      ],
+      "acac": [
+        "true"
+      ],
+      "http_status": 204,
+      "is_wildcard_danger": false,
+      "timestamp": "2026-08-27T10:34:35.2667078+00:00"
+    },
+    {
+      "id": "DNS-A-kos.khepraexperts.com",
+      "target": "kos.khepraexperts.com",
+      "type": "A",
+      "result": "PASS",
+      "latency_ms": 14,
+      "records": "\r\nName                           Type   TTL   Section    NameHost\r\n----                           ----   ---   -------    --------\r\nkos.khepraexperts.com          CNAME  6565  Answer     kos-fullstack.fly.dev\r\n\r\nName       : kos-fullstack.fly.dev\r\nQueryType  : A\r\nTTL        : 492\r\nSection    : Answer\r\nIP4Address : 66.241.125.166\r\n\r\n\r\n",
+      "error": null,
+      "timestamp": "2026-08-27T10:33:55.5624193+00:00"
+    },
+    {
+      "id": "DNS-AAAA-kos.khepraexperts.com",
+      "target": "kos.khepraexperts.com",
+      "type": "AAAA",
+      "result": "PASS",
+      "latency_ms": 37,
+      "records": "\r\nName                           Type   TTL   Section    NameHost\r\n----                           ----   ---   -------    --------\r\nkos.khepraexperts.com          CNAME  6565  Answer     kos-fullstack.fly.dev\r\n\r\nName       : kos-fullstack.fly.dev\r\nQueryType  : AAAA\r\nTTL        : 284\r\nSection    : Answer\r\nIP6Address : 2a09:8280:1::17a:8b19:0\r\n\r\n\r\n",
+      "error": null,
+      "timestamp": "2026-08-27T10:33:55.6214841+00:00"
+    },
+    {
+      "id": "DNS-CNAME-kos.khepraexperts.com",
+      "target": "kos.khepraexperts.com",
+      "type": "CNAME",
+      "result": "PASS",
+      "latency_ms": 9,
+      "records": "\r\nName                           Type   TTL   Section    NameHost\r\n----                           ----   ---   -------    --------\r\nkos.khepraexperts.com          CNAME  4977  Answer     kos-fullstack.fly.dev\r\n\r\n",
+      "error": null,
+      "timestamp": "2026-08-27T10:33:55.6334596+00:00"
+    },
+    {
+      "id": "DNS-A-api.khepraexperts.com",
+      "target": "api.khepraexperts.com",
+      "type": "A",
+      "result": "PASS",
+      "latency_ms": 10,
+      "records": "\r\nName                           Type   TTL   Section    NameHost\r\n----                           ----   ---   -------    --------\r\napi.khepraexperts.com          CNAME  6565  Answer     kos-fullstack.fly.dev\r\n\r\nName       : kos-fullstack.fly.dev\r\nQueryType  : A\r\nTTL        : 284\r\nSection    : Answer\r\nIP4Address : 66.241.125.166\r\n\r\n\r\n",
+      "error": null,
+      "timestamp": "2026-08-27T10:33:55.6492433+00:00"
+    },
+    {
+      "id": "DNS-AAAA-api.khepraexperts.com",
+      "target": "api.khepraexperts.com",
+      "type": "AAAA",
+      "result": "PASS",
+      "latency_ms": 21,
+      "records": "\r\nName                           Type   TTL   Section    NameHost\r\n----                           ----   ---   -------    --------\r\napi.khepraexperts.com          CNAME  6565  Answer     kos-fullstack.fly.dev\r\n\r\nName       : kos-fullstack.fly.dev\r\nQueryType  : AAAA\r\nTTL        : 284\r\nSection    : Answer\r\nIP6Address : 2a09:8280:1::17a:8b19:0\r\n\r\n\r\n",
+      "error": null,
+      "timestamp": "2026-08-27T10:33:55.6740194+00:00"
+    },
+    {
+      "id": "DNS-CNAME-api.khepraexperts.com",
+      "target": "api.khepraexperts.com",
+      "type": "CNAME",
+      "result": "PASS",
+      "latency_ms": 79,
+      "records": "\r\nName                           Type   TTL   Section    NameHost\r\n----                           ----   ---   -------    --------\r\napi.khepraexperts.com          CNAME  4982  Answer     kos-fullstack.fly.dev\r\n\r\n",
+      "error": null,
+      "timestamp": "2026-08-27T10:33:55.7564905+00:00"
+    },
+    {
+      "id": "DNS-NS-kos.khepraexperts.com",
+      "target": "kos.khepraexperts.com",
+      "type": "NS",
+      "result": "PASS",
+      "latency_ms": 91,
+      "records": "\r\nName                           Type   TTL   Section    NameHost\r\n----                           ----   ---   -------    --------\r\nkos.khepraexperts.com          CNAME  6565  Answer     kos-fullstack.fly.dev\r\n\r\nName                   : fly.dev\r\nQueryType              : SOA\r\nTTL                    : 60\r\nSection                : Authority\r\nNameAdministrator      : ops.fly.io\r\nSerialNumber           : 1787826831\r\nTimeToZoneRefresh      : 86400\r\nTimeToZoneFailureRetry : 7200\r\nTimeToExpiration       : 604800\r\nDefaultTTL             : 300\r\n\r\n\r\n",
+      "error": null,
+      "timestamp": "2026-08-27T10:33:55.8680014+00:00"
+    },
+    {
+      "id": "FRONTEND-ROOT",
+      "target": "https://kos.khepraexperts.com/",
+      "method": "GET",
+      "result": "PASS",
+      "latency_ms": 867,
+      "http_status": 200,
+      "expected": 200,
+      "body_snippet": "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n<meta charset=\"utf-8\"/>\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/>\n<title>KOS • Khepra Experts - RegTech Enterprise Hub</title>\n<link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap\" rel=\"stylesheet\">\n<script src=\"https://cdn.tailwindcss.com\"></script>\n<style>*{font-family:Inter,sans-serif}.mono{font-family:'JetBrains Mono',monospace}.bg-kos{background:#0A0E",
+      "error": null,
+      "timestamp": "2026-08-27T10:34:06.6476011+00:00"
+    },
+    {
+      "id": "API-HEALTH",
+      "target": "https://api.khepraexperts.com/health",
+      "method": "GET",
+      "result": "PASS",
+      "latency_ms": 789,
+      "http_status": 200,
+      "expected": 200,
+      "body_snippet": "{\"status\":\"ONLINE\",\"system\":\"KOS RegTech Enterprise Hub\",\"version\":\"3.0.0-bigfour\",\"region\":\"cdg\",\"uptime\":50395.930279457,\"supabase\":\"mock\",\"timestamp\":\"2026-08-27T10:34:07.337Z\"}",
+      "error": null,
+      "timestamp": "2026-08-27T10:34:07.4479404+00:00"
+    },
+    {
+      "id": "API-READY",
+      "target": "https://api.khepraexperts.com/ready",
+      "method": "GET",
+      "result": "PASS",
+      "latency_ms": 807,
+      "http_status": 200,
+      "expected": 200,
+      "body_snippet": "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n<meta charset=\"utf-8\"/>\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/>\n<title>KOS • Khepra Experts - RegTech Enterprise Hub</title>\n<link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap\" rel=\"stylesheet\">\n<script src=\"https://cdn.tailwindcss.com\"></script>\n<style>*{font-family:Inter,sans-serif}.mono{font-family:'JetBrains Mono',monospace}.bg-kos{background:#0A0E",
+      "error": null,
+      "timestamp": "2026-08-27T10:34:08.2556131+00:00"
+    },
+    {
+      "id": "API-VERSION",
+      "target": "https://api.khepraexperts.com/version",
+      "method": "GET",
+      "result": "PASS",
+      "latency_ms": 989,
+      "http_status": 200,
+      "expected": 200,
+      "body_snippet": "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n<meta charset=\"utf-8\"/>\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/>\n<title>KOS • Khepra Experts - RegTech Enterprise Hub</title>\n<link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap\" rel=\"stylesheet\">\n<script src=\"https://cdn.tailwindcss.com\"></script>\n<style>*{font-family:Inter,sans-serif}.mono{font-family:'JetBrains Mono',monospace}.bg-kos{background:#0A0E",
+      "error": null,
+      "timestamp": "2026-08-27T10:34:09.2453146+00:00"
+    },
+    {
+      "id": "API-OPENAPI",
+      "target": "https://api.khepraexperts.com/openapi.json",
+      "method": "GET",
+      "result": "PASS",
+      "latency_ms": 984,
+      "http_status": 200,
+      "expected": 200,
+      "body_snippet": "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n<meta charset=\"utf-8\"/>\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/>\n<title>KOS • Khepra Experts - RegTech Enterprise Hub</title>\n<link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap\" rel=\"stylesheet\">\n<script src=\"https://cdn.tailwindcss.com\"></script>\n<style>*{font-family:Inter,sans-serif}.mono{font-family:'JetBrains Mono',monospace}.bg-kos{background:#0A0E",
+      "error": null,
+      "timestamp": "2026-08-27T10:34:10.2303942+00:00"
+    },
+    {
+      "id": "API-DOCS",
+      "target": "https://api.khepraexperts.com/docs",
+      "method": "GET",
+      "result": "PASS",
+      "latency_ms": 991,
+      "http_status": 200,
+      "expected": null,
+      "body_snippet": "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n<meta charset=\"utf-8\"/>\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/>\n<title>KOS • Khepra Experts - RegTech Enterprise Hub</title>\n<link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap\" rel=\"stylesheet\">\n<script src=\"https://cdn.tailwindcss.com\"></script>\n<style>*{font-family:Inter,sans-serif}.mono{font-family:'JetBrains Mono',monospace}.bg-kos{background:#0A0E",
+      "error": null,
+      "timestamp": "2026-08-27T10:34:11.2267121+00:00"
+    },
+    {
+      "id": "API-ROOT",
+      "target": "https://api.khepraexperts.com/",
+      "method": "GET",
+      "result": "PASS",
+      "latency_ms": 934,
+      "http_status": 200,
+      "expected": null,
+      "body_snippet": "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n<meta charset=\"utf-8\"/>\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/>\n<title>KOS • Khepra Experts - RegTech Enterprise Hub</title>\n<link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap\" rel=\"stylesheet\">\n<script src=\"https://cdn.tailwindcss.com\"></script>\n<style>*{font-family:Inter,sans-serif}.mono{font-family:'JetBrains Mono',monospace}.bg-kos{background:#0A0E",
+      "error": null,
+      "timestamp": "2026-08-27T10:34:12.1622422+00:00"
+    },
+    {
+      "id": "HEADERS-FRONTEND",
+      "target": "https://kos.khepraexperts.com",
+      "result": "PASS",
+      "headers": {
+        "X-Powered-By": [
+          "Express"
+        ],
+        "Vary": [
+          "Origin"
+        ],
+        "Access-Control-Allow-Credentials": [
+          "true"
+        ],
+        "Accept-Ranges": [
+          "bytes"
+        ],
+        "Cache-Control": [
+          "public, max-age=3600"
+        ],
+        "ETag": [
+          "W/\"1992-1a03e90b0e8\""
+        ],
+        "Date": [
+          "Thu, 27 Aug 2026 10:34:30 GMT"
+        ],
+        "Connection": [
+          "keep-alive"
+        ],
+        "Keep-Alive": [
+          "timeout=5"
+        ],
+        "Server": [
+          "Fly/bae4c81b48",
+          "(2026-08-26)"
+        ],
+        "Via": [
+          "1.1 fly.io",
+          "1.1 fly.io"
+        ],
+        "fly-request-id": [
+          "01M11CJ6K666W5AHK39YB9BJK7-jnb"
+        ],
+        "Last-Modified": [
+          "Wed, 26 Aug 2026 14:54:25 GMT"
+        ],
+        "Content-Type": [
+          "text/html; charset=UTF-8"
+        ],
+        "Content-Length": [
+          "6546"
+        ]
+      },
+      "checks": [
+        {
+          "header": "Strict-Transport-Security",
+          "present": false,
+          "severity": "WARN"
+        },
+        {
+          "header": "X-Content-Type-Options",
+          "present": false,
+          "severity": "WARN"
+        },
+        {
+          "header": "Content-Security-Policy",
+          "present": false,
+          "severity": "WARN"
+        },
+        {
+          "header": "Referrer-Policy",
+          "present": false,
+          "severity": "WARN"
+        },
+        {
+          "header": "X-Frame-Options",
+          "present": false,
+          "severity": "WARN"
+        }
+      ],
+      "timestamp": "2026-08-27T10:34:31.0496022+00:00"
+    },
+    {
+      "id": "HEADERS-API",
+      "target": "https://api.khepraexperts.com",
+      "result": "PASS",
+      "headers": {
+        "X-Powered-By": [
+          "Express"
+        ],
+        "Vary": [
+          "Origin"
+        ],
+        "Access-Control-Allow-Credentials": [
+          "true"
+        ],
+        "Accept-Ranges": [
+          "bytes"
+        ],
+        "Cache-Control": [
+          "public, max-age=3600"
+        ],
+        "ETag": [
+          "W/\"1992-1a03e90b0e8\""
+        ],
+        "Date": [
+          "Thu, 27 Aug 2026 10:34:31 GMT"
+        ],
+        "Connection": [
+          "keep-alive"
+        ],
+        "Keep-Alive": [
+          "timeout=5"
+        ],
+        "Server": [
+          "Fly/bae4c81b48",
+          "(2026-08-26)"
+        ],
+        "Via": [
+          "1.1 fly.io",
+          "1.1 fly.io"
+        ],
+        "fly-request-id": [
+          "01M11CJ7BVPTNCKZ7ZXCN6G6ZJ-jnb"
+        ],
+        "Last-Modified": [
+          "Wed, 26 Aug 2026 14:54:25 GMT"
+        ],
+        "Content-Type": [
+          "text/html; charset=UTF-8"
+        ],
+        "Content-Length": [
+          "6546"
+        ]
+      },
+      "checks": [
+        {
+          "header": "Strict-Transport-Security",
+          "present": false,
+          "severity": "WARN"
+        },
+        {
+          "header": "X-Content-Type-Options",
+          "present": false,
+          "severity": "WARN"
+        },
+        {
+          "header": "Content-Security-Policy",
+          "present": false,
+          "severity": "WARN"
+        },
+        {
+          "header": "Referrer-Policy",
+          "present": false,
+          "severity": "WARN"
+        },
+        {
+          "header": "X-Frame-Options",
+          "present": false,
+          "severity": "WARN"
+        }
+      ],
+      "timestamp": "2026-08-27T10:34:31.8655493+00:00"
+    },
+    {
+      "id": "HEADERS-API-HEALTH",
+      "target": "https://api.khepraexperts.com/health",
+      "result": "PASS",
+      "headers": {
+        "X-Powered-By": [
+          "Express"
+        ],
+        "Vary": [
+          "Origin"
+        ],
+        "Access-Control-Allow-Credentials": [
+          "true"
+        ],
+        "ETag": [
+          "W/\"b4-Wo9Wf/AC7/RFqzPIO+FYqEFmhP0\""
+        ],
+        "Date": [
+          "Thu, 27 Aug 2026 10:34:32 GMT"
+        ],
+        "Connection": [
+          "keep-alive"
+        ],
+        "Keep-Alive": [
+          "timeout=5"
+        ],
+        "Server": [
+          "Fly/bae4c81b48",
+          "(2026-08-26)"
+        ],
+        "Via": [
+          "1.1 fly.io",
+          "1.1 fly.io"
+        ],
+        "fly-request-id": [
+          "01M11CJ854C33DNTM2SGM027CS-jnb"
+        ],
+        "Content-Type": [
+          "application/json; charset=utf-8"
+        ],
+        "Content-Length": [
+          "180"
+        ]
+      },
+      "checks": [
+        {
+          "header": "Strict-Transport-Security",
+          "present": false,
+          "severity": "WARN"
+        },
+        {
+          "header": "X-Content-Type-Options",
+          "present": false,
+          "severity": "WARN"
+        },
+        {
+          "header": "Content-Security-Policy",
+          "present": false,
+          "severity": "WARN"
+        },
+        {
+          "header": "Referrer-Policy",
+          "present": false,
+          "severity": "WARN"
+        },
+        {
+          "header": "X-Frame-Options",
+          "present": false,
+          "severity": "WARN"
+        }
+      ],
+      "timestamp": "2026-08-27T10:34:32.6849261+00:00"
+    },
+    {
+      "id": "NEG-RAG-EMPTY",
+      "target": "https://api.khepraexperts.com/api/v1/rag/query",
+      "method": "POST",
+      "result": "PASS",
+      "http_status": 404,
+      "latency_ms": 846,
+      "body_snippet": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Cannot POST /api/v1/rag/query</pre>\n</body>\n</html>\n",
+      "timestamp": "2026-08-27T10:34:25.2195521+00:00"
+    },
+    {
+      "id": "NEG-RAG-INVALID-JSON",
+      "target": "https://api.khepraexperts.com/api/v1/rag/query",
+      "method": "POST",
+      "result": "PASS",
+      "http_status": 400,
+      "latency_ms": 805,
+      "body_snippet": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Bad Request</pre>\n</body>\n</html>\n",
+      "timestamp": "2026-08-27T10:34:26.0254784+00:00"
+    },
+    {
+      "id": "NEG-RAG-HUGE",
+      "target": "https://api.khepraexperts.com/api/v1/rag/query",
+      "method": "POST",
+      "result": "PASS",
+      "http_status": 404,
+      "latency_ms": 818,
+      "body_snippet": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Cannot POST /api/v1/rag/query</pre>\n</body>\n</html>\n",
+      "timestamp": "2026-08-27T10:34:26.8447659+00:00"
+    },
+    {
+      "id": "NEG-RAG-WRONG-TYPE",
+      "target": "https://api.khepraexperts.com/api/v1/rag/query",
+      "method": "POST",
+      "result": "PASS",
+      "http_status": 404,
+      "latency_ms": 749,
+      "body_snippet": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Cannot POST /api/v1/rag/query</pre>\n</body>\n</html>\n",
+      "timestamp": "2026-08-27T10:34:27.5946623+00:00"
+    },
+    {
+      "id": "NEG-RAG-UNKNOWN-PARAM",
+      "target": "https://api.khepraexperts.com/api/v1/rag/query",
+      "method": "POST",
+      "result": "PASS",
+      "http_status": 404,
+      "latency_ms": 903,
+      "body_snippet": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n<title>Error</title>\n</head>\n<body>\n<pre>Cannot POST /api/v1/rag/query</pre>\n</body>\n</html>\n",
+      "timestamp": "2026-08-27T10:34:28.49808+00:00"
+    },
+    {
+      "id": "NEG-404",
+      "target": "https://api.khepraexperts.com/nonexistent-route-xyz",
+      "method": "GET",
+      "result": "WARN",
+      "http_status": 200,
+      "latency_ms": 814,
+      "body_snippet": "<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n<meta charset=\"utf-8\"/>\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"/>\n<title>KOS • Khepra Experts - RegTech Enterprise Hub</title>\n<link href=\"https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap\" rel=\"stylesheet\">\n<script src=\"https://cdn.tailwindcss.com\"></script>\n<style>*{font-family:Inter,sans-serif}.mono{font-family:'JetBrains Mono',monospace}.bg-kos{background:#0A0E",
+      "timestamp": "2026-08-27T10:34:29.3131413+00:00"
+    },
+    {
+      "id": "NEG-CRAWLERS-INJECTION",
+      "target": "https://api.khepraexperts.com/api/v1/crawlers",
+      "method": "GET",
+      "result": "PASS",
+      "http_status": 404,
+      "latency_ms": 777,
+      "body_snippet": "{\"error\":\"API not found: /api/v1/crawlers\"}",
+      "timestamp": "2026-08-27T10:34:30.0912301+00:00"
+    },
+    {
+      "id": "NET-PING-kos.khepraexperts.com",
+      "target": "kos.khepraexperts.com",
+      "result": "PASS",
+      "latency_ms": 241,
+      "error": null,
+      "timestamp": "2026-08-27T10:33:57.655956+00:00"
+    },
+    {
+      "id": "NET-PING-api.khepraexperts.com",
+      "target": "api.khepraexperts.com",
+      "result": "PASS",
+      "latency_ms": 195,
+      "error": null,
+      "timestamp": "2026-08-27T10:33:59.0688543+00:00"
+    },
+    {
+      "id": "NET-PING-8.8.8.8",
+      "target": "8.8.8.8",
+      "result": "PASS",
+      "latency_ms": 98,
+      "error": null,
+      "timestamp": "2026-08-27T10:34:00.2832257+00:00"
+    },
+    {
+      "id": "NET-PING-1.1.1.1",
+      "target": "1.1.1.1",
+      "result": "PASS",
+      "latency_ms": 190,
+      "error": null,
+      "timestamp": "2026-08-27T10:34:01.675246+00:00"
+    },
+    {
+      "id": "NET-TCP-443-kos.khepraexperts.com",
+      "target": "kos.khepraexperts.com",
+      "result": "PASS",
+      "latency_ms": 215,
+      "error": null,
+      "timestamp": "2026-08-27T10:34:01.8955176+00:00"
+    },
+    {
+      "id": "NET-TCP-443-api.khepraexperts.com",
+      "target": "api.khepraexperts.com",
+      "result": "PASS",
+      "latency_ms": 188,
+      "error": null,
+      "timestamp": "2026-08-27T10:34:02.0847167+00:00"
+    },
+    {
+      "id": "SUPABASE-CONFIG",
+      "result": "SKIP",
+      "details": "DATABASE NOT CONFIGURED - SUPABASE_URL not present",
+      "severity": "INFO",
+      "timestamp": "2026-08-27T10:34:35.3529917+00:00"
+    },
+    {
+      "id": "TLS-FRONTEND",
+      "target": "https://kos.khepraexperts.com",
+      "result": "PASS",
+      "latency_ms": 1041,
+      "http_status": 200,
+      "tls_valid": true,
+      "cert_notAfter": "2026-11-22T09:05:49+00:00",
+      "cert_days_left": 86,
+      "cert_subject": "CN=kos.khepraexperts.com",
+      "cert_issuer": "CN=YE1, O=Let's Encrypt, C=US",
+      "error": null,
+      "timestamp": "2026-08-27T10:34:03.6192333+00:00"
+    },
+    {
+      "id": "TLS-API",
+      "target": "https://api.khepraexperts.com",
+      "result": "PASS",
+      "latency_ms": 767,
+      "http_status": 200,
+      "tls_valid": true,
+      "cert_notAfter": "2026-11-22T15:25:18+00:00",
+      "cert_days_left": 87,
+      "cert_subject": "CN=api.khepraexperts.com",
+      "cert_issuer": "CN=YE2, O=Let's Encrypt, C=US",
+      "error": null,
+      "timestamp": "2026-08-27T10:34:04.8355869+00:00"
+    },
+    {
+      "id": "TLS-API-HEALTH",
+      "target": "https://api.khepraexperts.com/health",
+      "result": "PASS",
+      "latency_ms": 376,
+      "http_status": 200,
+      "tls_valid": true,
+      "cert_notAfter": "2026-11-22T15:25:18+00:00",
+      "cert_days_left": 87,
+      "cert_subject": "CN=api.khepraexperts.com",
+      "cert_issuer": "CN=YE2, O=Let's Encrypt, C=US",
+      "error": null,
+      "timestamp": "2026-08-27T10:34:05.7134944+00:00"
+    }
+  ],
+  "tests_warn": 1,
+  "total_score": 97.78,
+  "tests_pass": 44,
+  "major_blockers": 1,
+  "frontend": "https://kos.khepraexperts.com",
+  "tests_total": 53,
+  "tests_skip": 5
+}
