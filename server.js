@@ -83,6 +83,31 @@ app.get('/openapi.json', (req, res) => {
       "/api/sources": { get: { summary: "Sources" } },
       "/api/rag/search": { post: { summary: "RAG Search" } }
     }
+// --- PAYDUNYA MOUNT (ESM + CJS compatible) ---
+let paydunyaRoutesLoaded = false;
+try {
+  const paydunyaRouter = require('./src/routes/paydunya.js');
+  const router = paydunyaRouter.default || paydunyaRouter;
+  app.use('/api/paydunya', router);
+  paydunyaRoutesLoaded = true;
+  console.log('[BOOT] PayDunya routes mounted at /api/paydunya');
+} catch (e) {
+  try {
+    // Fallback si src/routes/paydunya.js n'existe pas en CJS -> inline minimal
+    const express = require('express');
+    const r = express.Router();
+    const PLANS = { starter: 15000, pro: 35000, cabinet: 75000, enterprise: 150000 };
+    r.get('/plans', (req,res)=> res.json({ plans: PLANS, currency:'XOF', gateway:'PayDunya', mode: process.env.PAYDUNYA_MODE||'disabled' }));
+    r.post('/checkout', (req,res)=> res.status(503).json({ success:false, error:'PayDunya service not fully installed - run npm install paydunya', code:'PAYDUNYA_DISABLED' }));
+    r.get('/confirm', (req,res)=> res.status(400).json({ error:'token required' }));
+    r.post('/ipn', (req,res)=> res.status(200).json({ received:true }));
+    app.use('/api/paydunya', r);
+    console.log('[BOOT] PayDunya fallback routes mounted');
+  } catch (e2) {
+    console.log('[BOOT] PayDunya mount failed', e.message, e2.message);
+  }
+}
+
   });
 });
 
