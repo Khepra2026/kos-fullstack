@@ -1,5 +1,21 @@
 [build]
   command = "npm run build"
-  publish = ".next"
-[functions]
-  directory = ".next/server/app"
+  publish = ".next/static"
+  functions = "netlify/functions"
+
+[build.environment]
+  NEXT_USE_NETLIFY_EDGE = "true"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Strict-Transport-Security = "max-age=63072000; includeSubDomains; preload"
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    X-Request-ID = "kos-req"
+
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/next_api_:splat"
+  status = 200

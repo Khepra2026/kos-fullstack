@@ -1,6 +1,6 @@
 
 # Tests E2E métier KOS - Scénarios A-H
-param([string]$BaseUrl="https://kos-khepraexperts.fly.dev")
+param([string]$BaseUrl="https://localhost:3000")
 Write-Host "=== E2E Big Four ==="
 $tests = @(
   @{id="KOS-E2E-001"; name="healthz liveness"; url="$BaseUrl/healthz"; expect=200},
