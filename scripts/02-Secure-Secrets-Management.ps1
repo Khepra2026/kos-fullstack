@@ -41,4 +41,4 @@ Write-Host "`nLister (sans valeurs): fly secrets list -a $AppName"
 
 # 4. GitHub Actions - utiliser ${{ secrets.XXX }}
 Write-Host "`nGitHub: Configurer Settings > Secrets > Actions > New repository secret"
-Write-Host "Ne JAMAIS faire echo ${{ secrets.X }} dans les logs"
+Write-Host "Ne JAMAIS faire echo `Write-Host "Ne JAMAIS faire echo {{ secrets.X }} dans les logs"
