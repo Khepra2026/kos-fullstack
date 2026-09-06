@@ -5,7 +5,7 @@ const pwa = withPWA({
   dest: 'public',
   register: true,
   skipWaiting: true,
-  disable: false,
+  disable: process.env.NODE_ENV === 'development',
   runtimeCaching: [
     {
       urlPattern: /^https:\/\/api\.*/i,
@@ -13,33 +13,28 @@ const pwa = withPWA({
       options: { cacheName: 'api-cache', networkTimeoutSeconds: 10, expiration: { maxEntries: 100, maxAgeSeconds: 86400 } }
     },
     {
-      urlPattern: /\.(?:js|css|woff2|png|jpg|jpeg|svg|gif|webp|woff)$/i,
+      urlPattern: /\.(?:js|css|woff2|woff|png|jpg|jpeg|svg|gif|webp)$/i,
       handler: 'CacheFirst',
       options: { cacheName: 'static-assets', expiration: { maxEntries: 300, maxAgeSeconds: 2592000 } }
     }
   ],
-  fallbacks: {
-    document: '/offline'
-  },
+  fallbacks: { document: '/offline' },
   buildExcludes: [/middleware-manifest\.json$/]
 });
 
 const nextConfig = {
-  output: 'standalone',
+  // output: 'standalone' uniquement pour Docker, pas Vercel - Vercel gère son propre output
+  ...(process.env.VERCEL !== '1' ? { output: 'standalone' } : {}),
   reactStrictMode: true,
   swcMinify: true,
-  compiler: {
-    removeConsole: process.env.NODE_ENV === 'production',
-  },
+  compiler: { removeConsole: process.env.NODE_ENV === 'production' },
   env: {
     GIT_SHA: process.env.GIT_SHA || 'unknown',
     BUILD_TIME: new Date().toISOString(),
-    KOS_VERSION: '2.0.0-bigfour-netflix',
+    KOS_VERSION: '2.0.0-bigfour-netflix-pwa',
     KOS_MODE: 'PWA'
   },
-  images: {
-    remotePatterns: [{ protocol: 'https', hostname: '**' }]
-  }
+  images: { remotePatterns: [{ protocol: 'https', hostname: '**' }] }
 };
 
 module.exports = pwa(nextConfig);
