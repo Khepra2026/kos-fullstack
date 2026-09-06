@@ -5,7 +5,8 @@
 [build.environment]
   NODE_VERSION = "20.18.0"
   NPM_VERSION = "10.8.2"
-  NPM_FLAGS = "--legacy-peer-deps"
+  PYTHON_VERSION = "3.11"
+  PIP_DISABLE_PIP_VERSION_CHECK = "1"
   NEXT_TELEMETRY_DISABLED = "1"
 
 [[plugins]]
@@ -15,22 +16,8 @@
   for = "/manifest.json"
   [headers.values]
     Content-Type = "application/manifest+json"
-    Cache-Control = "public, max-age=0, must-revalidate"
 
 [[headers]]
   for = "/sw.js"
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"
-
-[[headers]]
-  for = "/workbox-*.js"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
-
-[[headers]]
-  for = "/*"
-  [headers.values]
-    X-Frame-Options = "DENY"
-    X-Content-Type-Options = "nosniff"
-    X-XSS-Protection = "1; mode=block"
-    Referrer-Policy = "strict-origin-when-cross-origin"
