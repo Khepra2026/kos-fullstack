@@ -1,8 +1,8 @@
 {
   "framework": "nextjs",
   "buildCommand": "npm run build",
+  "installCommand": "npm install --legacy-peer-deps",
   "outputDirectory": ".next",
-  "installCommand": "npm ci",
   "regions": ["cdg1"],
   "headers": [
     { "source": "/manifest.json", "headers": [{ "key": "Content-Type", "value": "application/manifest+json" }] },
