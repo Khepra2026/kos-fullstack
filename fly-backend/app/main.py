@@ -130,3 +130,4 @@ async def kos_ingest(
     result = supabase.table("kos_documents").insert(doc).execute()
     doc_id = result.data[0]["id"] if result.data else doc["id"]
     return {"lineage_id": doc_id, "chunks": 1, "tenant_id": tenant_id}
+
