@@ -7,6 +7,7 @@ from typing import Any
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+
 from supabase import create_client
 
 logger = logging.getLogger(__name__)
@@ -114,7 +115,7 @@ async def kos_query(
             for d in (search_result.data or [])
         ]
         return {"query": q, "results": docs, "count": len(docs), "source": "text_search", "mock": False}
-    except Exception as e: # noqa: BLE001
+    except Exception as e:
         logger.error(f"text_search failed: {e}")
         raise HTTPException(status_code=500, detail=f"Query failed: {e}") from e
 
