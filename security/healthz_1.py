@@ -1,7 +1,8 @@
 
 # FastAPI healthz / ready - liveness != readiness
+import os
+
 from fastapi import APIRouter, Response
-import os, asyncpg, redis
 
 router = APIRouter()
 

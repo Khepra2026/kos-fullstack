@@ -1,5 +1,8 @@
-import os, requests, time
+import os
+import time
 from pathlib import Path
+
+import requests
 
 base="data/raw/global_regulators"
 cats={

@@ -1,9 +1,9 @@
 
 # KOS RAG Anti-hallucination guard - Big Four requirement
 # Si pas de preuve suffisante => refuser d'inventer
-from typing import List, Dict
 
-def validate_grounded_answer(question: str, retrieved: List[Dict], answer: str, min_score=0.75) -> Dict:
+
+def validate_grounded_answer(question: str, retrieved: list[dict], answer: str, min_score=0.75) -> dict:
     if not retrieved:
         return {"allowed": False, "reason": "Aucune source réglementaire trouvée", "action": "REFUSE_AND_ASK_CLARIFICATION"}
     # Vérif citations

@@ -1,5 +1,9 @@
-import os, requests, time
+import os
+import time
 from pathlib import Path
+
+import requests
+
 base="data/raw/global_regulators"
 Path(base).mkdir(parents=True, exist_ok=True)
 

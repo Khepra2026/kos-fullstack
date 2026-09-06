@@ -1,15 +1,20 @@
-import os, glob
+import glob
+import os
 from pathlib import Path
+
 from dotenv import load_dotenv
+
 load_dotenv(dotenv_path=Path(".env.local"))
 load_dotenv()  # fallback .env
 from supabase import create_client
+
 url = os.getenv('NEXT_PUBLIC_SUPABASE_URL') or os.getenv('SUPABASE_URL') or "https://pgfwhahiwqvqeahpirjx.supabase.co"
 key = os.getenv('SUPABASE_SERVICE_ROLE_KEY') or os.getenv('SUPABASE_SERVICE_KEY') or os.getenv('NEXT_PUBLIC_SUPABASE_ANON_KEY')
 print(f"URL {url[:35]}... KEY {key[:15]}...")
 sb = create_client(url, key)
 
 import fitz
+
 files = glob.glob("data/raw/**/*.pdf", recursive=True)
 print(f"Found {len(files)} PDFs")
 cnt=0

@@ -7,6 +7,7 @@ from typing import Any
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+
 from supabase import create_client
 
 logger = logging.getLogger(__name__)
@@ -20,7 +21,7 @@ try:
         if SUPABASE_URL and SUPABASE_KEY
         else None
     )
-except Exception as e:
+except Exception as e: # noqa: BLE001 - init fallback volontaire
     logger.warning(f"Supabase init failed: {e}")
     supabase = None
 
@@ -88,7 +89,7 @@ async def kos_query(
                 for d in result.data
             ]
             return {"query": q, "results": docs, "count": len(docs), "source": "pgvector"}
-    except Exception as e:
+    except Exception as e: # noqa: BLE001 - fallback RAG volontaire
         logger.warning(f"pgvector match failed, fallback to text_search: {e}")
 
     try:

@@ -1,6 +1,9 @@
 import os
-from supabase import create_client
+
 from dotenv import load_dotenv
+
+from supabase import create_client
+
 load_dotenv('.env.local')
 url=os.getenv('NEXT_PUBLIC_SUPABASE_URL') or os.getenv('SUPABASE_URL')
 # Votre .env.local a SERVICE_ROLE_KEY pas SERVICE_KEY

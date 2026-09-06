@@ -1,15 +1,20 @@
 import os
 from pathlib import Path
+
 from dotenv import load_dotenv
+
 load_dotenv(dotenv_path=Path(".env.local"), override=True)
-from supabase import create_client
 import glob
+
+from supabase import create_client
+
 url=os.getenv('NEXT_PUBLIC_SUPABASE_URL') or os.getenv('SUPABASE_URL')
 key=os.getenv('SUPABASE_SERVICE_ROLE_KEY') or os.getenv('SUPABASE_SERVICE_KEY')
 print(f"URL={url[:40]} KEY_LEN={len(key) if key else 0}")
 sb=create_client(url, key)
 
 import pymupdf
+
 files=glob.glob("data/raw/**/*.pdf", recursive=True)
 print(f"PDFs: {len(files)}")
 cnt=0

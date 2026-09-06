@@ -1,6 +1,10 @@
-import os, glob
+import glob
+import os
+
 from dotenv import load_dotenv
+
 from supabase import create_client
+
 load_dotenv('.env.local')
 url=os.getenv('NEXT_PUBLIC_SUPABASE_URL')
 key=os.getenv('SUPABASE_SERVICE_ROLE_KEY') or os.getenv('SUPABASE_SERVICE_KEY')

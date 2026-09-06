@@ -1,11 +1,16 @@
-import os, glob
+import glob
+import os
+
 from dotenv import load_dotenv
+
 from supabase import create_client
+
 load_dotenv('.env.local')
 sb=create_client(os.getenv('NEXT_PUBLIC_SUPABASE_URL'), os.getenv('SUPABASE_SERVICE_ROLE_KEY'))
 import fitz
+
 files=glob.glob("data/raw/**/*.*", recursive=True)
-files=[f for f in files if f.lower().endswith(('.pdf'))]
+files=[f for f in files if f.lower().endswith('.pdf')]
 print(f"Ingest {len(files)} PDFs")
 cnt=0
 for fp in files:

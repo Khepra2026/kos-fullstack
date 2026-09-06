@@ -1,5 +1,7 @@
-import requests, time
+import time
 from datetime import datetime
+
+import requests
 
 URLS = [
     "https://api.khepraexperts.com/health",

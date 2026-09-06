@@ -1,4 +1,5 @@
 import requests
+
 DOMAINS = ["https://khepraexperts.com","https://www.khepraexperts.com","https://app.khepraexperts.com","https://api.khepraexperts.com","https://kos.khepraexperts.com","https://kos-gateway-hsts.khepra-experts.workers.dev"]
 print("=== KOS QA 404 + HSTS ===")
 for domain in DOMAINS:

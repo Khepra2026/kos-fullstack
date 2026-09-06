@@ -1,5 +1,6 @@
-import requests
 from datetime import datetime
+
+import requests
 
 # Toutes les routes connues KOS Regtech AI
 ROUTES = {
@@ -68,7 +69,9 @@ for e in errors:
     print(f"{e['domain']} {e['url']} -> {e['status']}")
 
 # Sauvegarde
-import json, pathlib
+import json
+import pathlib
+
 pathlib.Path("evidence/QA").mkdir(parents=True, exist_ok=True)
 open(f"evidence/QA/404-report-{datetime.now().strftime('%Y-%m-%d')}.json","w",encoding="utf-8").write(json.dumps(report,indent=2))
 print(f"\nRapport sauvé: evidence/QA/404-report-{datetime.now().strftime('%Y-%m-%d')}.json")

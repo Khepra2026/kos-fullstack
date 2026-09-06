@@ -1,6 +1,10 @@
-import os, glob
-from supabase import create_client
+import glob
+import os
+
 from dotenv import load_dotenv
+
+from supabase import create_client
+
 load_dotenv('.env.local')
 sb = create_client(os.getenv('SUPABASE_URL') or os.getenv('NEXT_PUBLIC_SUPABASE_URL'), os.getenv('SUPABASE_SERVICE_KEY'))
 files=[]

@@ -3,8 +3,9 @@ KOS RAG Pipeline - BCEAO / UEMOA / BDF
 Conforme SOC2 + RGPD UEMOA
 """
 import os
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
+
 
 class KOSRAGLoader:
     def __init__(self):

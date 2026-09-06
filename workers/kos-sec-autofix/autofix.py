@@ -3,5 +3,6 @@
 # 2. npm audit fix
 # 3. Supabase RLS check -> alerte si Count < total_tables
 import subprocess
+
 print("Running pip-audit...")
 subprocess.run(["pip-audit","--fix","--requirement","requirements.txt"])
