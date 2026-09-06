@@ -1,10 +1,18 @@
 [build]
   base = "."
   command = "pip install -r requirements.txt && npm install --legacy-peer-deps && npm run build"
-  publish = "dist"
+  publish = ".next"
   functions = "netlify/functions"
 
 [build.environment]
   NODE_VERSION = "20.11.0"
   PYTHON_VERSION = "3.11.9"
   NPM_FLAGS = "--legacy-peer-deps"
+  PIP_DISABLE_PIP_VERSION_CHECK = "1"
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
