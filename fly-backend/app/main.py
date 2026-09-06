@@ -7,7 +7,6 @@ from typing import Any
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-
 from supabase import create_client
 
 logger = logging.getLogger(__name__)
@@ -21,7 +20,7 @@ try:
         if SUPABASE_URL and SUPABASE_KEY
         else None
     )
-except Exception as e: # noqa: BLE001 - init fallback volontaire
+except Exception as e: # noqa: BLE001
     logger.warning(f"Supabase init failed: {e}")
     supabase = None
 
@@ -41,7 +40,12 @@ app.add_middleware(
 )
 
 def get_tenant_id(x_tenant_id: str | None = None) -> str:
-    return x_tenant_id or os.getenv("DEFAULT_TENANT_ID", "default")
+    if x_tenant_id:
+        return x_tenant_id
+    env_val = os.getenv("DEFAULT_TENANT_ID")
+    if env_val:
+        return env_val
+    return "default"
 
 @app.get("/")
 async def root() -> JSONResponse:
@@ -89,7 +93,7 @@ async def kos_query(
                 for d in result.data
             ]
             return {"query": q, "results": docs, "count": len(docs), "source": "pgvector"}
-    except Exception as e: # noqa: BLE001 - fallback RAG volontaire
+    except Exception as e: # noqa: BLE001
         logger.warning(f"pgvector match failed, fallback to text_search: {e}")
 
     try:
@@ -110,7 +114,7 @@ async def kos_query(
             for d in (search_result.data or [])
         ]
         return {"query": q, "results": docs, "count": len(docs), "source": "text_search", "mock": False}
-    except Exception as e:
+    except Exception as e: # noqa: BLE001
         logger.error(f"text_search failed: {e}")
         raise HTTPException(status_code=500, detail=f"Query failed: {e}") from e
 
@@ -130,4 +134,3 @@ async def kos_ingest(
     result = supabase.table("kos_documents").insert(doc).execute()
     doc_id = result.data[0]["id"] if result.data else doc["id"]
     return {"lineage_id": doc_id, "chunks": 1, "tenant_id": tenant_id}
-
