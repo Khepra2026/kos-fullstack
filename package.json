@@ -10,8 +10,9 @@
     "test": "echo 'no tests yet'"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.115.0",
     "express": "^5.2.1",
-    "next": "14.2.5",
+    "next": "^14.2.35",
     "next-pwa": "^5.6.0",
     "react": "18.3.1",
     "react-dom": "18.3.1"
@@ -35,9 +36,11 @@
   },
   "homepage": "https://github.com/Khepra2026/kos-fullstack#readme",
   "devDependencies": {
+    "@babel/core": "^8.0.1",
     "@netlify/plugin-nextjs": "^5.15.13",
     "@types/node": "26.2.0",
     "@types/react": "19.2.18",
+    "babel-loader": "^10.1.1",
     "eslint": "^9.39.5",
     "typescript": "5.4.5"
   }
