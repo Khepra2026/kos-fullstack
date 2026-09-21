@@ -10,10 +10,11 @@
     "test": "echo 'no tests yet'"
   },
   "dependencies": {
+    "@ducanh2912/next-pwa": "10.2.9",
     "@supabase/supabase-js": "^2.115.0",
     "express": "^5.2.1",
-    "next": "^14.2.35",
-    "next-pwa": "^5.6.0",
+    "next": "14.2.35",
+    "postcss": "8.5.3",
     "react": "18.3.1",
     "react-dom": "18.3.1"
   },
@@ -43,5 +44,12 @@
     "babel-loader": "^10.1.1",
     "eslint": "^9.39.5",
     "typescript": "5.4.5"
+  },
+  "overrides": {
+    "serialize-javascript": "7.0.1",
+    "glob": "10.4.5",
+    "decode-uri-component": "0.4.3",
+    "postcss": "8.5.3",
+    "braces": "3.0.3"
   }
 }
