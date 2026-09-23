@@ -20,3 +20,9 @@ requirements.txt.bak
 
 .vercel
 .env*
+migrate_*.py
+rag_*.py
+kb_docs.txt
+supabase/.temp/
+.vercel
+.env*
