@@ -42,6 +42,7 @@
     "@types/node": "26.2.0",
     "@types/react": "19.2.18",
     "babel-loader": "^10.1.1",
+    "dotenv": "^18.0.3",
     "eslint": "^9.39.5",
     "typescript": "5.4.5"
   },
