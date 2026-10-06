@@ -1,37 +1,199 @@
 name: KOS Watcher 24/7 - 15min Cloud
+
 on:
   schedule:
-    - cron: '*/15 * * * *'
+    - cron: "*/15 * * * *"          # toutes les 15 minutes
   workflow_dispatch:
+    inputs:
+      force_redeploy:
+        description: "Forcer un redeploy même si les headers sont OK"
+        required: false
+        type: boolean
+        default: false
+      deep_check:
+        description: "Activer les checks supplémentaires (Readdy + app)"
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kos-watcher
+  cancel-in-progress: false
+
+env:
+  KOS_URL: "https://kos.khepraexperts.com/"
+  READDY_URL: "https://khepraexperts.com/"
+  APP_URL: "https://app.khepraexperts.com/"
+
 jobs:
-  watch:
+  # ################################################################
+  # 00 — CONTROL PLANE / HEADER CHECK
+  # ################################################################
+  control-plane:
+    name: KOS — Header Control Plane
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    continue-on-error: false
+
+    outputs:
+      needs_redeploy: ${{ steps.check.outputs.needs_redeploy }}
+      status: ${{ steps.check.outputs.status }}
+      hsts: ${{ steps.check.outputs.hsts }}
+      csp: ${{ steps.check.outputs.csp }}
+      xfo: ${{ steps.check.outputs.xfo }}
+
     steps:
+      - name: Initialize
+        id: init
+        shell: bash
+        run: |
+          set +e
+          echo "## KOS Watcher Control Plane" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Run ID: \`${GITHUB_RUN_ID}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Trigger: \`${{ github.event_name }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- UTC: \`$(date -u +%Y-%m-%dT%H:%M:%SZ)\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+
       - name: Check KOS Big Four Headers LIVE
         id: check
+        shell: bash
         run: |
+          set +e
           echo "=== KOS WATCHER $(date -u) ==="
-          KOS=$(curl -I -s https://kos.khepraexperts.com/ | tr -d '\r')
+
+          # ---- Fetch headers ----
+          KOS=$(curl -I -s --max-time 20 "$KOS_URL" | tr -d '\r')
           echo "$KOS"
+
           HSTS=$(echo "$KOS" | grep -i "strict-transport-security" | wc -l)
-          CSP=$(echo "$KOS" | grep -i "content-security-policy" | wc -l)
-          XFO=$(echo "$KOS" | grep -i "x-frame-options" | wc -l)
-          if [ $HSTS -eq 0 ] || [ $CSP -eq 0 ] || [ $XFO -eq 0 ]; then
-            echo "CRITICAL FAIL KOS"
-            echo "needs_redeploy=true" >> $GITHUB_OUTPUT
+          CSP=$(echo "$KOS"  | grep -i "content-security-policy"  | wc -l)
+          XFO=$(echo "$KOS"  | grep -i "x-frame-options"          | wc -l)
+          XCTO=$(echo "$KOS" | grep -i "x-content-type-options"   | wc -l)
+
+          echo "hsts=$HSTS"  >> "$GITHUB_OUTPUT"
+          echo "csp=$CSP"    >> "$GITHUB_OUTPUT"
+          echo "xfo=$XFO"    >> "$GITHUB_OUTPUT"
+
+          # ---- Decision ----
+          if [ "$HSTS" -eq 0 ] || [ "$CSP" -eq 0 ] || [ "$XFO" -eq 0 ]; then
+            echo "CRITICAL FAIL KOS — missing security headers"
+            echo "needs_redeploy=true" >> "$GITHUB_OUTPUT"
+            echo "status=CRITICAL"     >> "$GITHUB_OUTPUT"
+            STATUS="CRITICAL"
           else
             echo "PASS KOS 100%"
-            echo "needs_redeploy=false" >> $GITHUB_OUTPUT
+            echo "needs_redeploy=false" >> "$GITHUB_OUTPUT"
+            echo "status=HEALTHY"       >> "$GITHUB_OUTPUT"
+            STATUS="HEALTHY"
           fi
-          echo "--- Readdy INFO ---"
-          curl -I -s https://khepraexperts.com/ | grep -i -E "strict|content-security|x-frame" || echo "INFO Readdy no headers"
-          curl -I -s https://app.khepraexperts.com/ | grep -i -E "strict|content-security|x-frame" || echo "INFO Readdy no headers"
-      - name: Auto-Redeploy if FAIL
-        if: steps.check.outputs.needs_redeploy == 'true'
+
+          # ---- Step Summary ----
+          {
+            echo "### KOS Headers Status"
+            echo "| Header                    | Present |"
+            echo "|---------------------------|---------|"
+            echo "| Strict-Transport-Security | $([ $HSTS -gt 0 ] && echo '✅' || echo '❌') |"
+            echo "| Content-Security-Policy   | $([ $CSP  -gt 0 ] && echo '✅' || echo '❌') |"
+            echo "| X-Frame-Options           | $([ $XFO  -gt 0 ] && echo '✅' || echo '❌') |"
+            echo "| X-Content-Type-Options    | $([ $XCTO -gt 0 ] && echo '✅' || echo '⚠️') |"
+            echo ""
+            echo "- **Overall status**: **$STATUS**"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          # ---- Optional deep check (Readdy + App) ----
+          if [ "${{ inputs.deep_check || true }}" = "true" ]; then
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "### Deep Check (Readdy + App)" >> "$GITHUB_STEP_SUMMARY"
+
+            echo "--- Readdy INFO ---"
+            READDY=$(curl -I -s --max-time 15 "$READDY_URL" | tr -d '\r' || true)
+            echo "$READDY" | grep -i -E "strict|content-security|x-frame|x-content" || echo "INFO Readdy: no matching headers"
+            echo "\`\`\`" >> "$GITHUB_STEP_SUMMARY"
+            echo "$READDY" | head -n 15 >> "$GITHUB_STEP_SUMMARY" || true
+            echo "\`\`\`" >> "$GITHUB_STEP_SUMMARY"
+
+            echo "--- App INFO ---"
+            APP=$(curl -I -s --max-time 15 "$APP_URL" | tr -d '\r' || true)
+            echo "$APP" | grep -i -E "strict|content-security|x-frame|x-content" || echo "INFO App: no matching headers"
+            echo "\`\`\`" >> "$GITHUB_STEP_SUMMARY"
+            echo "$APP" | head -n 15 >> "$GITHUB_STEP_SUMMARY" || true
+            echo "\`\`\`" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  # ################################################################
+  # 01 — AUTO-HEALING / REDEPLOY
+  # ################################################################
+  auto-heal:
+    name: KOS — Auto-Heal / Redeploy
+    needs: control-plane
+    if: |
+      always() &&
+      (
+        needs.control-plane.outputs.needs_redeploy == 'true' ||
+        inputs.force_redeploy == true
+      )
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    continue-on-error: true
+
+    steps:
+      - name: Trigger Vercel Deploy Hook
+        shell: bash
         run: |
-          echo "AUTO-HEALING"
-          if [ -n "${{ secrets.VERCEL_DEPLOY_HOOK }}" ]; then
-            curl -X POST "${{ secrets.VERCEL_DEPLOY_HOOK }}"
-          else
-            echo "Add VERCEL_DEPLOY_HOOK secret"
+          set +e
+          echo "## Auto-Healing" >> "$GITHUB_STEP_SUMMARY"
+
+          if [ -z "${{ secrets.VERCEL_DEPLOY_HOOK }}" ]; then
+            echo "❌ VERCEL_DEPLOY_HOOK secret is missing"
+            echo "- Action: **SKIPPED** (secret absent)" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
           fi
+
+          echo "🚀 Triggering Vercel redeploy..."
+          HTTP_CODE=$(curl -s -o /tmp/deploy_response.txt -w "%{http_code}" \
+            -X POST \
+            --max-time 30 \
+            "${{ secrets.VERCEL_DEPLOY_HOOK }}")
+
+          echo "HTTP: $HTTP_CODE"
+          cat /tmp/deploy_response.txt || true
+
+          {
+            echo "- Action: **REDEPLOY TRIGGERED**"
+            echo "- HTTP response: \`$HTTP_CODE\`"
+            if [ "$HTTP_CODE" = "201" ] || [ "$HTTP_CODE" = "200" ]; then
+              echo "- Result: **SUCCESS**"
+            else
+              echo "- Result: **FAILED / UNEXPECTED**"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # ################################################################
+  # 02 — FINAL STATUS
+  # ################################################################
+  final-status:
+    name: KOS — Final Status
+    needs:
+      - control-plane
+      - auto-heal
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Summary
+        shell: bash
+        run: |
+          {
+            echo "## Final Report"
+            echo "- KOS Status: **${{ needs.control-plane.outputs.status }}**"
+            echo "- Needs Redeploy: \`${{ needs.control-plane.outputs.needs_redeploy }}\`"
+            echo "- HSTS: \`${{ needs.control-plane.outputs.hsts }}\`"
+            echo "- CSP:  \`${{ needs.control-plane.outputs.csp }}\`"
+            echo "- XFO:  \`${{ needs.control-plane.outputs.xfo }}\`"
+            echo ""
+            echo "Watcher finished at \`$(date -u +%Y-%m-%dT%H:%M:%SZ)\`"
+          } >> "$GITHUB_STEP_SUMMARY"
